@@ -11,6 +11,7 @@ import UIKit
 class FriendsTableViewController: UITableViewController, UITextFieldDelegate {
     
     var allFriendsArray = [FriendItem]()
+    
     var searchText: String? = nil {
         didSet {
             searchTextField?.text = searchText
