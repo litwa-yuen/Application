@@ -46,7 +46,9 @@ class SearchViewController: UIViewController, UITableViewDataSource, UISearchRes
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! UITableViewCell
         let friend = filteredFriend[indexPath.row]
         cell.textLabel?.text = friend.name
-        cell.detailTextLabel?.text = "$\(friend.amount)"
+        var formatter = NSNumberFormatter()
+        formatter.numberStyle = .CurrencyStyle
+        cell.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!
         return cell
     }
     

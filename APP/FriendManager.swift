@@ -1,18 +1,186 @@
-import UIKit
+import Foundation
 
 var friendMgr: FriendManager = FriendManager()
 
-struct Friend {
-    let name: String
+
+
+class Friend {
+    
+    var name: String
+    var amount: Double
+    var pay: Double?
+    init(name:String, amount: Double){
+        self.name = name
+        self.amount = amount
+        self.pay = 0.0
+    }
+}
+
+struct Transaction {
+    let oweName: String
+    let paidName: String
     let amount: Double
 }
 
 class FriendManager: NSObject {
-   var friends = [Friend]()
+    var friends = [Friend]()
+    var paid = [Friend]()
+    var owed = [Friend]()
+    var summary = [Transaction]()
+    
     
     func addFriend(name: String, amount: Double) {
-        friends.append(Friend(name: name, amount: amount))
+        
+        
+        var temp:Double = NSString(format: "%.02f", amount).doubleValue
+        friends.append(Friend(name: name, amount: temp))
     }
     
-
+    func total() -> Double {
+        var total: Double = 0
+        for friend in friends {
+            total += friend.amount
+        }
+        return total
+    }
+    
+    func average() -> Double {
+        if !friends.isEmpty {
+            return NSString(format: "%.02f", total()/Double(friends.count)).doubleValue
+        }
+        else {
+            return 0.0
+        }
+    }
+    
+    func different() -> Double {
+        
+        return NSString(format: "%.02f", Double(average()*Double(friends.count)).distanceTo(total())).doubleValue
+    }
+    
+    func evalute() {
+        summary.removeAll()
+        splitTwoNSetPay()
+        findExactMatch()
+        while !paid.isEmpty{
+            
+            compare();
+        }
+        
+    }
+    
+    private func splitTwoNSetPay() {
+        
+        for friend in friends {
+            //split into two array and start calculator
+            if friend.amount > average() {
+                friend.pay = NSString(format: "%.02f", friend.amount - average()).doubleValue
+                paid.append(friend)
+            }
+            else if friend.amount < average() {
+                friend.pay = NSString(format: "%.02f", average() - friend.amount).doubleValue
+                owed.append(friend)
+            }
+        }
+        remainAmount()
+        sortTwoArrays()
+    }
+    
+    private func findExactMatch() {
+        if !paid.isEmpty && !owed.isEmpty {
+            for var i = paid.endIndex-1; i >= 0; i-- {
+                if let index: Int = binarySearch(paid[i].pay!, data: owed) {
+                    if index >= 0 {
+                        summary.append(Transaction(oweName: owed[index].name, paidName: paid[i].name, amount: paid[i].pay!))
+                        owed.removeAtIndex(index)
+                        paid.removeAtIndex(i)
+                    }
+                    
+                }
+            }
+            sortTwoArrays()
+        }
+    }
+    
+    private func binarySearch(key: Double, data: [Friend]) -> Int? {
+        var low: Int = 0
+        var high: Int = data.count-1
+        while high >= low {
+            var middle: Int = (low + high) / 2
+            if data[middle].pay == key {
+                return middle
+            }
+            else if data[middle].pay > key {
+                low = middle+1
+            }
+            else {
+                high = middle-1
+            }
+            
+        }
+        return -1
+    }
+    
+    private func sortTwoArrays() {
+        paid.sort { (friend1: Friend, friend2: Friend) -> Bool in
+            return friend1.pay > friend2.pay
+        }
+        owed.sort { (friend1: Friend, friend2: Friend) -> Bool in
+            return friend1.pay > friend2.pay
+        }
+    }
+    
+    private func remainAmount() {
+        let dif: Double = different()
+        if !paid.isEmpty  {
+            paid[0].pay = paid[0].pay! + dif
+        }
+ 
+    }
+    
+    private func compare() {
+        var largestPaid: Double = -1
+        var largestOwed: Double = -1
+        if !paid.isEmpty {
+            largestPaid = paid[0].pay!
+        }
+        if !owed.isEmpty {
+            largestOwed = owed[0].pay!
+        }
+        if largestOwed > 0 && largestPaid > 0 {
+            if largestPaid > largestOwed {
+                summary.append(Transaction(oweName: owed[0].name, paidName: paid[0].name, amount: owed[0].pay!))
+                owed.removeAtIndex(0)
+                let remaining: Double = NSString(format: "%.02f", largestPaid - largestOwed).doubleValue
+                if let remainingIndex: Int = binarySearch(remaining, data: owed) {
+                    if remainingIndex >= 0 {
+                        summary.append(Transaction(oweName: owed[remainingIndex].name, paidName: paid[0].name, amount: remaining))
+                        paid.removeAtIndex(0)
+                        owed.removeAtIndex(remainingIndex)
+                    }
+                    else {
+                        paid[0].pay = remaining
+                    }
+                }
+            }
+            else {
+                summary.append(Transaction(oweName: owed[0].name, paidName: paid[0].name, amount: paid[0].pay!))
+                paid.removeAtIndex(0)
+                let remaining: Double = NSString(format: "%.02f", largestOwed - largestPaid).doubleValue
+                if let remainingIndex: Int = binarySearch(remaining, data: paid) {
+                    if remainingIndex >= 0 {
+                        summary.append(Transaction(oweName: owed[0].name, paidName: paid[remainingIndex].name, amount: remaining))
+                        owed.removeAtIndex(0)
+                        paid.removeAtIndex(remainingIndex)
+                    }
+                    else {
+                        owed[0].pay = remaining
+                    }
+                }
+            }
+           
+        }
+        
+        sortTwoArrays()
+    }
 }
