@@ -40,6 +40,7 @@ class SearchViewController: UIViewController, UITableViewDataSource, UISearchRes
     
     private struct Storyboard {
         static let ReuseCellIdentifier = "searchFriend"
+        static let DetailIdentifier = "detail"
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -65,4 +66,20 @@ class SearchViewController: UIViewController, UITableViewDataSource, UISearchRes
         
         tableView.reloadData()
     }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if let identifier = segue.identifier {
+            switch identifier {
+            case Storyboard.DetailIdentifier:
+                let cell = sender as? UITableViewCell
+                if let indexPath = tableView.indexPathForCell(cell!) {
+                    friendMgr.evalute()
+                    let seguedToDetail = segue.destinationViewController as? DetailTableViewController
+                    seguedToDetail?.friend = filteredFriend[indexPath.row]
+                }
+            default: break
+            }
+        }
+    }
+    
 }

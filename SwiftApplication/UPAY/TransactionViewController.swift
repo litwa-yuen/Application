@@ -75,6 +75,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     
     private struct Storyboard {
         static let ReuseCellIdentifier = "transFriend"
+        static let DetailIdentifier = "detail"
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -94,15 +95,20 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
             tableFriends.reloadData()
         }
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        if let identifier = segue.identifier {
+            switch identifier {
+                case Storyboard.DetailIdentifier:
+                    let cell = sender as? UITableViewCell
+                    if let indexPath = tableFriends.indexPathForCell(cell!) {
+                        friendMgr.evalute()
+                        let seguedToDetail = segue.destinationViewController as? DetailTableViewController
+                        seguedToDetail?.friend = friendMgr.friends[indexPath.row]
+                }
+            default: break
+            }
+        }
     }
-    */
 
 }
