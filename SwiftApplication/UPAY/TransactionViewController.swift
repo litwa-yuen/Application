@@ -2,16 +2,21 @@ import UIKit
 import CoreData
 
 class TransactionViewController: UIViewController, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate {
-
+    
     @IBOutlet weak var tableFriends: UITableView!
     @IBOutlet weak var amountTextField: UITextField!
-    @IBOutlet weak var searchTextField: UITextField!
+    @IBOutlet weak var searchTextField: UITextField! {
+        didSet {
+            searchTextField.delegate = self
+            toggleAddButton()
+        }
+    }
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
+    @IBOutlet weak var addButton: UIButton!
     
     
     // MARK: - NSFetchedResultsControllerDelegate
-    
     let context = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     var nFriend: Friends? = nil
     
@@ -55,22 +60,14 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     // MARK: - Button action
     
     @IBAction func addToQueue(sender: UIButton) {
-        //searchTextField iw required
-        if searchTextField.text.isEmpty {
-            let alert = UIAlertView()
-            alert.title = "Name is required"
-            alert.message = "Please Enter Name in the Box"
-            alert.addButtonWithTitle("OK")
-            alert.show()
-        }
-        else {
-            newFriend()
-            self.view.endEditing(true)
-            amountTextField.text = nil
-            searchTextField.text = nil
-            refresh()
-            tableFriends.reloadData()
-        }
+        
+        newFriend()
+        self.view.endEditing(true)
+        amountTextField.text = nil
+        searchTextField.text = nil
+        refresh()
+        tableFriends.reloadData()
+        
         
     }
     
@@ -94,6 +91,16 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         context?.save(nil)
     }
     
+    func toggleAddButton () {
+        if searchTextField.text.isEmpty {
+            addButton.enabled = false
+        }
+        else {
+            addButton.enabled = true
+        }
+        
+    }
+    
     func refresh() {
         friendMgr.friends.removeAll()
         friendMgr.summary.removeAll()
@@ -103,6 +110,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         formatter.numberStyle = .CurrencyStyle
         averageLabel.text = "Average is \(formatter.stringFromNumber(friendMgr.average())!)"
         totalLabel.text = "Total is \(formatter.stringFromNumber(friendMgr.total())!)"
+        toggleAddButton()
     }
     
     
@@ -122,6 +130,19 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         return true
     }
     
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        if textField == searchTextField {
+            let text = (textField.text as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            if !text.isEmpty {
+                addButton.enabled = true
+            }
+            else {
+                addButton.enabled = false
+            }
+        }
+        return true
+    }
+    
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
         self.view.endEditing(true)
     }
@@ -131,13 +152,13 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let numberOfRow = frc.sections?[section].numberOfObjects
         return numberOfRow!
-    
+        
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         let numberOfSections = frc.sections?.count
         return numberOfSections!
-    
+        
     }
     
     private struct Storyboard {
@@ -166,16 +187,16 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if let identifier = segue.identifier {
             switch identifier {
-                case Storyboard.DetailIdentifier:
-                    let cell = sender as? UITableViewCell
-                    if let indexPath = tableFriends.indexPathForCell(cell!) {
-                        let seguedToDetail = segue.destinationViewController as? DetailTableViewController
-                        let nFriend: Friends = frc.objectAtIndexPath(indexPath) as! Friends
-                        seguedToDetail?.friendData = nFriend
+            case Storyboard.DetailIdentifier:
+                let cell = sender as? UITableViewCell
+                if let indexPath = tableFriends.indexPathForCell(cell!) {
+                    let seguedToDetail = segue.destinationViewController as? DetailTableViewController
+                    let nFriend: Friends = frc.objectAtIndexPath(indexPath) as! Friends
+                    seguedToDetail?.friendData = nFriend
                 }
             default: break
             }
         }
     }
-
+    
 }
