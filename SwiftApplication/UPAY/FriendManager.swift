@@ -33,6 +33,7 @@ class FriendManager: NSObject {
     var owed = [Friend]()
     var summary = [Transaction]()
     
+    
     // MARK: - public action functions
     func addFriend(name: String, amount: Double) {
         

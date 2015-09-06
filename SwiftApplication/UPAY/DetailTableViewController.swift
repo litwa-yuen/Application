@@ -3,14 +3,33 @@ import UIKit
 class DetailTableViewController: UITableViewController {
     
     
-    var friend: Friend = Friend(name: "default", amount: 0.0) {
-        didSet{
+    var tranactions: [Transaction]? = nil
+    
+    var friend: Friend? = nil {
+        didSet {
+            updateFromSearch()
+        }
+    }
+    
+    var friendData: Friends? = nil {
+        didSet {
             update()
         }
     }
     
     func update() {
-        self.title = friend.name
+        self.title = friendData?.name
+        for friend in friendMgr.friends {
+            if friend.name == self.title {
+                tranactions = friend.detail
+            }
+        }
+        
+    }
+    
+    func updateFromSearch() {
+        self.title = friend?.name
+        tranactions = friend?.detail
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -27,7 +46,7 @@ class DetailTableViewController: UITableViewController {
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
  
-        if let length = friend.detail?.count {
+        if let length = tranactions?.count {
             return length
         }
         else {
@@ -46,7 +65,7 @@ class DetailTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) as! UITableViewCell
         var formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
-        if let transaction = friend.detail?[indexPath.row] {
+        if let transaction = tranactions?[indexPath.row] {
             cell.textLabel?.text = "\(transaction.oweName) owe \(transaction.paidName) \(formatter.stringFromNumber(transaction.amount)!)"
             if transaction.oweName == self.title {
                 cell.textLabel?.textColor = UIColor.redColor()
