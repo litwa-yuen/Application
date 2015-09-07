@@ -60,15 +60,12 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     // MARK: - Button action
     
     @IBAction func addToQueue(sender: UIButton) {
-        
         newFriend()
         self.view.endEditing(true)
         amountTextField.text = nil
         searchTextField.text = nil
         refresh()
         tableFriends.reloadData()
-        
-        
     }
     
     @IBAction func clearAll(sender: UIButton) {
@@ -104,6 +101,8 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     func refresh() {
         friendMgr.friends.removeAll()
         friendMgr.summary.removeAll()
+        searchTextField.text = ""
+        amountTextField.text = ""
         fetchData()
         friendMgr.evalute()
         var formatter = NSNumberFormatter()

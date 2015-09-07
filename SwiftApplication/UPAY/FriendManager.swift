@@ -48,7 +48,7 @@ class FriendManager: NSObject {
         }
         splitTwoNSetPay()
         findExactMatch()
-        while !paid.isEmpty{
+        while !paid.isEmpty && !owed.isEmpty {
             compare();
         }
     }
@@ -201,8 +201,8 @@ class FriendManager: NSObject {
     
     private func remainAmount() {
         let dif: Double = different()
-        if !paid.isEmpty  {
-            paid[0].pay = paid[0].pay! + dif
+        if !paid.isEmpty {
+            paid[0].pay = paid[0].pay! - dif
         }
     }
 }
