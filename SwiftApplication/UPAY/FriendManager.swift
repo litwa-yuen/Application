@@ -8,11 +8,13 @@ class Friend {
     
     var name: String
     var amount: Double
+    var multiplier: Int
     var pay: Double?
     var detail: [Transaction]?
-    init(name:String, amount: Double){
+    init(name:String, amount: Double, multiplier: Int){
         self.name = name
         self.amount = amount
+        self.multiplier = multiplier
         self.pay = 0.0
         self.detail = []
     }
@@ -38,7 +40,7 @@ class FriendManager: NSObject {
     func addFriend(name: String, amount: Double) {
         
         var temp:Double = NSString(format: "%.02f", amount).doubleValue
-        friends.append(Friend(name: name, amount: temp))
+        friends.append(Friend(name: name, amount: temp, multiplier: 1))
     }
     
     func evalute() {
@@ -64,7 +66,7 @@ class FriendManager: NSObject {
     
     func average() -> Double {
         if !friends.isEmpty {
-            return NSString(format: "%.02f", total()/Double(friends.count)).doubleValue
+            return NSString(format: "%.02f", total()/Double(getTotalPeople())).doubleValue
         }
         else {
             return 0.0
@@ -72,20 +74,29 @@ class FriendManager: NSObject {
     }
     
     func different() -> Double {
-        return NSString(format: "%.02f", Double(average()*Double(friends.count)).distanceTo(total())).doubleValue
+        return NSString(format: "%.02f", Double(average()*Double(getTotalPeople())).distanceTo(total())).doubleValue
     }
     
+    
+    func getTotalPeople() -> Int {
+        var totalPeople: Int = 0
+        for friend in friends {
+            totalPeople += friend.multiplier
+        }
+        return totalPeople
+    }
     
     // MARK: - private actions functions
     private func splitTwoNSetPay() {
         for friend in friends {
             //split into two array and start calculator
-            if friend.amount > average() {
-                friend.pay = NSString(format: "%.02f", friend.amount - average()).doubleValue
+            let multAmount = friend.amount * Double(friend.multiplier)
+            if multAmount > average() {
+                friend.pay = NSString(format: "%.02f", multAmount - average()).doubleValue
                 paid.append(friend)
             }
-            else if friend.amount < average() {
-                friend.pay = NSString(format: "%.02f", average() - friend.amount).doubleValue
+            else if multAmount < average() {
+                friend.pay = NSString(format: "%.02f", average() - multAmount).doubleValue
                 owed.append(friend)
             }
         }

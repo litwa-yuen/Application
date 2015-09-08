@@ -39,7 +39,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         var fetchRequest = NSFetchRequest(entityName: "Friends")
         friendData = context?.executeFetchRequest(fetchRequest, error: nil) as! [Friends]
         for friend in friendData {
-            friendMgr.friends.append(Friend(name: friend.name, amount: friend.amount))
+            friendMgr.friends.append(Friend(name: friend.name, amount: friend.amount, multiplier: 1))
         }
     }
     
