@@ -14,6 +14,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var addButton: UIButton!
+    @IBOutlet weak var shareTextField: UITextField!
     
     
     // MARK: - NSFetchedResultsControllerDelegate
@@ -39,7 +40,8 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         var fetchRequest = NSFetchRequest(entityName: "Friends")
         friendData = context?.executeFetchRequest(fetchRequest, error: nil) as! [Friends]
         for friend in friendData {
-            friendMgr.friends.append(Friend(name: friend.name, amount: friend.amount, multiplier: 1))
+            let number = Int(friend.multiplier)
+            friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number)
         }
     }
     
@@ -79,11 +81,19 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         let ent = NSEntityDescription.entityForName("Friends", inManagedObjectContext: context!)
         let nFriend = Friends(entity: ent!, insertIntoManagedObjectContext: context)
         nFriend.name = searchTextField.text
+        
         if amountTextField?.text == nil || amountTextField?.text == "" {
             nFriend.amount = 0.0
         }
         else {
             nFriend.amount = (amountTextField.text as NSString).doubleValue
+        }
+        
+        if shareTextField.text.isEmpty || shareTextField.text.toInt()! < 1 {
+            nFriend.multiplier = 1
+        }
+        else {
+            nFriend.multiplier = shareTextField.text.toInt()!
         }
         context?.save(nil)
     }
@@ -103,6 +113,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
         friendMgr.summary.removeAll()
         searchTextField.text = ""
         amountTextField.text = ""
+        shareTextField.text = ""
         fetchData()
         friendMgr.evalute()
         var formatter = NSNumberFormatter()
@@ -139,6 +150,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
                 addButton.enabled = false
             }
         }
+        
         return true
     }
     
@@ -168,7 +180,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate, UITableV
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) as! UITableViewCell
         let friend = frc.objectAtIndexPath(indexPath) as! Friends
-        cell.textLabel?.text = friend.name
+        cell.textLabel?.text = "\(friend.name) (\(friend.multiplier))"
         var formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
         cell.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!

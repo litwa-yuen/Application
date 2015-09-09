@@ -37,10 +37,10 @@ class FriendManager: NSObject {
     
     
     // MARK: - public action functions
-    func addFriend(name: String, amount: Double) {
+    func addFriend(name: String, amount: Double, multiplier: Int) {
         
         var temp:Double = NSString(format: "%.02f", amount).doubleValue
-        friends.append(Friend(name: name, amount: temp, multiplier: 1))
+        friends.append(Friend(name: name, amount: temp, multiplier: multiplier))
     }
     
     func evalute() {
@@ -90,13 +90,13 @@ class FriendManager: NSObject {
     private func splitTwoNSetPay() {
         for friend in friends {
             //split into two array and start calculator
-            let multAmount = friend.amount * Double(friend.multiplier)
-            if multAmount > average() {
-                friend.pay = NSString(format: "%.02f", multAmount - average()).doubleValue
+            let multAverage = average() * Double(friend.multiplier)
+            if friend.amount > multAverage {
+                friend.pay = NSString(format: "%.02f", friend.amount - multAverage).doubleValue
                 paid.append(friend)
             }
-            else if multAmount < average() {
-                friend.pay = NSString(format: "%.02f", average() - multAmount).doubleValue
+            else if friend.amount < multAverage {
+                friend.pay = NSString(format: "%.02f", multAverage - friend.amount).doubleValue
                 owed.append(friend)
             }
         }
