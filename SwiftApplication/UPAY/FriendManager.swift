@@ -107,7 +107,7 @@ class FriendManager: NSObject {
     private func findExactMatch() {
         if !paid.isEmpty && !owed.isEmpty {
             for var i = paid.endIndex-1; i >= 0; i-- {
-                if let index: Int = binarySearch(paid[i].pay!, data: owed) {
+                if let index: Int = binarySearch(NSString(format: "%.02f", paid[i].pay!).doubleValue , data: owed) {
                     if index >= 0 {
                         addSummaryAndDetail(owed[index].name, paidName: paid[i].name, amount: paid[i].pay!)
                         owed.removeAtIndex(index)
@@ -172,10 +172,10 @@ class FriendManager: NSObject {
         var high: Int = data.count-1
         while high >= low {
             var middle: Int = (low + high) / 2
-            if data[middle].pay == key {
+            if NSString(format: "%.02f", data[middle].pay!).doubleValue == key {
                 return middle
             }
-            else if data[middle].pay > key {
+            else if NSString(format: "%.02f", data[middle].pay!).doubleValue > key {
                 low = middle+1
             }
             else {
