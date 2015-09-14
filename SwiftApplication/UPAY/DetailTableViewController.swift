@@ -4,7 +4,7 @@ class DetailTableViewController: UITableViewController {
     
     
     var tranactions: [Transaction]? = nil
-    
+    var transDecs: String? = ""
     var friend: Friend? = nil {
         didSet {
             updateFromSearch()
@@ -19,6 +19,7 @@ class DetailTableViewController: UITableViewController {
     
     func update() {
         self.title = friendData?.name
+        transDecs = friendData?.desc
         for friend in friendMgr.friends {
             if friend.name == self.title {
                 tranactions = friend.detail
@@ -29,6 +30,7 @@ class DetailTableViewController: UITableViewController {
     
     func updateFromSearch() {
         self.title = friend?.name
+        transDecs = friend?.desc
         tranactions = friend?.detail
     }
 
@@ -76,6 +78,20 @@ class DetailTableViewController: UITableViewController {
         }
         
         return cell
+    }
+    
+    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView(frame: CGRectMake(0, 0, tableView.frame.size.width, 22))
+        headerView.backgroundColor = UIColor.blackColor()
+        var descriptionLabel: UILabel = UILabel()
+        descriptionLabel.frame = CGRectMake(5, 2, tableView.frame.size.width-5, 18)
+        descriptionLabel.text = transDecs!
+        descriptionLabel.textAlignment = NSTextAlignment.Left
+        descriptionLabel.textColor = UIColor.whiteColor()
+        
+        headerView.addSubview(descriptionLabel)
+        
+        return headerView
     }
     
 

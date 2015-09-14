@@ -35,7 +35,7 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
         friendData = context.executeFetchRequest(fetchRequest, error: nil) as! [Friends]
         for friend in friendData {
             let number = Int(friend.multiplier)
-            friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number)
+            friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number, desc: friend.desc )
         }
     }
 

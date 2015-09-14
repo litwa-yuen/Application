@@ -16,5 +16,7 @@ class Friends: NSManagedObject {
     @NSManaged var amount: Double
     @NSManaged var name: String
     @NSManaged var multiplier: NSNumber
+    @NSManaged var desc: String
+
 
 }

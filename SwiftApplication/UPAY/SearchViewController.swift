@@ -1,6 +1,5 @@
 
 import UIKit
-import CoreData
 
 class SearchViewController: UIViewController, UITableViewDataSource, UISearchResultsUpdating {
     

@@ -11,12 +11,14 @@ class Friend {
     var multiplier: Int
     var pay: Double?
     var detail: [Transaction]?
-    init(name:String, amount: Double, multiplier: Int){
+    var desc: String
+    init(name:String, amount: Double, multiplier: Int, desc: String){
         self.name = name
         self.amount = amount
         self.multiplier = multiplier
         self.pay = 0.0
         self.detail = []
+        self.desc = desc
     }
     func cleanDetail() {
         self.detail = []
@@ -37,10 +39,10 @@ class FriendManager: NSObject {
     
     
     // MARK: - public action functions
-    func addFriend(name: String, amount: Double, multiplier: Int) {
+    func addFriend(name: String, amount: Double, multiplier: Int, desc: String) {
         
         var temp:Double = NSString(format: "%.02f", amount).doubleValue
-        friends.append(Friend(name: name, amount: temp, multiplier: multiplier))
+        friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc))
     }
     
     func evalute() {

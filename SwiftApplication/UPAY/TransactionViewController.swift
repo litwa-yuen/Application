@@ -47,6 +47,14 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
         else {
             nFriend.multiplier = shareTextField.text.toInt()!
         }
+        
+        
+        if descriptionTextField.text == nil {
+            nFriend.desc = ""
+        }
+        else {
+            nFriend.desc = descriptionTextField.text
+        }
         context.save(nil)
     }
     
