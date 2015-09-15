@@ -1,11 +1,3 @@
-//
-//  ParticipantsViewController.swift
-//  UPAY
-//
-//  Created by Lit Wa Yuen on 9/10/15.
-//  Copyright (c) 2015 CS320. All rights reserved.
-//
-
 import UIKit
 import CoreData
 
@@ -76,8 +68,25 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
     // MARK: - Actions and Utilities
     
     @IBAction func clearAll(sender: UIBarButtonItem) {
-        deleteCoreData()
-        refresh()
+        var alert = UIAlertController(
+            title: "Warning!",
+            message: "Are you sure you want to delete all transactions",
+            preferredStyle: UIAlertControllerStyle.Alert)
+        
+        var cancelAction = UIAlertAction(
+            title: "Cancel",
+            style: UIAlertActionStyle.Cancel)
+            { (action) in
+                // do nothing
+            }
+        alert.addAction(cancelAction)
+        
+        var clearAllAction = UIAlertAction(title: "Clear", style: UIAlertActionStyle.Default) { (action) -> Void in
+            self.deleteCoreData()
+            self.refresh()
+        }
+        alert.addAction(clearAllAction)
+        presentViewController(alert, animated: true, completion: nil)
     }
     
     func refresh() {

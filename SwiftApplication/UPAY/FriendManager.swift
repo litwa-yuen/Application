@@ -126,39 +126,39 @@ class FriendManager: NSObject {
         var largestPaid: Double = -1
         var largestOwed: Double = -1
         if !paid.isEmpty {
-            largestPaid = paid[0].pay!
+            largestPaid = paid.first!.pay!
         }
         if !owed.isEmpty {
-            largestOwed = owed[0].pay!
+            largestOwed = owed.first!.pay!
         }
         if largestOwed > 0 && largestPaid > 0 {
             if largestPaid > largestOwed {
-                addSummaryAndDetail(owed[0].name, paidName: paid[0].name, amount: owed[0].pay!)
+                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: owed.first!.pay!)
                 owed.removeAtIndex(0)
                 let remaining: Double = NSString(format: "%.02f", largestPaid - largestOwed).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: owed) {
                     if remainingIndex >= 0 {
-                        addSummaryAndDetail(owed[remainingIndex].name, paidName: paid[0].name, amount: remaining)
+                        addSummaryAndDetail(owed[remainingIndex].name, paidName: paid.first!.name, amount: remaining)
                         paid.removeAtIndex(0)
                         owed.removeAtIndex(remainingIndex)
                     }
                     else {
-                        paid[0].pay = remaining
+                        paid.first!.pay = remaining
                     }
                 }
             }
             else {
-                addSummaryAndDetail(owed[0].name, paidName: paid[0].name, amount: paid[0].pay!)
+                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: paid.first!.pay!)
                 paid.removeAtIndex(0)
                 let remaining: Double = NSString(format: "%.02f", largestOwed - largestPaid).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: paid) {
                     if remainingIndex >= 0 {
-                        addSummaryAndDetail(owed[0].name, paidName: paid[remainingIndex].name, amount: remaining)
+                        addSummaryAndDetail(owed.first!.name, paidName: paid[remainingIndex].name, amount: remaining)
                         owed.removeAtIndex(0)
                         paid.removeAtIndex(remainingIndex)
                     }
                     else {
-                        owed[0].pay = remaining
+                        owed.first!.pay = remaining
                     }
                 }
             }
@@ -215,7 +215,8 @@ class FriendManager: NSObject {
     private func remainAmount() {
         let dif: Double = different()
         if !paid.isEmpty {
-            paid[0].pay = paid[0].pay! - dif
+            // TODO pick a random user
+            paid.first!.pay = paid.first!.pay! - dif
         }
     }
 }
