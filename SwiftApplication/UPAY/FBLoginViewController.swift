@@ -1,9 +1,9 @@
 //
 //  FBLoginViewController.swift
-//  UPAY
+//  UPAY1.1
 //
-//  Created by Lit Wa Yuen on 9/9/15.
-//  Copyright (c) 2015 CS320. All rights reserved.
+//  Created by Lit Wa Yuen on 9/17/15.
+//  Copyright © 2015 CS320. All rights reserved.
 //
 
 import UIKit
@@ -15,18 +15,17 @@ class FBLoginViewController: UIViewController, FBSDKLoginButtonDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         if FBSDKAccessToken.currentAccessToken() == nil{
-            println("Not logged in..")
+            print("Not logged in..")
         }
         else {
-            println("Logged in..")
+            print("Logged in..")
         }
-        var loginButton = FBSDKLoginButton()
+        let loginButton = FBSDKLoginButton()
         loginButton.readPermissions = ["public_profile", "email", "user_friends"]
         loginButton.center = self.view.center
         loginButton.delegate = self
         
         self.view.addSubview(loginButton)
-
         // Do any additional setup after loading the view.
     }
 
@@ -38,8 +37,6 @@ class FBLoginViewController: UIViewController, FBSDKLoginButtonDelegate {
     private struct Storyboard {
         static let ReuseCellIdentifier = "login"
     }
-
-    
     
     // MARK: - Facebook Login
     func loginButton(loginButton: FBSDKLoginButton!, didCompleteWithResult result: FBSDKLoginManagerLoginResult!, error: NSError!) {
@@ -47,13 +44,14 @@ class FBLoginViewController: UIViewController, FBSDKLoginButtonDelegate {
             self.performSegueWithIdentifier(Storyboard.ReuseCellIdentifier, sender: self)
         }
         else {
-            println(error.localizedDescription)
+            print(error.localizedDescription)
         }
     }
     
     func loginButtonDidLogOut(loginButton: FBSDKLoginButton!) {
-        println("user logged out...")
+        print("user logged out...")
     }
+    
 
     /*
     // MARK: - Navigation

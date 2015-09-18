@@ -1,16 +1,29 @@
+//
+//  ParticipantsViewController.swift
+//  UPAY1.1
+//
+//  Created by Lit Wa Yuen on 9/17/15.
+//  Copyright © 2015 CS320. All rights reserved.
+//
+
 import UIKit
 import CoreData
 
-class ParticipantsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate {
+class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDelegate,
+    UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var participantsTableView: UITableView!
-    @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var averageLabel: UILabel!
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext!
+    @IBOutlet weak var totalLabel: UILabel!
+    
+    
+    let context: NSManagedObjectContext = (UIApplication.sharedApplication()
+        .delegate as! AppDelegate).managedObjectContext
     var frc: NSFetchedResultsController = NSFetchedResultsController()
     
     func getFetchedResultsController() -> NSFetchedResultsController {
-        frc = NSFetchedResultsController(fetchRequest: friendFetchRequest(), managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        frc = NSFetchedResultsController(fetchRequest: friendFetchRequest(),
+            managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
         return frc
     }
     
@@ -23,34 +36,39 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
     
     func fetchData() {
         var friendData = [Friends]()
-        var fetchRequest = NSFetchRequest(entityName: "Friends")
-        friendData = context.executeFetchRequest(fetchRequest, error: nil) as! [Friends]
+        let fetchRequest = NSFetchRequest(entityName: "Friends")
+        friendData = (try! context.executeFetchRequest(fetchRequest)) as! [Friends]
         for friend in friendData {
-            let number = Int(friend.multiplier)
+            let number = Int(friend.multiplier!)
             friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number, desc: friend.desc )
         }
     }
-
+    
     func deleteCoreData() {
         var friendData = [Friends]()
-        var fetchRequest = NSFetchRequest(entityName: "Friends")
-        friendData = context.executeFetchRequest(fetchRequest, error: nil) as! [Friends]
+        let fetchRequest = NSFetchRequest(entityName: "Friends")
+        friendData = (try! context.executeFetchRequest(fetchRequest)) as! [Friends]
         for friend in friendData {
             context.deleteObject(friend)
         }
-        context.save(nil)
+        do {
+            try context.save()
+        } catch _ {
+        }
     }
     
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         participantsTableView.reloadData()
     }
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
         frc = getFetchedResultsController()
         frc.delegate = self
-        frc.performFetch(nil)
+        do {
+            try frc.performFetch()
+        } catch _ {
+        }
         participantsTableView.dataSource = self
 
         // Do any additional setup after loading the view.
@@ -64,24 +82,21 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    // MARK: - Actions and Utilities
-    
     @IBAction func clearAll(sender: UIBarButtonItem) {
-        var alert = UIAlertController(
+        let alert = UIAlertController(
             title: "Warning!",
             message: "Are you sure you want to delete all transactions",
             preferredStyle: UIAlertControllerStyle.Alert)
         
-        var cancelAction = UIAlertAction(
+        let cancelAction = UIAlertAction(
             title: "Cancel",
             style: UIAlertActionStyle.Cancel)
             { (action) in
                 // do nothing
-            }
+        }
         alert.addAction(cancelAction)
         
-        var clearAllAction = UIAlertAction(title: "Clear", style: UIAlertActionStyle.Default) { (action) -> Void in
+        let clearAllAction = UIAlertAction(title: "Clear", style: UIAlertActionStyle.Default) { (action) -> Void in
             self.deleteCoreData()
             self.refresh()
         }
@@ -94,11 +109,11 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
         friendMgr.summary.removeAll()
         fetchData()
         friendMgr.evalute()
-        var formatter = NSNumberFormatter()
+        let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
         averageLabel.text = "Average: \(formatter.stringFromNumber(friendMgr.average())!)"
         totalLabel.text = "Total: \(formatter.stringFromNumber(friendMgr.total())!)"
-
+        
         participantsTableView.reloadData()
     }
     
@@ -107,9 +122,8 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
     private struct Storyboard {
         static let ReuseCellIdentifier = "Participant"
         static let DetailIdentifier = "detail"
-        static let SummaryIdentifier = "showSummary"
     }
-
+    
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let numberOfRow = frc.sections?[section].numberOfObjects
@@ -124,10 +138,16 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) as! UITableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath)
         let friend = frc.objectAtIndexPath(indexPath) as! Friends
-        cell.textLabel?.text = "\(friend.name) (\(friend.multiplier))"
-        var formatter = NSNumberFormatter()
+        if friend.multiplier == 1 {
+            cell.textLabel?.text = "\(friend.name)"
+        }
+        else {
+            let broughtWith = (friend.multiplier) as! Int - 1
+            cell.textLabel?.text = "\(friend.name) + \(broughtWith)"
+        }
+        let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
         cell.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!
         
@@ -137,9 +157,14 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
     func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         let managedObject: NSManagedObject = frc.objectAtIndexPath(indexPath) as! NSManagedObject
         context.deleteObject(managedObject)
-        context.save(nil)
+        do {
+            try context.save()
+        } catch _ {
+        }
         refresh()
     }
+    
+
     
     // MARK: - Navigation
 
@@ -153,9 +178,11 @@ class ParticipantsViewController: UIViewController, UITableViewDelegate, UITable
                     let seguedToDetail = segue.destinationViewController as? DetailTableViewController
                     let nFriend: Friends = frc.objectAtIndexPath(indexPath) as! Friends
                     seguedToDetail?.friendData = nFriend
-                }                
+                }
             default: break
             }
         }
     }
+
+
 }

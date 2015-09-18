@@ -16,7 +16,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
         }
     }
     // MARK: - NSFetchedResultsControllerDelegate
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext!
+    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     var nFriend: Friends? = nil
     
     
@@ -38,14 +38,14 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
             nFriend.amount = 0.0
         }
         else {
-            nFriend.amount = (amountTextField.text as NSString).doubleValue
+            nFriend.amount = (amountTextField.text! as NSString).doubleValue
         }
         
-        if shareTextField.text.isEmpty || shareTextField.text.toInt()! < 1 {
+        if shareTextField.text!.isEmpty || Int(shareTextField.text!) < 0 {
             nFriend.multiplier = 1
         }
         else {
-            nFriend.multiplier = shareTextField.text.toInt()!
+            nFriend.multiplier = (Int(shareTextField.text!)! + 1)
         }
         
         
@@ -53,9 +53,12 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
             nFriend.desc = ""
         }
         else {
-            nFriend.desc = descriptionTextField.text
+            nFriend.desc = descriptionTextField.text!
         }
-        context.save(nil)
+        do {
+            try context.save()
+        } catch _ {
+        }
     }
     
     // MARK: - MVC Lifecycle
@@ -72,7 +75,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
     }
     
     
-    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.view.endEditing(true)
     }
     

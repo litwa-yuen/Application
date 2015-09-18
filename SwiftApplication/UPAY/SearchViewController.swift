@@ -44,13 +44,20 @@ class SearchViewController: UIViewController, UITableViewDataSource, UISearchRes
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! UITableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as UITableViewCell?
         let friend = filteredFriend[indexPath.row]
-        cell.textLabel?.text = "\(friend.name) (\(friend.multiplier))"
-        var formatter = NSNumberFormatter()
+        if friend.multiplier == 1 {
+            cell!.textLabel?.text = "\(friend.name)"
+        }
+        else {
+            let broughtWith = friend.multiplier - 1
+            cell!.textLabel?.text = "\(friend.name) + \(broughtWith)"
+        }
+
+        let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
-        cell.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!
-        return cell
+        cell!.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!
+        return cell!
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -60,8 +67,8 @@ class SearchViewController: UIViewController, UITableViewDataSource, UISearchRes
     func updateSearchResultsForSearchController(searchController: UISearchController) {
         let searchText = searchController.searchBar.text
         
-        filteredFriend = searchText.isEmpty ? friendMgr.friends : friendMgr.friends.filter({(friend: Friend) -> Bool in
-            return friend.name.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+        filteredFriend = searchText!.isEmpty ? friendMgr.friends : friendMgr.friends.filter({(friend: Friend) -> Bool in
+            return friend.name.rangeOfString(searchText!, options: .CaseInsensitiveSearch) != nil
         })
         
         tableView.reloadData()

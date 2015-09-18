@@ -23,8 +23,8 @@ class SummaryTableViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) as! UITableViewCell
-        var formatter = NSNumberFormatter()
+        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) 
+        let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
         let transaction = friendMgr.summary[indexPath.row]
         cell.textLabel?.text = "\(transaction.oweName) owe \(transaction.paidName) \(formatter.stringFromNumber(transaction.amount)!)"

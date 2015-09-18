@@ -64,8 +64,8 @@ class DetailTableViewController: UITableViewController {
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) as! UITableViewCell
-        var formatter = NSNumberFormatter()
+        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath) 
+        let formatter = NSNumberFormatter()
         formatter.numberStyle = .CurrencyStyle
         if let transaction = tranactions?[indexPath.row] {
             cell.textLabel?.text = "\(transaction.oweName) owe \(transaction.paidName) \(formatter.stringFromNumber(transaction.amount)!)"
@@ -83,7 +83,7 @@ class DetailTableViewController: UITableViewController {
     override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView(frame: CGRectMake(0, 0, tableView.frame.size.width, 22))
         headerView.backgroundColor = UIColor.blackColor()
-        var descriptionLabel: UILabel = UILabel()
+        let descriptionLabel: UILabel = UILabel()
         descriptionLabel.frame = CGRectMake(5, 2, tableView.frame.size.width-5, 18)
         descriptionLabel.text = transDecs!
         descriptionLabel.textAlignment = NSTextAlignment.Left

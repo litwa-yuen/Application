@@ -1,35 +1,7 @@
 import Foundation
 
-var friendMgr: FriendManager = FriendManager()
 
 
-
-class Friend {
-    
-    var name: String
-    var amount: Double
-    var multiplier: Int
-    var pay: Double?
-    var detail: [Transaction]?
-    var desc: String
-    init(name:String, amount: Double, multiplier: Int, desc: String){
-        self.name = name
-        self.amount = amount
-        self.multiplier = multiplier
-        self.pay = 0.0
-        self.detail = []
-        self.desc = desc
-    }
-    func cleanDetail() {
-        self.detail = []
-    }
-}
-
-struct Transaction {
-    let oweName: String
-    let paidName: String
-    let amount: Double
-}
 
 class FriendManager: NSObject {
     var friends = [Friend]()
@@ -41,7 +13,7 @@ class FriendManager: NSObject {
     // MARK: - public action functions
     func addFriend(name: String, amount: Double, multiplier: Int, desc: String) {
         
-        var temp:Double = NSString(format: "%.02f", amount).doubleValue
+        let temp:Double = NSString(format: "%.02f", amount).doubleValue
         friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc))
     }
     
@@ -109,9 +81,9 @@ class FriendManager: NSObject {
     private func findExactMatch() {
         if !paid.isEmpty && !owed.isEmpty {
             for var i = paid.endIndex-1; i >= 0; i-- {
-                if let index: Int = binarySearch(NSString(format: "%.02f", paid[i].pay!).doubleValue , data: owed) {
+                if let index: Int = binarySearch(NSString(format: "%.02f", paid[i].pay).doubleValue , data: owed) {
                     if index >= 0 {
-                        addSummaryAndDetail(owed[index].name, paidName: paid[i].name, amount: paid[i].pay!)
+                        addSummaryAndDetail(owed[index].name, paidName: paid[i].name, amount: paid[i].pay)
                         owed.removeAtIndex(index)
                         paid.removeAtIndex(i)
                     }
@@ -126,14 +98,14 @@ class FriendManager: NSObject {
         var largestPaid: Double = -1
         var largestOwed: Double = -1
         if !paid.isEmpty {
-            largestPaid = paid.first!.pay!
+            largestPaid = paid.first!.pay
         }
         if !owed.isEmpty {
-            largestOwed = owed.first!.pay!
+            largestOwed = owed.first!.pay
         }
         if largestOwed > 0 && largestPaid > 0 {
             if largestPaid > largestOwed {
-                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: owed.first!.pay!)
+                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: owed.first!.pay)
                 owed.removeAtIndex(0)
                 let remaining: Double = NSString(format: "%.02f", largestPaid - largestOwed).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: owed) {
@@ -148,7 +120,7 @@ class FriendManager: NSObject {
                 }
             }
             else {
-                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: paid.first!.pay!)
+                addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: paid.first!.pay)
                 paid.removeAtIndex(0)
                 let remaining: Double = NSString(format: "%.02f", largestOwed - largestPaid).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: paid) {
@@ -173,11 +145,11 @@ class FriendManager: NSObject {
         var low: Int = 0
         var high: Int = data.count-1
         while high >= low {
-            var middle: Int = (low + high) / 2
-            if NSString(format: "%.02f", data[middle].pay!).doubleValue == key {
+            let middle: Int = (low + high) / 2
+            if NSString(format: "%.02f", data[middle].pay).doubleValue == key {
                 return middle
             }
-            else if NSString(format: "%.02f", data[middle].pay!).doubleValue > key {
+            else if NSString(format: "%.02f", data[middle].pay).doubleValue > key {
                 low = middle+1
             }
             else {
@@ -189,9 +161,9 @@ class FriendManager: NSObject {
     }
     
     private func addDetail(target: String, oweName: String, paidName: String, amount: Double) {
-        if let found = find( lazy(friends).map({$0.name}), target) {
+        if let found = friends.map({$0.name}).indexOf(target) {
             let obj = friends[found]
-            obj.detail!.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
+            obj.detail.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
         }
         
     }
@@ -204,10 +176,10 @@ class FriendManager: NSObject {
     }
     
     private func sortTwoArrays() {
-        paid.sort { (friend1: Friend, friend2: Friend) -> Bool in
+        paid.sortInPlace { (friend1: Friend, friend2: Friend) -> Bool in
             return friend1.pay > friend2.pay
         }
-        owed.sort { (friend1: Friend, friend2: Friend) -> Bool in
+        owed.sortInPlace { (friend1: Friend, friend2: Friend) -> Bool in
             return friend1.pay > friend2.pay
         }
     }
@@ -216,7 +188,7 @@ class FriendManager: NSObject {
         let dif: Double = different()
         if !paid.isEmpty {
             // TODO pick a random user
-            paid.first!.pay = paid.first!.pay! - dif
+            paid.first!.pay = paid.first!.pay - dif
         }
     }
 }
