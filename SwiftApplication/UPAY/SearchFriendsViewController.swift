@@ -7,23 +7,26 @@
 //
 
 import UIKit
-import FBSDKCoreKit
+import CoreData
+import ContactsUI
 
 class SearchFriendsViewController: UIViewController, UITableViewDataSource, UISearchResultsUpdating {
-
+    
     @IBOutlet weak var tableView: UITableView!
     var friendList = [String]()
     var filteredFriendList = [String]()
     var searchController: UISearchController!
+    let store = CNContactStore()
+    // MARK: - NSFetchedResultsControllerDelegate
+    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
         
-        if FBSDKAccessToken.currentAccessToken() != nil {
-            getFriendList()
-            getUserInfo()
-        }
+        getContacts()
         
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -41,53 +44,93 @@ class SearchFriendsViewController: UIViewController, UITableViewDataSource, UISe
         // Do any additional setup after loading the view.
         // Do any additional setup after loading the view.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    // MARK: - Facebook API
-    func getFriendList() {
+    func getContacts() {
+        let store = CNContactStore()
         
-        let friendsRequest : FBSDKGraphRequest = FBSDKGraphRequest(graphPath: "/me/taggable_friends", parameters: ["fields":"id, name"])
-        friendsRequest.startWithCompletionHandler({ (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
-            dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                if let resultdict = result as? NSDictionary {
-                    if let data = resultdict.objectForKey("data") as? NSArray {
-                        for i in 0...data.count-1 {
-                            if let valueDict = data[i] as? NSDictionary {
-                                if let name = valueDict.objectForKey("name") as? String {
-                                    self.friendList.append(name)
-                                    self.tableView.reloadData()
-                                }
-                            }
-                            
-                        }
-                    }
-                }
+        store.requestAccessForEntityType(.Contacts) { (success, error) -> Void in
+            if let error = error {
+                print(error.localizedDescription)
             }
+        }
+        
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            let predicate = CNContact.predicateForContactsInContainerWithIdentifier(store.defaultContainerIdentifier())
+            let keysToFetch = [CNContactFormatter.descriptorForRequiredKeysForStyle(.FullName)]
             
-        })
+            do {
+                let contacts = try store.unifiedContactsMatchingPredicate(predicate, keysToFetch: keysToFetch)
+                
+                
+                for contact in contacts {
+                    
+                    let fullName = CNContactFormatter.stringFromContact(contact, style: .FullName) ?? "No Name"
+
+                    self.friendList.append(fullName)
+                    self.tableView.reloadData()
+                    
+                }
+                
+            } catch _ {
+                print("An error occured.")
+            }
+        }
         
     }
     
-    func getUserInfo () {
-        let meRequest: FBSDKGraphRequest = FBSDKGraphRequest(graphPath: "/me", parameters: ["fields":"id, name"])
-        meRequest.startWithCompletionHandler ({ (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                if let resultdict = result as? NSDictionary {
-                    if let username = resultdict.objectForKey("name") as? String {
-                        let displayName = username + " (You)"
-                        self.friendList.append(displayName)
-                        self.tableView.reloadData()
-                    }
+    @IBAction func addFriend(sender: UIBarButtonItem) {
+        let alert = UIAlertController(
+            title: "Add Friend",
+            message: "Please enter a friend name ...",
+            preferredStyle: UIAlertControllerStyle.Alert)
+        
+        let cancelAction = UIAlertAction(
+            title: "Cancel",
+            style: UIAlertActionStyle.Cancel)
+            { (action) in
+                // do nothing
+        }
+        alert.addAction(cancelAction)
+        
+        let addFriendAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) { (action) -> Void in
+            if let tf = alert.textFields?.first as UITextField! {
+                if !self.friendList.isEmpty {
+                    self.friendList.insert(tf.text!, atIndex: 1)
                 }
-            })
-        })
+                else {
+                    self.friendList.append(tf.text!)
+                }
+                self.tableView.reloadData()
+            }
+        }
+        alert.addAction(addFriendAction)
+        
+        alert.addTextFieldWithConfigurationHandler { (textField) -> Void in
+            textField.placeholder = "friend name"
+        }
+        presentViewController(alert, animated: true, completion: nil)
+        
     }
     
-
+    func addFriendDatabase(name: String) {
+        let context = self.context
+        let ent = NSEntityDescription.entityForName("Participants", inManagedObjectContext: context)
+        let nParticipant = Participants(entity: ent!, insertIntoManagedObjectContext: context)
+        nParticipant.name = name
+        let uuid = NSUUID().UUIDString
+        nParticipant.id = uuid
+        do {
+            try context.save()
+        } catch _ {
+        }
+        
+    }
+    
     // MARK: - Search Results Updating
     func updateSearchResultsForSearchController(searchController: UISearchController) {
         let searchText = searchController.searchBar.text
@@ -159,5 +202,5 @@ class SearchFriendsViewController: UIViewController, UITableViewDataSource, UISe
         }
     }
     
-
+    
 }

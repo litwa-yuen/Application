@@ -2,7 +2,7 @@
 //  Participants+CoreDataProperties.swift
 //  UPAY1.1
 //
-//  Created by Lit Wa Yuen on 9/17/15.
+//  Created by Lit Wa Yuen on 9/19/15.
 //  Copyright © 2015 CS320. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -12,12 +12,9 @@
 import Foundation
 import CoreData
 
-extension Friends {
+extension Participants {
 
-    @NSManaged var amount: Double
-    @NSManaged var desc: String
-    @NSManaged var multiplier: NSNumber?
-    @NSManaged var name: String
-    
+    @NSManaged var id: String?
+    @NSManaged var name: String?
 
 }

@@ -10,8 +10,8 @@ import UIKit
 import CoreData
 
 class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDelegate,
-    UITableViewDataSource, UITableViewDelegate {
-
+UITableViewDataSource, UITableViewDelegate {
+    
     @IBOutlet weak var participantsTableView: UITableView!
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
@@ -70,14 +70,14 @@ class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDe
         } catch _ {
         }
         participantsTableView.dataSource = self
-
+        
         // Do any additional setup after loading the view.
     }
     
     override func viewWillAppear(animated: Bool) {
         refresh()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -154,7 +154,8 @@ class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDe
         return cell
     }
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle:
+        UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         let managedObject: NSManagedObject = frc.objectAtIndexPath(indexPath) as! NSManagedObject
         context.deleteObject(managedObject)
         do {
@@ -164,10 +165,10 @@ class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDe
         refresh()
     }
     
-
+    
     
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if let identifier = segue.identifier {
@@ -183,6 +184,6 @@ class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDe
             }
         }
     }
-
-
+    
+    
 }
