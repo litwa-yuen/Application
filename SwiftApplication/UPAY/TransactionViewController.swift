@@ -15,6 +15,16 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
             nameLabel?.text = friendName
         }
     }
+    
+    var friendId: String = ""
+    
+    var newParticipant = ("","") {
+        didSet {
+            friendName = newParticipant.0
+            friendId = newParticipant.1
+        }
+    }
+
     // MARK: - NSFetchedResultsControllerDelegate
     let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     var nFriend: Friends? = nil
@@ -33,6 +43,7 @@ class TransactionViewController: UIViewController, UITextFieldDelegate {
         let ent = NSEntityDescription.entityForName("Friends", inManagedObjectContext: context)
         let nFriend = Friends(entity: ent!, insertIntoManagedObjectContext: context)
         nFriend.name = nameLabel.text!
+        nFriend.identifier = friendId
         
         if amountTextField?.text == nil || amountTextField?.text == "" {
             nFriend.amount = 0.0

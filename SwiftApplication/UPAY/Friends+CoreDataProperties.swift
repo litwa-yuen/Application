@@ -18,6 +18,7 @@ extension Friends {
     @NSManaged var desc: String
     @NSManaged var multiplier: NSNumber?
     @NSManaged var name: String
+    @NSManaged var identifier: String
     
 
 }

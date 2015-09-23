@@ -23,14 +23,16 @@ class Friend {
     var name: String
     var amount: Double
     var multiplier: Int
+    var identifier: String
     var pay = 0.0
     var detail = [Transaction]()
     var desc: String
-    init(name:String, amount: Double, multiplier: Int, desc: String){
+    init(name:String, amount: Double, multiplier: Int, desc: String, identifier: String){
         self.name = name
         self.amount = amount
         self.multiplier = multiplier
         self.desc = desc
+        self.identifier = identifier
     }
     func cleanDetail() {
         self.detail = []

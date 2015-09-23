@@ -8,15 +8,15 @@
 
 import UIKit
 import CoreData
+import ContactsUI
 
 class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDelegate,
-UITableViewDataSource, UITableViewDelegate {
+UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     
     @IBOutlet weak var participantsTableView: UITableView!
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
-    
-    
+        
     let context: NSManagedObjectContext = (UIApplication.sharedApplication()
         .delegate as! AppDelegate).managedObjectContext
     var frc: NSFetchedResultsController = NSFetchedResultsController()
@@ -40,7 +40,7 @@ UITableViewDataSource, UITableViewDelegate {
         friendData = (try! context.executeFetchRequest(fetchRequest)) as! [Friends]
         for friend in friendData {
             let number = Int(friend.multiplier!)
-            friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number, desc: friend.desc )
+            friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number, desc: friend.desc, identifier: friend.identifier )
         }
     }
     
@@ -63,6 +63,7 @@ UITableViewDataSource, UITableViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         frc = getFetchedResultsController()
         frc.delegate = self
         do {
@@ -104,6 +105,24 @@ UITableViewDataSource, UITableViewDelegate {
         presentViewController(alert, animated: true, completion: nil)
     }
     
+    @IBAction func pickParticipant(sender: UIBarButtonItem) {
+        let contactPicker = CNContactPickerViewController()
+        contactPicker.displayedPropertyKeys = [CNContactEmailAddressesKey]
+        
+        contactPicker.predicateForEnablingContact = NSPredicate(format: "NOT (identifier IN %@)", friendMgr.friends.map{$0.identifier})
+        contactPicker.delegate = self
+        self.presentViewController(contactPicker, animated: true, completion: nil)
+    }
+    
+    func contactPicker(picker: CNContactPickerViewController, didSelectContact contact: CNContact) {
+        let newPar = (CNContactFormatter.stringFromContact(contact, style: .FullName)!, contact.identifier)
+        let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TransactionViewController") as? TransactionViewController
+        tvc?.newParticipant = newPar
+        self.navigationController?.pushViewController(tvc!, animated: true)
+    }
+    
+    
+    
     func refresh() {
         friendMgr.friends.removeAll()
         friendMgr.summary.removeAll()
@@ -122,6 +141,7 @@ UITableViewDataSource, UITableViewDelegate {
     private struct Storyboard {
         static let ReuseCellIdentifier = "Participant"
         static let DetailIdentifier = "detail"
+        static let AddIdentifier = "add"
     }
     
     

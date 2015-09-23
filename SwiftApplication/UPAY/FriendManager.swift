@@ -11,10 +11,10 @@ class FriendManager: NSObject {
     
     
     // MARK: - public action functions
-    func addFriend(name: String, amount: Double, multiplier: Int, desc: String) {
+    func addFriend(name: String, amount: Double, multiplier: Int, desc: String, identifier: String) {
         
         let temp:Double = NSString(format: "%.02f", amount).doubleValue
-        friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc))
+        friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc, identifier: identifier))
     }
     
     func evalute() {
