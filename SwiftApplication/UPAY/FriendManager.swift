@@ -161,10 +161,10 @@ class FriendManager: NSObject {
     }
     
     private func addDetail(target: String, oweName: String, paidName: String, amount: Double) {
-        if let found = friends.map({$0.name}).indexOf(target) {
-            let obj = friends[found]
-            obj.detail.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
-        }
+        guard let found = friends.map({$0.name}).indexOf(target) else { return }
+        
+        let obj = friends[found]
+        obj.detail.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
         
     }
     

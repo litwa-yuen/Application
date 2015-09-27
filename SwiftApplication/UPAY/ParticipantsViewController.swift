@@ -16,7 +16,9 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     @IBOutlet weak var participantsTableView: UITableView!
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
-        
+    @IBOutlet weak var barButton: UIBarButtonItem!
+
+    
     let context: NSManagedObjectContext = (UIApplication.sharedApplication()
         .delegate as! AppDelegate).managedObjectContext
     var frc: NSFetchedResultsController = NSFetchedResultsController()
@@ -106,12 +108,27 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     }
     
     @IBAction func pickParticipant(sender: UIBarButtonItem) {
-        let contactPicker = CNContactPickerViewController()
-        contactPicker.displayedPropertyKeys = [CNContactEmailAddressesKey]
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
+        alert.addAction(UIAlertAction(
+            title: "Add from Contacts", style: .Default) { (action) -> Void in
+                self.addFriendFromContacts()
+        })
+        alert.addAction(UIAlertAction(
+            title: "Add from Name", style: .Default) { (action) -> Void in
+                self.addTempFriend()
+            })
+
+        alert.addAction(UIAlertAction(
+            title: "Cancel",
+            style: .Cancel)
+            { (action) in
+                // do nothing
+        })
+        alert.modalPresentationStyle = .Popover
+        let ppc = alert.popoverPresentationController
+        ppc?.barButtonItem = barButton
+        presentViewController(alert, animated: true, completion: nil)
         
-        contactPicker.predicateForEnablingContact = NSPredicate(format: "NOT (identifier IN %@)", friendMgr.friends.map{$0.identifier})
-        contactPicker.delegate = self
-        self.presentViewController(contactPicker, animated: true, completion: nil)
     }
     
     func contactPicker(picker: CNContactPickerViewController, didSelectContact contact: CNContact) {
@@ -121,7 +138,46 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
         self.navigationController?.pushViewController(tvc!, animated: true)
     }
     
+    func addFriendFromContacts() {
+        let contactPicker = CNContactPickerViewController()
+        contactPicker.displayedPropertyKeys = [CNContactEmailAddressesKey]
+        
+        contactPicker.predicateForEnablingContact = NSPredicate(format: "NOT (identifier IN %@)", friendMgr.friends.map{$0.identifier})
+        contactPicker.delegate = self
+        self.presentViewController(contactPicker, animated: true, completion: nil)
+
+    }
     
+    func addTempFriend() {
+        let alert = UIAlertController(
+            title: "Add Friend",
+            message: "Please enter a friend name ...",
+            preferredStyle: UIAlertControllerStyle.Alert)
+        
+        let cancelAction = UIAlertAction(
+            title: "Cancel",
+            style: UIAlertActionStyle.Cancel)
+            { (action) in
+                // do nothing
+        }
+        alert.addAction(cancelAction)
+        
+        let addFriendAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) { (action) -> Void in
+            if let tf = alert.textFields?.first as UITextField! {
+                let newPar = (tf.text!, NSUUID().UUIDString)
+                let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TransactionViewController") as? TransactionViewController
+                tvc?.newParticipant = newPar
+                self.navigationController?.pushViewController(tvc!, animated: true)
+            }
+        }
+        alert.addAction(addFriendAction)
+        
+        alert.addTextFieldWithConfigurationHandler { (textField) -> Void in
+            textField.placeholder = "friend name"
+        }
+        presentViewController(alert, animated: true, completion: nil)
+
+    }
     
     func refresh() {
         friendMgr.friends.removeAll()
