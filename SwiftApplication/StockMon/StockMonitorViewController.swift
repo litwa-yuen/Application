@@ -26,6 +26,7 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
     @IBOutlet weak var stockTableView: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
+        stockTableView.contentInset = UIEdgeInsetsMake(20, stockTableView.contentInset.left, stockTableView.contentInset.bottom, stockTableView.contentInset.right);
         stockTableView.dataSource = self
         refreshData()
     }
@@ -57,7 +58,9 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
         
         let addFriendAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) { (action) -> Void in
             if let tf = alert.textFields?.first as UITextField! {
-                self.createStock(tf.text!)
+                if self.validateStockSymbol(tf.text!) {
+                    self.createStock(tf.text!)
+                }
             }
         }
         alert.addAction(addFriendAction)
@@ -79,6 +82,10 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
         } catch _ {
         }
         refreshData()
+    }
+    
+    func validateStockSymbol(symbol: String) -> Bool {
+        return true
     }
     
     func getStockDetail(stockSymbol: String) {
@@ -121,25 +128,54 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
         let stock = stockMgr.stocks[indexPath.row]
         cell.textLabel?.text = "\(stock.symbol)"
         cell.detailTextLabel?.text = "\(stock.close)"
+        cell.detailTextLabel?.textColor = (stock.close > stock.open) ? UIColor.greenColor() : UIColor.redColor()
         return cell
     }
     
     func tableView(tableView: UITableView, commitEditingStyle editingStyle:
         UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+            if editingStyle == UITableViewCellEditingStyle.Delete {
+                let cell = stockMgr.stocks[indexPath.row]
+                deleteCoreData(cell.symbol)
+                stockMgr.stocks.removeAtIndex(indexPath.row)
+                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
+            }
             
     }
     
+    func deleteCoreData(symbol: String) {
+        let fetchRequest = NSFetchRequest(entityName: "Stocks")
+        fetchRequest.predicate = NSPredicate(format: "symbol == %@", symbol)
+        var stockData = (try! context.executeFetchRequest(fetchRequest)) as! [Stocks]
+        context.deleteObject(stockData[0])
 
-    
-    
-    /*
+        do {
+            try context.save()
+        } catch _ {
+        }
+        
+    }
+
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     // Get the new view controller using segue.destinationViewController.
     // Pass the selected object to the new view controller.
+        if let identifier = segue.identifier {
+            switch identifier {
+            case Storyboard.ReuseCellIdentifier:
+                let cell = sender as? UITableViewCell
+                if let indexPath = stockTableView.indexPathForCell(cell!) {
+                    let seguedToDetail = segue.destinationViewController as? LineGraphViewController
+                    let stock = stockMgr.stocks[indexPath.row].symbol
+                    seguedToDetail?.stockSymbol = stock
+                    
+                }
+            default: break
+            }
+        }
     }
-    */
+    
     
 }
