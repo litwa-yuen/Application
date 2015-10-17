@@ -16,8 +16,9 @@ class StockDetail {
     var low: Double
     var close: Double
     var volume: Double
+    var lastClose: Double
     
-    init(data: NSArray, symbol: String) {
+    init(data: NSArray, symbol: String, lastClose: Double) {
         self.symbol = symbol
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
@@ -27,6 +28,6 @@ class StockDetail {
         self.low = data[3] as! Double
         self.close = data[4] as! Double
         self.volume = data[5] as! Double
-
+        self.lastClose = lastClose
     }
 }

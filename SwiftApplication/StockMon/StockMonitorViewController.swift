@@ -89,7 +89,7 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
     }
     
     func getStockDetail(stockSymbol: String) {
-        let url = NSURL(string: "https://www.quandl.com/api/v3/datasets/WIKI/\(stockSymbol).json?rows=1")
+        let url = NSURL(string: "https://www.quandl.com/api/v3/datasets/WIKI/\(stockSymbol).json?rows=2")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -99,7 +99,8 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
                         if let resultDict = object as? NSDictionary {
                             if let dataSet = resultDict.objectForKey("dataset") as? NSDictionary {
                                 if let stockDatas = dataSet["data"] as? NSArray {
-                                    stockMgr.putStockDetail(stockDatas[0] as! NSArray, symbol: stockSymbol)
+                                    let lastCloseValue: StockDetail = StockDetail(data: stockDatas[1] as! NSArray, symbol: stockSymbol, lastClose: 0)
+                                    stockMgr.putStockDetail(stockDatas[0] as! NSArray, symbol: stockSymbol, lastCloseValue: lastCloseValue.close)
                                     self.stockTableView.reloadData()
                                 }
                             }
@@ -128,7 +129,7 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
         let stock = stockMgr.stocks[indexPath.row]
         cell.textLabel?.text = "\(stock.symbol)"
         cell.detailTextLabel?.text = "\(stock.close)"
-        cell.detailTextLabel?.textColor = (stock.close > stock.open) ? UIColor.greenColor() : UIColor.redColor()
+        cell.detailTextLabel?.textColor = (stock.close > stock.lastClose) ? UIColor.greenColor() : UIColor.redColor()
         return cell
     }
     
@@ -168,8 +169,8 @@ class StockMonitorViewController: UIViewController, UITableViewDataSource, UITab
                 let cell = sender as? UITableViewCell
                 if let indexPath = stockTableView.indexPathForCell(cell!) {
                     let seguedToDetail = segue.destinationViewController as? LineGraphViewController
-                    let stock = stockMgr.stocks[indexPath.row].symbol
-                    seguedToDetail?.stockSymbol = stock
+                    let stock = stockMgr.stocks[indexPath.row]
+                    seguedToDetail?.seletedStockDetail = stock
                     
                 }
             default: break
