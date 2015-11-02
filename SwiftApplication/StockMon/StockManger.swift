@@ -13,7 +13,7 @@ var stockMgr: StockManger = StockManger()
 class StockManger: NSObject {
     var stocks = [StockDetail]()
 
-    func putStockDetail(data: NSArray, symbol: String) {
-        stocks.append(StockDetail(data: data, symbol: symbol))
+    func putStockDetail(data: NSArray, symbol: String, lastCloseValue: Double) {
+        stocks.append(StockDetail(data: data, symbol: symbol, lastClose: lastCloseValue))
     }
 }
