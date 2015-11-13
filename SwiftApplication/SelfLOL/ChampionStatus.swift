@@ -1,10 +1,3 @@
-//
-//  ChampionStatus.swift
-//  SelfLOL
-//
-//  Created by Lit Wa Yuen on 10/20/15.
-//  Copyright © 2015 lit.wa.yuen. All rights reserved.
-//
 
 import Foundation
 import UIKit
@@ -17,7 +10,7 @@ var championsMap = [
     4:"TwistedFate",
     5:"XinZhao",
     6:"Urgot",
-    7:"LeBlanc",
+    7:"Leblanc",
     8:"Vladimir",
     9:"FiddleSticks",
     10:"Kayle",
@@ -77,7 +70,7 @@ var championsMap = [
     72:"Skarner",
     74:"Heimerdinger",
     75:"Nasus",
-    76:"Niddlee",
+    76:"Nidalee",
     77:"Udyr",
     78:"Poppy",
     79:"Gragas",
@@ -148,12 +141,17 @@ class ChampionStatus {
     init(entry: NSDictionary) {
         
         self.id = (entry["id"] as? Int)!
-        self.name = championsMap[self.id]
+        if let championName = championsMap[self.id] {
+            self.name = championName
+        }
+        else {
+            self.name = "unknown"
+        }
+        
         if let dict = entry["stats"] as? NSDictionary {
             self.aggregatedStatsDto = AggregatedStatsDto(status: dict)
         }
     }
-    
 }
 
 class AggregatedStatsDto {
@@ -172,5 +170,31 @@ class AggregatedStatsDto {
         self.totalMinionKills = (status["totalMinionKills"] as? Int)!
         self.totalDeathsPerSession = (status["totalDeathsPerSession"] as? Int)!
         self.totalAssists = (status["totalAssists"] as? Int)!
+    }
+    
+    func getWinRate() -> String {
+        return "\(roundToPercent(Double(totalSessionsWon), dec: Double(totalSessionsPlayed)))% \(totalSessionsPlayed) Played"
+    }
+    
+    func getAverageStatus() -> String {
+        let averageKills = roundToOneDecimal(Double(totalChampionKills), dec: Double(totalSessionsPlayed))
+        let averageDeath = roundToOneDecimal(Double(totalDeathsPerSession), dec: Double(totalSessionsPlayed))
+        let averageAssists = roundToOneDecimal(Double(totalAssists), dec: Double(totalSessionsPlayed))
+        return "\(averageKills)/\(averageDeath)/\(averageAssists) \(calculateKDA()) KDA"
+    }
+    
+    func roundToOneDecimal(num: Double, dec: Double) -> Double {
+        let result = num/dec
+        return NSString(format: "%.01f", result).doubleValue
+    }
+    
+    func roundToPercent(num: Double, dec: Double) -> Int {
+        let result = num/dec * 100
+        return Int(result)
+    }
+    
+    func calculateKDA() -> Double {
+        let result = (Double(totalChampionKills) + Double(totalAssists)) / Double(totalDeathsPerSession)
+        return NSString(format: "%.02f", result).doubleValue
     }
 }

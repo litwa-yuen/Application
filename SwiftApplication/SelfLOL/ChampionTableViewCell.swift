@@ -1,11 +1,3 @@
-//
-//  ChampionTableViewCell.swift
-//  SelfLOL
-//
-//  Created by Lit Wa Yuen on 10/31/15.
-//  Copyright © 2015 lit.wa.yuen. All rights reserved.
-//
-
 import UIKit
 
 class ChampionTableViewCell: UITableViewCell {
@@ -29,25 +21,24 @@ class ChampionTableViewCell: UITableViewCell {
         
         if let champion = self.champion {
             championNameLabel?.text = "\((champion.name)!) "
-            championImageView?.image = champion.image
-            let totalSessionsPlayed = Double((champion.aggregatedStatsDto?.totalSessionsPlayed)!)
-            let totalSessionsWon =  Double((champion.aggregatedStatsDto?.totalSessionsWon)!)
-            let totalChampionKills = Double((champion.aggregatedStatsDto?.totalChampionKills)!)
-            let totalDeathsPerSession = Double((champion.aggregatedStatsDto?.totalDeathsPerSession)!)
-            let totalAssists = Double((champion.aggregatedStatsDto?.totalAssists)!)
-            championKDA?.text = "\(roundToOneDecimal(totalChampionKills, dec: totalSessionsPlayed))/\(roundToOneDecimal(totalDeathsPerSession, dec: totalSessionsPlayed))/\(roundToOneDecimal(totalAssists, dec: totalSessionsPlayed))"
-            winRateLabel.text = "\(roundToPercent(totalSessionsWon, dec: totalSessionsPlayed))% \(Int(totalSessionsPlayed)) Played"
+            championImageView?.image = resizeImage(champion.image!, newWidth: 50)
+            championKDA?.text = "\((champion.aggregatedStatsDto?.getAverageStatus())!)"
+            winRateLabel.text = "\((champion.aggregatedStatsDto?.getWinRate())!)"
         }
     }
     
-    func roundToOneDecimal(num: Double, dec: Double) -> Double {
-        let result = num/dec
-        return NSString(format: "%.01f", result).doubleValue
-    }
+  
     
-    func roundToPercent(num: Double, dec: Double) -> Int {
-        let result = num/dec * 100
-        return Int(result)
+    func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
+        
+        let scale = newWidth / image.size.width
+        let newHeight = image.size.height * scale
+        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
+        image.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
     }
 
 }

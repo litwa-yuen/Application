@@ -1,11 +1,3 @@
-//
-//  RankInfo.swift
-//  SelfLOL
-//
-//  Created by Lit Wa Yuen on 10/18/15.
-//  Copyright © 2015 lit.wa.yuen. All rights reserved.
-//
-
 import Foundation
 
 class RankInfo {
@@ -21,6 +13,27 @@ class RankInfo {
         self.name = (data["name"] as? String)!
         self.queue = (data["queue"] as? String)!
         self.tier = (data["tier"] as? String)!
+    }
+    
+    func getRankWithLP() -> String {
+        if tier == "provisional" {
+            return "UnRank"
+        }
+        else if tier == "MASTER" || tier == "CHALLENGER" {
+            return "\(tier) (\(entry!.leaguePoints) LP)"
+        }
+        else {
+            return "\(tier) \((entry?.division)!) (\(entry!.leaguePoints) LP)"
+        }
+    }
+    
+    func getRank() -> String {
+        if tier == "MASTER" || tier == "CHALLENGER" || tier == "provisional" {
+            return "\(tier)"
+        }
+        else {
+            return "\(tier) \((entry?.division)!)"
+        }
     }
 }
 

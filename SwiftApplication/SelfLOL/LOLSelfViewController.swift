@@ -1,96 +1,161 @@
-//
-//  LOLSelfViewController.swift
-//  SelfLOL
-//
-//  Created by Lit Wa Yuen on 10/17/15.
-//  Copyright © 2015 lit.wa.yuen. All rights reserved.
-//
-
 import UIKit
+import CoreData
 
 class LOLSelfViewController: UIViewController, UITableViewDataSource {
-
+    
+    @IBOutlet weak var gameButton: UIButton!
     @IBOutlet weak var championsTable: UITableView!
     @IBOutlet weak var summonerNameTextField: UITextField!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var rankLabel: UILabel!
+    @IBOutlet weak var averageStatus: UILabel!
+    @IBOutlet weak var winRate: UILabel!
+    
+    
+    // MARK: - NSFetchedResultsControllerDelegate
+    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    
+    func deleteCoreData() {
+        var playerData = [Player]()
+        let fetchRequest = NSFetchRequest(entityName: "Players")
+        playerData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+        for player in playerData {
+            context.deleteObject(player)
+        }
+        do {
+            try context.save()
+        } catch _ {
+        }
+    }
+    
+    func fetchPlayersRequest() -> NSFetchRequest {
+        let fetchRequest = NSFetchRequest(entityName: "Players")
+        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        return fetchRequest
+    }
+    
     var image: UIImage? {
         get{
             return imageView.image
         }
         set{
-            imageView.image = newValue
-            if let constrainedView = imageView {
-                if let newImage = newValue {
-                    aspectRatioConstraint = NSLayoutConstraint(
-                        item: constrainedView,
-                        attribute: .Width,
-                        relatedBy: .Equal,
-                        toItem: constrainedView,
-                        attribute: .Height,
-                        multiplier: newImage.aspectRatio,
-                        constant: 0)
-                }
-                else{
-                    aspectRatioConstraint = nil
-                }
-            }
+            imageView.image = resizeImage(newValue!, newWidth: 50)
+            imageView.hidden = false
         }
     }
     
-    var aspectRatioConstraint: NSLayoutConstraint?{
-        willSet{
-            if let existingConstraint = aspectRatioConstraint {
-                view.removeConstraint(existingConstraint)
-            }
-        }
-        didSet{
-            if let newConstraint = aspectRatioConstraint {
-                view.addConstraint(newConstraint)
-            }
-        }
-    }
     var rankInfo: RankInfo? {
         didSet{
             image = rankInfo?.image
-            rankLabel.text = "\(rankInfo!.tier) \(rankInfo!.entry!.division)"
+            summoner!.rankInfo = rankInfo
+            rankLabel.text = rankInfo!.getRankWithLP()
+            rankLabel.textColor = UIColor.blackColor()
+            gameButton.hidden = false
+            rankLabel.hidden = false
         }
     }
-
+    
     var summoner: Summoner? {
         didSet{
             getRankInfo(summoner!.id)
             getChampionRankInfo(summoner!.id)
-
         }
     }
     
     var champions = [ChampionStatus]()
-    var averageChampion: ChampionStatus?
+    var averageChampion: ChampionStatus? {
+        didSet{
+            averageStatus.text = "\((averageChampion?.aggregatedStatsDto?.getAverageStatus())!)"
+            winRate.text = " \((averageChampion?.aggregatedStatsDto?.getWinRate())!)"
+            averageStatus.hidden = false
+            winRate.hidden = false
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        gameButton.hidden = true
+        rankLabel.hidden = true
+        averageStatus.hidden = true
+        winRate.hidden = true
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
         championsTable.dataSource = self
+        let fetchRequest = fetchPlayersRequest()
+        
+        do {
+            let result: NSArray = try context.executeFetchRequest(fetchRequest)
+            if result.count > 0 {
+                let res = result[0] as! NSManagedObject
+                let playerName: String = res.valueForKey("name")! as! String
+                summonerNameTextField.text = playerName
+            }
+            
+        }catch _ {}
         championsTable.reloadData()
         // Do any additional setup after loading the view.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
     @IBAction func searchSummoner(sender: UIButton) {
+        reset()
+        self.view.endEditing(true)
         if summonerNameTextField.text != nil && summonerNameTextField.text != "" {
-            champions.removeAll()
-            getSummonerId(summonerNameTextField.text!)
+            let fetchRequest = fetchPlayersRequest()
+            do {
+                let result: NSArray = try context.executeFetchRequest(fetchRequest)
+                if result.count > 0 {
+                    let res = result[0] as! NSManagedObject
+                    let playerName: String = res.valueForKey("name")! as! String
+                    let playerId: NSNumber = res.valueForKey("id")! as! NSNumber
+                    if playerName == summonerNameTextField.text! {
+                        let obj:NSDictionary = ["name":playerName, "id":playerId]
+                        self.summoner = Summoner(data: obj)
+                    }
+                    else {
+                        deleteCoreData()
+                        getSummonerId(summonerNameTextField.text!)
+                    }
+                    
+                }
+                else {
+                    getSummonerId(summonerNameTextField.text!)
+                }
+            }catch _ {
+            }
         }
     }
     
-    func getChampionRankInfo(summonerId: NSNumber) {
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2015&api_key=b40a6c35-4c98-4c9b-b034-76ef6be36ae2")
+    func reset() {
+        gameButton.hidden = true
+        rankLabel.hidden = true
+        averageStatus.hidden = true
+        winRate.hidden = true
+        imageView.hidden = true
+        champions.removeAll()
+        championsTable.reloadData()
+
+    }
+    
+    func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
+        
+        let scale = newWidth / image.size.width
+        let newHeight = image.size.height * scale
+        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
+        image.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
+    }
+    
+    func getChampionRankInfo(summonerId: CLong) {
+        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2015&api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -122,23 +187,35 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         }
         task.resume()
     }
-
     
-    func getRankInfo(summonerId: NSNumber) {
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/\(summonerId)/entry?api_key=b40a6c35-4c98-4c9b-b034-76ef6be36ae2")
+    
+    func getRankInfo(summonerId: CLong) {
+        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 if(error == nil) {
                     do {
-                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
-                        if let resultDict = object as? NSDictionary {
-                            if let entries = resultDict["\(summonerId)"] as? NSArray {
-                                self.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
+                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            switch(httpReponse.statusCode) {
+                            case 200:
+                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                if let resultDict = object as? NSDictionary {
+                                    if let entries = resultDict["\(summonerId)"] as? NSArray {
+                                        self.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
+                                    }
+                                }
+                            case 404:
+                                self.rankLabel.text = "UnRank"
+                                self.rankLabel.hidden = false
+                                self.gameButton.hidden = false
+                                self.image = UIImage(named: "provisional")
+                            default: print(httpReponse.statusCode)
 
+                                
                             }
-
                         }
+                        
                     } catch {}
                 }
             })
@@ -147,19 +224,42 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     }
     
     func getSummonerId(summonerName: String) {
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/\(summonerName)?api_key=b40a6c35-4c98-4c9b-b034-76ef6be36ae2")
+        let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
+        let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
+        
+        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 if(error == nil) {
                     do {
-                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
-                        if let resultDict = object as? NSDictionary {
-                            if let dataSet = resultDict.objectForKey(summonerName.lowercaseString) as? NSDictionary {
-                                self.summoner = Summoner(data: dataSet)
-                                
+                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            switch(httpReponse.statusCode) {
+                            case 200:
+                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                if let resultDict = object as? NSDictionary {
+                                    if let dataSet = resultDict.objectForKey(trimmedSummonerName.lowercaseString) as? NSDictionary {
+                                        self.summoner = Summoner(data: dataSet)
+                                        let context = self.context
+                                        let ent = NSEntityDescription.entityForName("Players", inManagedObjectContext: context)
+                                        let nPlayer = Player(entity: ent!, insertIntoManagedObjectContext: context)
+                                        nPlayer.name = self.summonerNameTextField.text!
+                                        nPlayer.id = self.summoner?.id
+                                        
+                                        do {
+                                            try context.save()
+                                        } catch _ {
+                                        }
+                                    }
+                                }
+                            case 404:
+                                self.rankLabel.text = "Not Found"
+                                self.rankLabel.textColor = UIColor.redColor()
+                                self.rankLabel.hidden = false
+                            default: print(httpReponse.statusCode)
                             }
                         }
+                        
                     } catch {}
                 }
             })
@@ -181,23 +281,34 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return champions.count
     }
-
-
-    /*
+    
+    
+    
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        let DestViewController: CurrentGameViewController = segue.destinationViewController as! CurrentGameViewController
+        DestViewController.summoner = self.summoner
     }
-    */
-
+    
+    // MARK: - UITextFieldDelegate
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
 }
 
 extension RankInfo {
     var image: UIImage? {
-        let rank = "\(tier)_\(entry!.division)".lowercaseString
+        let rank = getRank().lowercaseString
         if let image = UIImage(named: rank){
             return image
         }
@@ -213,15 +324,7 @@ extension ChampionStatus {
             return image
         }
         else {
-            return UIImage(named: "provisional")
+            return UIImage(named: "unkown")
         }
-    }
-}
-
-
-
-extension UIImage{
-    var aspectRatio: CGFloat {
-        return size.height != 0 ? size.width / size.height : 0
     }
 }
