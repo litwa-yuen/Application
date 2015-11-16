@@ -2,14 +2,17 @@
 import Foundation
 
 let api_key: String = "4aa13409-45b8-4e9c-aabf-dc13dd92054b"
+var currentGame: CurrentGameInfo? = nil
 
 class CurrentGameInfo {
+    var gameId: CLong
     var bannedChampions: [BannedChampion]?
     var participants: [CurrentGameParticipant]?
     var table:[[CurrentGameParticipant]]?
     var blueTeamId: CLong?
     
     init(game: NSDictionary) {
+        self.gameId = (game["gameId"] as? CLong)!
         if let champions = game["bannedChampions"] as? NSArray {
             self.bannedChampions = []
             for champion in champions {

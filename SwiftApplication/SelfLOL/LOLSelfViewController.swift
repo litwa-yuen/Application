@@ -10,11 +10,12 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     @IBOutlet weak var rankLabel: UILabel!
     @IBOutlet weak var averageStatus: UILabel!
     @IBOutlet weak var winRate: UILabel!
+    @IBOutlet weak var searchSummoner: UIButton!
     
     
     // MARK: - NSFetchedResultsControllerDelegate
     let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
-    
+    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
     func deleteCoreData() {
         var playerData = [Player]()
         let fetchRequest = NSFetchRequest(entityName: "Players")
@@ -79,6 +80,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         rankLabel.hidden = true
         averageStatus.hidden = true
         winRate.hidden = true
+        indicator.center = view.center
+        view.addSubview(indicator)
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
         championsTable.dataSource = self
@@ -137,7 +140,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         averageStatus.hidden = true
         winRate.hidden = true
         imageView.hidden = true
+        searchSummoner.enabled = false
         champions.removeAll()
+        indicator.startAnimating()
         championsTable.reloadData()
 
     }
@@ -197,6 +202,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                 if(error == nil) {
                     do {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            self.indicator.stopAnimating()
+                            self.searchSummoner.enabled = true
                             switch(httpReponse.statusCode) {
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
@@ -234,6 +241,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                 if(error == nil) {
                     do {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            self.indicator.stopAnimating()
+                            self.searchSummoner.enabled = true
+
                             switch(httpReponse.statusCode) {
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
@@ -245,7 +255,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                         let nPlayer = Player(entity: ent!, insertIntoManagedObjectContext: context)
                                         nPlayer.name = self.summonerNameTextField.text!
                                         nPlayer.id = self.summoner?.id
-                                        
+
                                         do {
                                             try context.save()
                                         } catch _ {
@@ -256,6 +266,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.text = "Not Found"
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
+                                self.gameButton.hidden = true
+
                             default: print(httpReponse.statusCode)
                             }
                         }
