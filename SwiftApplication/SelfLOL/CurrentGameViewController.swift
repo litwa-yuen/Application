@@ -5,8 +5,14 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     @IBOutlet weak var participantTableView: UITableView!
     var summoner: Summoner? {
         willSet{
+            indicator.startAnimating()
             if newValue?.id != summoner?.id {
-                fetchCurrentGame((newValue?.id)!)
+                if Reachability.isConnectedToNetwork() {
+                    fetchCurrentGame((newValue?.id)!)
+                }
+                else {
+                    showReponseMessage("Network Unavailable.")
+                }
             }
         }
     }
@@ -14,7 +20,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         didSet{
             game?.split()
             participantTableView.reloadData()
-            if currentGame?.gameId != game?.gameId {
+            if game != nil && currentGame?.gameId != game?.gameId {
                 for participant in (game?.participants)! {
                     fetchRankInfo(participant)
                 }
@@ -29,18 +35,16 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
         participantTableView.estimatedRowHeight = participantTableView.rowHeight
         participantTableView.rowHeight = UITableViewAutomaticDimension
-        indicator.center = view.center
         participantTableView.registerClass(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
         
-        view.addSubview(indicator)
-        indicator.startAnimating()
         // Do any additional setup after loading the view.
         let value = UIInterfaceOrientation.LandscapeLeft.rawValue
         UIDevice.currentDevice().setValue(value, forKey: "orientation")
+        indicator.center = view.center
+        view.addSubview(indicator)
+
     }
     
     override func didReceiveMemoryWarning() {
@@ -56,6 +60,8 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     private struct Storyboard {
         static let ReuseCellIdentifier = "participant"
         static let ReuseFooterIdentifier = "banned"
+        static let DetailIdentifier = "detail"
+
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -84,7 +90,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             return "Blue Team"
         }
         else {
-            return "Purplue Team"
+            return "Purple Team"
         }
     }
     
@@ -139,16 +145,16 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             champ3.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activateConstraints([
                 NSLayoutConstraint.constraintsWithVisualFormat(
-                    "H:[lab(30)]-10-[champ1(50)]-5-[champ2(50)]-5-[champ3(50)]-5-|",
+                    "H:[lab(30)]-10-[champ3(50)]-5-[champ2(50)]-5-[champ1(50)]-5-|",
                     options:[], metrics:nil, views:["champ1":champ1, "lab":lab, "champ2":champ2, "champ3":champ3]),
                 NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[champ1]|",
-                    options:[], metrics:nil, views:["champ1":champ1]),
-                NSLayoutConstraint.constraintsWithVisualFormat("V:|[champ2]|", options: [], metrics: nil, views: ["champ2": champ2]),
-                NSLayoutConstraint.constraintsWithVisualFormat("V:|[champ3]|", options: [], metrics: nil, views: ["champ3": champ3]),
+                    "V:|[champ1]|", options:[], metrics:nil, views:["champ1":champ1]),
                 NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[lab]|",
-                    options:[], metrics:nil, views:["lab":lab])
+                    "V:|[champ2]|", options:[], metrics:nil, views:["champ2": champ2]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[champ3]|", options:[], metrics:nil, views:["champ3": champ3]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[lab]|", options:[], metrics:nil, views:["lab":lab])
                 ].flatten().map{$0})
             
             return h
@@ -161,15 +167,26 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     }
     
     
-    /*
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-    // Get the new view controller using segue.destinationViewController.
-    // Pass the selected object to the new view controller.
+        if let identifier = segue.identifier {
+            switch identifier {
+            case Storyboard.DetailIdentifier:
+                let cell = sender as? UITableViewCell
+                if let indexPath = participantTableView.indexPathForCell(cell!) {
+                    let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
+                    let participant = (game?.table![indexPath.section][indexPath.row])! as CurrentGameParticipant
+                    let obj:NSDictionary = ["name":participant.summonerName, "id":participant.summonerId]
+                    seguedToDetail?.summoner = Summoner(data: obj)
+                    seguedToDetail?.summonerName = participant.summonerName
+                }
+            default: break
+            }
+        }
     }
-    */
+    
     func fetchRankInfo(participant: CurrentGameParticipant){
         if participant.summonerId == (summoner?.id)! {
             participant.rankInfo = summoner!.rankInfo
@@ -191,15 +208,17 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                         participant.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
                                         currentGame = self.game
                                         self.participantTableView.reloadData()
-                                        
                                     }
                                 }
                             case 404:
                                 let obj:NSDictionary = ["name":participant.summonerName, "tier":"provisional", "queue":"SOLO_RANK5X5"]
                                 participant.rankInfo = RankInfo(data: obj)
                                 self.participantTableView.reloadData()
+                            case 429:
+                                self.showReponseMessage("Rate Limit Exceeded")
+                            case 503, 500:
+                                self.showReponseMessage( "Service Unavailable.")
                             default: print(httpReponse.statusCode)
-                                
                                 
                             }
                         }
@@ -221,6 +240,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                 if(error == nil) {
                     do {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            self.indicator.stopAnimating()
                             switch(httpReponse.statusCode) {
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
@@ -231,15 +251,11 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                     }
                                 }
                             case 404:
-                                self.indicator.stopAnimating()
-                                let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
-                                messageLabel.text = "Not in game.";
-                                messageLabel.textColor = UIColor.blackColor()
-                                messageLabel.numberOfLines = 0
-                                messageLabel.textAlignment = NSTextAlignment.Center
-                                self.participantTableView.backgroundView = messageLabel;
-                                self.participantTableView.separatorStyle = .None
-
+                                self.showReponseMessage("Not in a game")
+                            case 429:
+                                self.showReponseMessage("Rate Limit Exceeded")
+                            case 503, 500:
+                                self.showReponseMessage("Service Unavailable.")
                             default:
                                 print(httpReponse.statusCode)
                             }
@@ -250,5 +266,23 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             })
         }
         task.resume()
+    }
+    
+    
+    func showReponseMessage(message: String) {
+        indicator.stopAnimating()
+        let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel.text = message
+        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = NSTextAlignment.Center
+        self.participantTableView.backgroundView = messageLabel
+        self.participantTableView.separatorStyle = .None
+        if game != nil {
+            game = nil
+        }
+        participantTableView.reloadData()
+
+
     }
 }

@@ -133,6 +133,24 @@ var championsMap = [
     432:"Bard",
 ]
 
+var summonerSpellMap = [
+    1:"SummonerBoost",
+    2:"SummonerClairvoyance",
+    3:"SummonerExhaust",
+    4:"SummonerFlash",
+    6:"SummonerHaste",
+    7:"SummonerHeal",
+    11:"SummonerSmite",
+    12:"SummonerTeleport",
+    13:"SummonerMana",
+    14:"SummonerDot",
+    17:"SummonerOdinGarrison",
+    21:"SummonerBarrier",
+    30:"SummonerPoroRecall",
+    31:"SummonerPoroThrow",
+    32:"SummonerSnowball"
+]
+
 class ChampionStatus {
     var id: Int
     var name: String?

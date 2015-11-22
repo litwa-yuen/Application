@@ -11,6 +11,14 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     @IBOutlet weak var averageStatus: UILabel!
     @IBOutlet weak var winRate: UILabel!
     @IBOutlet weak var searchSummoner: UIButton!
+
+    
+    var summonerName: String = ""{
+        didSet{
+            summonerNameTextField?.text = summonerName
+        }
+    }
+
     
     
     // MARK: - NSFetchedResultsControllerDelegate
@@ -59,8 +67,16 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     
     var summoner: Summoner? {
         didSet{
-            getRankInfo(summoner!.id)
-            getChampionRankInfo(summoner!.id)
+            if Reachability.isConnectedToNetwork() {
+                indicator.startAnimating()
+                getRankInfo(summoner!.id)
+                getChampionRankInfo(summoner!.id)
+            }
+            else {
+                indicator.stopAnimating()
+                showReponseMessage("Network Unavailable.")
+            }
+            
         }
     }
     
@@ -94,8 +110,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                 let playerName: String = res.valueForKey("name")! as! String
                 summonerNameTextField.text = playerName
             }
-            
+    
         }catch _ {}
+        toggleAddButton()
+        if summonerName != "" {
+            summonerNameTextField?.text = summonerName
+        }
+
         championsTable.reloadData()
         // Do any additional setup after loading the view.
     }
@@ -108,7 +129,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     @IBAction func searchSummoner(sender: UIButton) {
         reset()
         self.view.endEditing(true)
-        if summonerNameTextField.text != nil && summonerNameTextField.text != "" {
+        if Reachability.isConnectedToNetwork() && summonerNameTextField.text != nil && summonerNameTextField.text != "" {
             let fetchRequest = fetchPlayersRequest()
             do {
                 let result: NSArray = try context.executeFetchRequest(fetchRequest)
@@ -132,6 +153,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             }catch _ {
             }
         }
+        else {
+            indicator.stopAnimating()
+            showReponseMessage("Network Unavailable.")
+            searchSummoner.enabled = true
+        }
     }
     
     func reset() {
@@ -143,6 +169,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         searchSummoner.enabled = false
         champions.removeAll()
         indicator.startAnimating()
+        showReponseMessage("")
         championsTable.reloadData()
 
     }
@@ -217,6 +244,10 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = false
                                 self.image = UIImage(named: "provisional")
+                            case 429:
+                                self.showReponseMessage("Rate Limit Exceeded")
+                            case 500, 503:
+                                self.showReponseMessage("Service Unavailable.")
                             default: print(httpReponse.statusCode)
 
                                 
@@ -267,7 +298,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = true
-
+                            case 503, 500:
+                                self.showReponseMessage("Service Unavailable.")
                             default: print(httpReponse.statusCode)
                             }
                         }
@@ -278,6 +310,18 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         }
         task.resume()
     }
+    
+    func showReponseMessage(message: String) {
+        let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel.text = message
+        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = NSTextAlignment.Center
+        self.championsTable.backgroundView = messageLabel
+        self.championsTable.separatorStyle = .None
+        
+    }
+
     
     // MARK: - UITableViewDataSource
     private struct Storyboard {
@@ -316,6 +360,28 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         self.view.endEditing(true)
     }
     
+    func toggleAddButton() {
+        if summonerNameTextField.text!.isEmpty {
+            searchSummoner.enabled = false
+        }
+        else {
+            searchSummoner.enabled = true
+        }
+    }
+    
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        if textField == summonerNameTextField {
+            let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            if !text.isEmpty {
+                searchSummoner.enabled = true
+            }
+            else {
+                searchSummoner.enabled = false
+            }
+        }
+        return true
+    }
+
 }
 
 extension RankInfo {
