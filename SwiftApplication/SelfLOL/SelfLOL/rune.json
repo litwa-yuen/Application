@@ -1,0 +1,2076 @@
+{
+   "runesMap":[
+      {
+         "runeId":10001,
+         "description":"+*% critical damage",
+         "imageId":"10001",
+         "data1":2.23,
+         "data2":0
+      },
+      {
+         "runeId":10002,
+         "description":"+*% movement speed",
+         "imageId":"10002",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":5001,
+         "description":"+* attack damage",
+         "imageId":"r_1_1",
+         "data1":0.53,
+         "data2":0
+      },
+      {
+         "runeId":5002,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"r_2_1",
+         "data1":0.08,
+         "data2":1.35
+      },
+      {
+         "runeId":5003,
+         "description":"+*% attack speed",
+         "imageId":"r_3_1",
+         "data1":0.94,
+         "data2":0
+      },
+      {
+         "runeId":5005,
+         "description":"+*% critical damage",
+         "imageId":"r_1_1",
+         "data1":1.24,
+         "data2":0
+      },
+      {
+         "runeId":5007,
+         "description":"+*% critical chance",
+         "imageId":"r_3_1",
+         "data1":0.52,
+         "data2":0
+      },
+      {
+         "runeId":5009,
+         "description":"+* armor penetration",
+         "imageId":"r_1_1",
+         "data1":0.72,
+         "data2":0
+      },
+      {
+         "runeId":5011,
+         "description":"+* health",
+         "imageId":"r_3_1",
+         "data1":1.93,
+         "data2":0
+      },
+      {
+         "runeId":5012,
+         "description":"+* health per level (+5.4 at champion level 18)",
+         "imageId":"r_4_1",
+         "data1":0.3,
+         "data2":0
+      },
+      {
+         "runeId":5013,
+         "description":"+* armor",
+         "imageId":"r_1_1",
+         "data1":0.51,
+         "data2":0
+      },
+      {
+         "runeId":5015,
+         "description":"+* magic resist",
+         "imageId":"r_3_1",
+         "data1":0.43,
+         "data2":0
+      },
+      {
+         "runeId":5016,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"r_4_1",
+         "data1":0.04,
+         "data2":0.72
+      },
+      {
+         "runeId":5021,
+         "description":"-*% cooldowns",
+         "imageId":"r_1_1",
+         "data1":0.11,
+         "data2":0
+      },
+      {
+         "runeId":5023,
+         "description":"+* ability power",
+         "imageId":"r_3_1",
+         "data1":0.33,
+         "data2":0
+      },
+      {
+         "runeId":5024,
+         "description":"+* ability power per level (+1.08 at champion level 18)",
+         "imageId":"r_4_1",
+         "data1":0.06,
+         "data2":0
+      },
+      {
+         "runeId":5025,
+         "description":"+* mana",
+         "imageId":"r_1_1",
+         "data1":3.28,
+         "data2":0
+      },
+      {
+         "runeId":5026,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"r_2_1",
+         "data1":0.65,
+         "data2":11.7
+      },
+      {
+         "runeId":5027,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"r_3_1",
+         "data1":0.15,
+         "data2":0
+      },
+      {
+         "runeId":5029,
+         "description":"+* magic penetration",
+         "imageId":"r_1_1",
+         "data1":0.49,
+         "data2":0
+      },
+      {
+         "runeId":5031,
+         "description":"+* attack damage",
+         "imageId":"b_1_1",
+         "data1":0.16,
+         "data2":0
+      },
+      {
+         "runeId":5032,
+         "description":"+* attack damage per level (+0.36 at champion level 18)",
+         "imageId":"b_2_1",
+         "data1":0.02,
+         "data2":0
+      },
+      {
+         "runeId":5033,
+         "description":"+*% attack speed",
+         "imageId":"b_3_1",
+         "data1":0.35,
+         "data2":0
+      },
+      {
+         "runeId":5035,
+         "description":"+*% critical damage",
+         "imageId":"b_1_1",
+         "data1":0.31,
+         "data2":0
+      },
+      {
+         "runeId":5037,
+         "description":"+*% critical chance",
+         "imageId":"b_3_1",
+         "data1":0.15,
+         "data2":0
+      },
+      {
+         "runeId":5041,
+         "description":"+* health",
+         "imageId":"b_3_1",
+         "data1":1.49,
+         "data2":0
+      },
+      {
+         "runeId":5042,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"b_4_1",
+         "data1":0.3,
+         "data2":5.4
+      },
+      {
+         "runeId":5043,
+         "description":"+* armor",
+         "imageId":"b_1_1",
+         "data1":0.39,
+         "data2":0
+      },
+      {
+         "runeId":5045,
+         "description":"+* magic resist",
+         "imageId":"b_3_1",
+         "data1":0.74,
+         "data2":0
+      },
+      {
+         "runeId":5046,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"b_4_1",
+         "data1":0.09,
+         "data2":1.68
+      },
+      {
+         "runeId":5047,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"b_1_1",
+         "data1":0.15,
+         "data2":0
+      },
+      {
+         "runeId":5051,
+         "description":"-*% cooldowns",
+         "imageId":"b_1_1",
+         "data1":0.47,
+         "data2":0
+      },
+      {
+         "runeId":5052,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"b_2_1",
+         "data1":0.05,
+         "data2":0.93
+      },
+      {
+         "runeId":5053,
+         "description":"+* ability power",
+         "imageId":"b_3_1",
+         "data1":0.66,
+         "data2":0
+      },
+      {
+         "runeId":5054,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"b_4_1",
+         "data1":0.1,
+         "data2":1.8
+      },
+      {
+         "runeId":5055,
+         "description":"+* mana",
+         "imageId":"b_1_1",
+         "data1":6.25,
+         "data2":0
+      },
+      {
+         "runeId":5056,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"b_2_1",
+         "data1":0.79,
+         "data2":14.22
+      },
+      {
+         "runeId":5057,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"b_3_1",
+         "data1":0.19,
+         "data2":0
+      },
+      {
+         "runeId":5058,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"b_4_1",
+         "data1":0.04,
+         "data2":0.67
+      },
+      {
+         "runeId":5059,
+         "description":"+* magic penetration",
+         "imageId":"b_1_1",
+         "data1":0.35,
+         "data2":0
+      },
+      {
+         "runeId":5061,
+         "description":"+* attack damage",
+         "imageId":"y_1_1",
+         "data1":0.24,
+         "data2":0
+      },
+      {
+         "runeId":5062,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"y_2_1",
+         "data1":0.03,
+         "data2":0.61
+      },
+      {
+         "runeId":5063,
+         "description":"+*% attack speed",
+         "imageId":"y_3_1",
+         "data1":0.42,
+         "data2":0
+      },
+      {
+         "runeId":5065,
+         "description":"+*% critical damage",
+         "imageId":"y_1_1",
+         "data1":0.43,
+         "data2":0
+      },
+      {
+         "runeId":5067,
+         "description":"+*% critical chance",
+         "imageId":"y_3_1",
+         "data1":0.23,
+         "data2":0
+      },
+      {
+         "runeId":5071,
+         "description":"+* health",
+         "imageId":"y_3_1",
+         "data1":4.48,
+         "data2":0
+      },
+      {
+         "runeId":5072,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"y_4_1",
+         "data1":0.75,
+         "data2":13.44
+      },
+      {
+         "runeId":5073,
+         "description":"+* armor",
+         "imageId":"y_1_1",
+         "data1":0.56,
+         "data2":0
+      },
+      {
+         "runeId":5074,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"y_2_1",
+         "data1":0.09,
+         "data2":1.68
+      },
+      {
+         "runeId":5075,
+         "description":"+* magic resist",
+         "imageId":"y_3_1",
+         "data1":0.41,
+         "data2":0
+      },
+      {
+         "runeId":5076,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"y_4_1",
+         "data1":0.05,
+         "data2":0.9
+      },
+      {
+         "runeId":5077,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"y_1_1",
+         "data1":0.31,
+         "data2":0
+      },
+      {
+         "runeId":5078,
+         "description":"+* health regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_2_1",
+         "data1":0.06,
+         "data2":1.08
+      },
+      {
+         "runeId":5081,
+         "description":"-*% cooldowns",
+         "imageId":"y_1_1",
+         "data1":0.2,
+         "data2":0
+      },
+      {
+         "runeId":5083,
+         "description":"+* ability power",
+         "imageId":"y_3_1",
+         "data1":0.33,
+         "data2":0
+      },
+      {
+         "runeId":5084,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"y_4_1",
+         "data1":0.06,
+         "data2":1.08
+      },
+      {
+         "runeId":5085,
+         "description":"+* mana",
+         "imageId":"y_1_1",
+         "data1":3.83,
+         "data2":0
+      },
+      {
+         "runeId":5086,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"y_2_1",
+         "data1":0.65,
+         "data2":11.7
+      },
+      {
+         "runeId":5087,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"y_3_1",
+         "data1":0.23,
+         "data2":0
+      },
+      {
+         "runeId":5088,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_4_1",
+         "data1":0.036,
+         "data2":0.65
+      },
+      {
+         "runeId":5091,
+         "description":"+* attack damage",
+         "imageId":"bl_1_1",
+         "data1":1.25,
+         "data2":0
+      },
+      {
+         "runeId":5092,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"bl_2_1",
+         "data1":0.14,
+         "data2":2.52
+      },
+      {
+         "runeId":5093,
+         "description":"+*% attack speed",
+         "imageId":"bl_3_1",
+         "data1":2.52,
+         "data2":0
+      },
+      {
+         "runeId":5095,
+         "description":"+*% critical damage",
+         "imageId":"bl_1_1",
+         "data1":2.48,
+         "data2":0
+      },
+      {
+         "runeId":5097,
+         "description":"+*% critical chance",
+         "imageId":"bl_3_1",
+         "data1":1.03,
+         "data2":0
+      },
+      {
+         "runeId":5099,
+         "description":"+* armor penetration",
+         "imageId":"bl_1_1",
+         "data1":1.42,
+         "data2":0
+      },
+      {
+         "runeId":5101,
+         "description":"+* health",
+         "imageId":"bl_3_1",
+         "data1":14.5,
+         "data2":0
+      },
+      {
+         "runeId":5102,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"bl_4_1",
+         "data1":1.5,
+         "data2":27
+      },
+      {
+         "runeId":5103,
+         "description":"+* armor",
+         "imageId":"bl_1_1",
+         "data1":2.37,
+         "data2":0
+      },
+      {
+         "runeId":5104,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"bl_2_1",
+         "data1":0.21,
+         "data2":3.78
+      },
+      {
+         "runeId":5105,
+         "description":"+* magic resist",
+         "imageId":"bl_3_1",
+         "data1":2.22,
+         "data2":0
+      },
+      {
+         "runeId":5106,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"bl_4_1",
+         "data1":0.21,
+         "data2":3.78
+      },
+      {
+         "runeId":5107,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"bl_1_1",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":5108,
+         "description":"+* health regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"bl_2_1",
+         "data1":0.16,
+         "data2":2.88
+      },
+      {
+         "runeId":5111,
+         "description":"-*% cooldowns",
+         "imageId":"bl_1_1",
+         "data1":1.4,
+         "data2":0
+      },
+      {
+         "runeId":5112,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"bl_2_1",
+         "data1":0.15,
+         "data2":2.8
+      },
+      {
+         "runeId":5113,
+         "description":"+* ability power",
+         "imageId":"bl_3_1",
+         "data1":2.75,
+         "data2":0
+      },
+      {
+         "runeId":5114,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"bl_4_1",
+         "data1":0.24,
+         "data2":4.32
+      },
+      {
+         "runeId":5115,
+         "description":"+* mana",
+         "imageId":"bl_1_1",
+         "data1":20.83,
+         "data2":0
+      },
+      {
+         "runeId":5116,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"bl_2_1",
+         "data1":2.31,
+         "data2":41.58
+      },
+      {
+         "runeId":5117,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"bl_3_1",
+         "data1":0.69,
+         "data2":0
+      },
+      {
+         "runeId":5118,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"bl_4_1",
+         "data1":0.14,
+         "data2":2.52
+      },
+      {
+         "runeId":5119,
+         "description":"+* magic penetration",
+         "imageId":"bl_1_1",
+         "data1":1.11,
+         "data2":0
+      },
+      {
+         "runeId":5121,
+         "description":"+*% movement speed",
+         "imageId":"bl_3_1",
+         "data1":0.83,
+         "data2":0
+      },
+      {
+         "runeId":5123,
+         "description":"+* attack damage",
+         "imageId":"r_1_2",
+         "data1":0.74,
+         "data2":0
+      },
+      {
+         "runeId":5124,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"r_2_2",
+         "data1":0.1,
+         "data2":1.89
+      },
+      {
+         "runeId":5125,
+         "description":"+*% attack speed",
+         "imageId":"r_3_2",
+         "data1":1.32,
+         "data2":0
+      },
+      {
+         "runeId":5127,
+         "description":"+*% critical damage",
+         "imageId":"r_1_2",
+         "data1":1.74,
+         "data2":0
+      },
+      {
+         "runeId":5129,
+         "description":"+*% critical chance",
+         "imageId":"r_3_2",
+         "data1":0.72,
+         "data2":0
+      },
+      {
+         "runeId":5131,
+         "description":"+* armor penetration",
+         "imageId":"r_1_2",
+         "data1":1,
+         "data2":0
+      },
+      {
+         "runeId":5133,
+         "description":"+* health",
+         "imageId":"r_3_2",
+         "data1":2.7,
+         "data2":0
+      },
+      {
+         "runeId":5134,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"r_4_2",
+         "data1":0.42,
+         "data2":7.56
+      },
+      {
+         "runeId":5135,
+         "description":"+* armor",
+         "imageId":"r_1_2",
+         "data1":0.71,
+         "data2":0
+      },
+      {
+         "runeId":5137,
+         "description":"+* magic resist",
+         "imageId":"r_3_2",
+         "data1":0.6,
+         "data2":0
+      },
+      {
+         "runeId":5138,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"r_4_2",
+         "data1":0.06,
+         "data2":1.08
+      },
+      {
+         "runeId":5143,
+         "description":"-*% cooldowns",
+         "imageId":"r_1_2",
+         "data1":0.16,
+         "data2":0
+      },
+      {
+         "runeId":5145,
+         "description":"+* ability power",
+         "imageId":"r_3_2",
+         "data1":0.46,
+         "data2":0
+      },
+      {
+         "runeId":5146,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"r_4_2",
+         "data1":0.08,
+         "data2":1.44
+      },
+      {
+         "runeId":5147,
+         "description":"+* mana",
+         "imageId":"r_1_2",
+         "data1":4.59,
+         "data2":0
+      },
+      {
+         "runeId":5148,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"r_2_2",
+         "data1":0.91,
+         "data2":16.38
+      },
+      {
+         "runeId":5149,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"r_3_2",
+         "data1":0.2,
+         "data2":0
+      },
+      {
+         "runeId":5151,
+         "description":"+* magic penetration",
+         "imageId":"r_1_2",
+         "data1":0.68,
+         "data2":0
+      },
+      {
+         "runeId":5153,
+         "description":"+* attack damage",
+         "imageId":"b_1_2",
+         "data1":0.22,
+         "data2":0
+      },
+      {
+         "runeId":5154,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"b_2_2",
+         "data1":0.03,
+         "data2":0.57
+      },
+      {
+         "runeId":5155,
+         "description":"+*% attack speed",
+         "imageId":"b_3_2",
+         "data1":0.5,
+         "data2":0
+      },
+      {
+         "runeId":5157,
+         "description":"+*% critical damage",
+         "imageId":"b_1_2",
+         "data1":0.43,
+         "data2":0
+      },
+      {
+         "runeId":5159,
+         "description":"+*% critical chance",
+         "imageId":"b_3_2",
+         "data1":0.22,
+         "data2":0
+      },
+      {
+         "runeId":5163,
+         "description":"+* health",
+         "imageId":"b_3_2",
+         "data1":2.08,
+         "data2":0
+      },
+      {
+         "runeId":5164,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"b_4_2",
+         "data1":0.42,
+         "data2":7.56
+      },
+      {
+         "runeId":5165,
+         "description":"+* armor",
+         "imageId":"b_1_2",
+         "data1":0.55,
+         "data2":0
+      },
+      {
+         "runeId":5167,
+         "description":"+* magic resist",
+         "imageId":"b_3_2",
+         "data1":1.04,
+         "data2":0
+      },
+      {
+         "runeId":5168,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"b_4_2",
+         "data1":0.13,
+         "data2":2.34
+      },
+      {
+         "runeId":5169,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"b_1_2",
+         "data1":0.21,
+         "data2":0
+      },
+      {
+         "runeId":5173,
+         "description":"-*% cooldowns",
+         "imageId":"b_1_2",
+         "data1":0.67,
+         "data2":0
+      },
+      {
+         "runeId":5174,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"b_2_2",
+         "data1":0.07,
+         "data2":1.3
+      },
+      {
+         "runeId":5175,
+         "description":"+* ability power",
+         "imageId":"b_3_2",
+         "data1":0.92,
+         "data2":0
+      },
+      {
+         "runeId":5176,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"b_4_2",
+         "data1":0.13,
+         "data2":2.34
+      },
+      {
+         "runeId":5177,
+         "description":"+* mana",
+         "imageId":"b_1_2",
+         "data1":8.75,
+         "data2":0
+      },
+      {
+         "runeId":5178,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"b_2_2",
+         "data1":1.1,
+         "data2":19.8
+      },
+      {
+         "runeId":5179,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"b_3_2",
+         "data1":0.26,
+         "data2":0
+      },
+      {
+         "runeId":5180,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"b_4_2",
+         "data1":0.05,
+         "data2":0.94
+      },
+      {
+         "runeId":5181,
+         "description":"+* magic penetration",
+         "imageId":"b_1_2",
+         "data1":0.49,
+         "data2":0
+      },
+      {
+         "runeId":5183,
+         "description":"+* attack damage",
+         "imageId":"y_1_2",
+         "data1":0.33,
+         "data2":0
+      },
+      {
+         "runeId":5184,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"y_2_2",
+         "data1":0.05,
+         "data2":0.85
+      },
+      {
+         "runeId":5185,
+         "description":"+*% attack speed",
+         "imageId":"y_3_2",
+         "data1":0.59,
+         "data2":0
+      },
+      {
+         "runeId":5187,
+         "description":"+*% critical damage",
+         "imageId":"y_1_2",
+         "data1":0.61,
+         "data2":0
+      },
+      {
+         "runeId":5189,
+         "description":"+*% critical chance",
+         "imageId":"y_3_2",
+         "data1":0.32,
+         "data2":0
+      },
+      {
+         "runeId":5193,
+         "description":"+* health",
+         "imageId":"y_3_2",
+         "data1":6.24,
+         "data2":0
+      },
+      {
+         "runeId":5194,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"y_4_2",
+         "data1":1.04,
+         "data2":18.72
+      },
+      {
+         "runeId":5195,
+         "description":"+* armor",
+         "imageId":"y_1_2",
+         "data1":0.78,
+         "data2":0
+      },
+      {
+         "runeId":5196,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"y_2_2",
+         "data1":0.13,
+         "data2":2.34
+      },
+      {
+         "runeId":5197,
+         "description":"+* magic resist",
+         "imageId":"y_3_2",
+         "data1":0.58,
+         "data2":0
+      },
+      {
+         "runeId":5198,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"y_4_2",
+         "data1":0.08,
+         "data2":1.44
+      },
+      {
+         "runeId":5199,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"y_1_2",
+         "data1":0.43,
+         "data2":0
+      },
+      {
+         "runeId":5200,
+         "description":"+* health regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_2_2",
+         "data1":0.09,
+         "data2":1.62
+      },
+      {
+         "runeId":5203,
+         "description":"-*% cooldowns",
+         "imageId":"y_1_2",
+         "data1":0.29,
+         "data2":0
+      },
+      {
+         "runeId":5205,
+         "description":"+* ability power",
+         "imageId":"y_3_2",
+         "data1":0.46,
+         "data2":0
+      },
+      {
+         "runeId":5206,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"y_4_2",
+         "data1":0.08,
+         "data2":1.44
+      },
+      {
+         "runeId":5207,
+         "description":"+* mana",
+         "imageId":"y_1_2",
+         "data1":5.36,
+         "data2":0
+      },
+      {
+         "runeId":5208,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"y_2_2",
+         "data1":0.91,
+         "data2":16.38
+      },
+      {
+         "runeId":5209,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"y_3_2",
+         "data1":0.32,
+         "data2":0
+      },
+      {
+         "runeId":5210,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_4_2",
+         "data1":0.05,
+         "data2":0.9
+      },
+      {
+         "runeId":5213,
+         "description":"+* attack damage",
+         "imageId":"bl_1_2",
+         "data1":1.75,
+         "data2":0
+      },
+      {
+         "runeId":5214,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"bl_2_2",
+         "data1":0.19,
+         "data2":3.42
+      },
+      {
+         "runeId":5215,
+         "description":"+*% attack speed",
+         "imageId":"bl_3_2",
+         "data1":3.51,
+         "data2":0
+      },
+      {
+         "runeId":5217,
+         "description":"+*% critical damage",
+         "imageId":"bl_1_2",
+         "data1":3.47,
+         "data2":0
+      },
+      {
+         "runeId":5219,
+         "description":"+*% critical chance",
+         "imageId":"bl_3_2",
+         "data1":1.44,
+         "data2":0
+      },
+      {
+         "runeId":5221,
+         "description":"+* armor penetration",
+         "imageId":"bl_1_2",
+         "data1":1.99,
+         "data2":0
+      },
+      {
+         "runeId":5223,
+         "description":"+* health",
+         "imageId":"bl_3_2",
+         "data1":20,
+         "data2":0
+      },
+      {
+         "runeId":5224,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"bl_4_2",
+         "data1":2.1,
+         "data2":37.8
+      },
+      {
+         "runeId":5225,
+         "description":"+* armor",
+         "imageId":"bl_1_2",
+         "data1":3.32,
+         "data2":0
+      },
+      {
+         "runeId":5226,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"bl_2_2",
+         "data1":0.29,
+         "data2":5.22
+      },
+      {
+         "runeId":5227,
+         "description":"+* magic resist",
+         "imageId":"bl_3_2",
+         "data1":3.11,
+         "data2":0
+      },
+      {
+         "runeId":5228,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"bl_4_2",
+         "data1":0.29,
+         "data2":5.22
+      },
+      {
+         "runeId":5229,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"bl_1_2",
+         "data1":2.1,
+         "data2":0
+      },
+      {
+         "runeId":5230,
+         "description":"+* health regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"bl_2_2",
+         "data1":0.22,
+         "data2":3.96
+      },
+      {
+         "runeId":5233,
+         "description":"-*% cooldowns",
+         "imageId":"bl_1_2",
+         "data1":1.95,
+         "data2":0
+      },
+      {
+         "runeId":5234,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"bl_2_2",
+         "data1":0.21,
+         "data2":3.9
+      },
+      {
+         "runeId":5235,
+         "description":"+* ability power",
+         "imageId":"bl_3_2",
+         "data1":3.85,
+         "data2":0
+      },
+      {
+         "runeId":5236,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"bl_4_2",
+         "data1":0.34,
+         "data2":6.12
+      },
+      {
+         "runeId":5237,
+         "description":"+* mana",
+         "imageId":"bl_1_2",
+         "data1":29.17,
+         "data2":0
+      },
+      {
+         "runeId":5238,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"bl_2_2",
+         "data1":3.24,
+         "data2":58.32
+      },
+      {
+         "runeId":5239,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"bl_3_2",
+         "data1":0.97,
+         "data2":0
+      },
+      {
+         "runeId":5240,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"bl_4_2",
+         "data1":0.19,
+         "data2":3.42
+      },
+      {
+         "runeId":5241,
+         "description":"+* magic penetration",
+         "imageId":"bl_1_2",
+         "data1":1.56,
+         "data2":0
+      },
+      {
+         "runeId":5243,
+         "description":"+*% movement speed",
+         "imageId":"bl_3_2",
+         "data1":1.17,
+         "data2":0
+      },
+      {
+         "runeId":5245,
+         "description":"+* attack damage",
+         "imageId":"r_1_3",
+         "data1":0.95,
+         "data2":0
+      },
+      {
+         "runeId":5246,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"r_2_3",
+         "data1":0.13,
+         "data2":2.43
+      },
+      {
+         "runeId":5247,
+         "description":"+*% attack speed",
+         "imageId":"r_3_3",
+         "data1":1.7,
+         "data2":0
+      },
+      {
+         "runeId":5249,
+         "description":"+*% critical damage",
+         "imageId":"r_1_3",
+         "data1":2.23,
+         "data2":0
+      },
+      {
+         "runeId":5251,
+         "description":"+*% critical chance",
+         "imageId":"r_3_3",
+         "data1":0.93,
+         "data2":0
+      },
+      {
+         "runeId":5253,
+         "description":"+* armor penetration",
+         "imageId":"r_1_3",
+         "data1":1.28,
+         "data2":0
+      },
+      {
+         "runeId":5255,
+         "description":"+* health",
+         "imageId":"r_3_3",
+         "data1":3.47,
+         "data2":0
+      },
+      {
+         "runeId":5256,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"r_4_3",
+         "data1":0.54,
+         "data2":9.72
+      },
+      {
+         "runeId":5257,
+         "description":"+* armor",
+         "imageId":"r_1_3",
+         "data1":0.91,
+         "data2":0
+      },
+      {
+         "runeId":5259,
+         "description":"+* magic resist",
+         "imageId":"r_3_3",
+         "data1":0.77,
+         "data2":0
+      },
+      {
+         "runeId":5260,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"r_4_3",
+         "data1":0.07,
+         "data2":1.26
+      },
+      {
+         "runeId":5265,
+         "description":"-*% cooldowns",
+         "imageId":"r_1_3",
+         "data1":0.2,
+         "data2":0
+      },
+      {
+         "runeId":5267,
+         "description":"+* ability power",
+         "imageId":"r_3_3",
+         "data1":0.59,
+         "data2":0
+      },
+      {
+         "runeId":5268,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"r_4_3",
+         "data1":0.1,
+         "data2":1.8
+      },
+      {
+         "runeId":5269,
+         "description":"+* mana",
+         "imageId":"r_1_3",
+         "data1":5.91,
+         "data2":0
+      },
+      {
+         "runeId":5270,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"r_2_3",
+         "data1":1.17,
+         "data2":21.06
+      },
+      {
+         "runeId":5271,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"r_3_3",
+         "data1":0.26,
+         "data2":0
+      },
+      {
+         "runeId":5273,
+         "description":"+* magic penetration",
+         "imageId":"r_1_3",
+         "data1":0.87,
+         "data2":0
+      },
+      {
+         "runeId":5275,
+         "description":"+* attack damage",
+         "imageId":"b_1_3",
+         "data1":0.28,
+         "data2":0
+      },
+      {
+         "runeId":5276,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"b_2_3",
+         "data1":0.04,
+         "data2":0.73
+      },
+      {
+         "runeId":5277,
+         "description":"+*% attack speed",
+         "imageId":"b_3_3",
+         "data1":0.64,
+         "data2":0
+      },
+      {
+         "runeId":5279,
+         "description":"+*% critical damage",
+         "imageId":"b_1_3",
+         "data1":0.56,
+         "data2":0
+      },
+      {
+         "runeId":5281,
+         "description":"+*% critical chance",
+         "imageId":"b_3_3",
+         "data1":0.28,
+         "data2":0
+      },
+      {
+         "runeId":5285,
+         "description":"+* health",
+         "imageId":"b_3_3",
+         "data1":2.67,
+         "data2":0
+      },
+      {
+         "runeId":5286,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"b_4_3",
+         "data1":0.54,
+         "data2":9.72
+      },
+      {
+         "runeId":5287,
+         "description":"+* armor",
+         "imageId":"b_1_3",
+         "data1":0.7,
+         "data2":0
+      },
+      {
+         "runeId":5289,
+         "description":"+* magic resist",
+         "imageId":"b_3_3",
+         "data1":1.34,
+         "data2":0
+      },
+      {
+         "runeId":5290,
+         "description":"+* magic resist per level (+# at champion level 18",
+         "imageId":"b_4_3",
+         "data1":0.16,
+         "data2":3
+      },
+      {
+         "runeId":5291,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"b_1_3",
+         "data1":0.27,
+         "data2":0
+      },
+      {
+         "runeId":5295,
+         "description":"-*% cooldowns",
+         "imageId":"b_1_3",
+         "data1":0.83,
+         "data2":0
+      },
+      {
+         "runeId":5296,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"b_2_3",
+         "data1":0.09,
+         "data2":1.67
+      },
+      {
+         "runeId":5297,
+         "description":"+* ability power",
+         "imageId":"b_3_3",
+         "data1":1.19,
+         "data2":0
+      },
+      {
+         "runeId":5298,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"b_4_3",
+         "data1":0.17,
+         "data2":3.06
+      },
+      {
+         "runeId":5299,
+         "description":"+* mana",
+         "imageId":"b_1_3",
+         "data1":11.25,
+         "data2":0
+      },
+      {
+         "runeId":5300,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"b_2_3",
+         "data1":1.42,
+         "data2":25.56
+      },
+      {
+         "runeId":5301,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"b_3_3",
+         "data1":0.33,
+         "data2":0
+      },
+      {
+         "runeId":5302,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"b_4_3",
+         "data1":0.06,
+         "data2":1.2
+      },
+      {
+         "runeId":5303,
+         "description":"+* magic penetration",
+         "imageId":"b_1_3",
+         "data1":0.63,
+         "data2":0
+      },
+      {
+         "runeId":5305,
+         "description":"+* attack damage",
+         "imageId":"y_1_3",
+         "data1":0.43,
+         "data2":0
+      },
+      {
+         "runeId":5306,
+         "description":"+* attack damage per level (+# at champion level 18)",
+         "imageId":"y_2_3",
+         "data1":0.06,
+         "data2":1.09
+      },
+      {
+         "runeId":5307,
+         "description":"+*% attack speed",
+         "imageId":"y_3_3",
+         "data1":0.76,
+         "data2":0
+      },
+      {
+         "runeId":5309,
+         "description":"+*% critical damage",
+         "imageId":"y_1_3",
+         "data1":0.78,
+         "data2":0
+      },
+      {
+         "runeId":5311,
+         "description":"+*% critical chance",
+         "imageId":"y_3_3",
+         "data1":0.42,
+         "data2":0
+      },
+      {
+         "runeId":5315,
+         "description":"+* health",
+         "imageId":"y_3_3",
+         "data1":8,
+         "data2":0
+      },
+      {
+         "runeId":5316,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"y_4_3",
+         "data1":1.33,
+         "data2":24
+      },
+      {
+         "runeId":5317,
+         "description":"+* armor",
+         "imageId":"y_1_3",
+         "data1":1,
+         "data2":0
+      },
+      {
+         "runeId":5318,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"y_2_3",
+         "data1":0.16,
+         "data2":3
+      },
+      {
+         "runeId":5319,
+         "description":"+* magic resist",
+         "imageId":"y_3_3",
+         "data1":0.74,
+         "data2":0
+      },
+      {
+         "runeId":5320,
+         "description":"+* magic resist per level (+1.8 at champion level 18)",
+         "imageId":"y_4_3",
+         "data1":0.1,
+         "data2":0
+      },
+      {
+         "runeId":5321,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"y_1_3",
+         "data1":0.56,
+         "data2":0
+      },
+      {
+         "runeId":5322,
+         "description":"+* health regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_2_3",
+         "data1":0.11,
+         "data2":1.98
+      },
+      {
+         "runeId":5325,
+         "description":"-*% cooldowns",
+         "imageId":"y_1_3",
+         "data1":0.36,
+         "data2":0
+      },
+      {
+         "runeId":5327,
+         "description":"+* ability power",
+         "imageId":"y_3_3",
+         "data1":0.59,
+         "data2":0
+      },
+      {
+         "runeId":5328,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"y_4_3",
+         "data1":0.1,
+         "data2":1.8
+      },
+      {
+         "runeId":5329,
+         "description":"+* mana",
+         "imageId":"y_1_3",
+         "data1":6.89,
+         "data2":0
+      },
+      {
+         "runeId":5330,
+         "description":"+* mana per level (+# at champion level 18)",
+         "imageId":"y_2_3",
+         "data1":1.17,
+         "data2":21.06
+      },
+      {
+         "runeId":5331,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"y_3_3",
+         "data1":0.41,
+         "data2":0
+      },
+      {
+         "runeId":5332,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"y_4_3",
+         "data1":0.065,
+         "data2":1.17
+      },
+      {
+         "runeId":5335,
+         "description":"+* attack damage",
+         "imageId":"bl_1_3",
+         "data1":2.25,
+         "data2":0
+      },
+      {
+         "runeId":5336,
+         "description":"+* attack damage per level (+4.5 at champion level 18)",
+         "imageId":"bl_2_3",
+         "data1":0.25,
+         "data2":0
+      },
+      {
+         "runeId":5337,
+         "description":"+*% attack speed",
+         "imageId":"bl_3_3",
+         "data1":4.5,
+         "data2":0
+      },
+      {
+         "runeId":5339,
+         "description":"+*% critical damage",
+         "imageId":"bl_1_3",
+         "data1":4.46,
+         "data2":0
+      },
+      {
+         "runeId":5341,
+         "description":"+*% critical chance",
+         "imageId":"bl_3_3",
+         "data1":1.86,
+         "data2":0
+      },
+      {
+         "runeId":5343,
+         "description":"+* armor penetration",
+         "imageId":"bl_1_3",
+         "data1":2.56,
+         "data2":0
+      },
+      {
+         "runeId":5345,
+         "description":"+* health",
+         "imageId":"bl_3_3",
+         "data1":26,
+         "data2":0
+      },
+      {
+         "runeId":5346,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"bl_4_3",
+         "data1":2.7,
+         "data2":48.6
+      },
+      {
+         "runeId":5347,
+         "description":"+* armor",
+         "imageId":"bl_1_3",
+         "data1":4.26,
+         "data2":0
+      },
+      {
+         "runeId":5348,
+         "description":"+* armor per level (+# at champion level 18)",
+         "imageId":"bl_2_3",
+         "data1":0.38,
+         "data2":6.84
+      },
+      {
+         "runeId":5349,
+         "description":"+* magic resist",
+         "imageId":"bl_3_3",
+         "data1":4,
+         "data2":0
+      },
+      {
+         "runeId":5350,
+         "description":"+* magic resist per level (+# at champion level 18)",
+         "imageId":"bl_4_3",
+         "data1":0.37,
+         "data2":6.66
+      },
+      {
+         "runeId":5351,
+         "description":"+* health regen / 5 sec.",
+         "imageId":"bl_1_3",
+         "data1":2.7,
+         "data2":0
+      },
+      {
+         "runeId":5352,
+         "description":"+* health regen / 5 sec. per level (+5.04 at champion level 18)",
+         "imageId":"bl_2_3",
+         "data1":0.28,
+         "data2":0
+      },
+      {
+         "runeId":5355,
+         "description":"-*% cooldowns",
+         "imageId":"bl_1_3",
+         "data1":2.5,
+         "data2":0
+      },
+      {
+         "runeId":5356,
+         "description":"-*% cooldowns per level (-#% at champion level 18)",
+         "imageId":"bl_2_3",
+         "data1":0.28,
+         "data2":5
+      },
+      {
+         "runeId":5357,
+         "description":"+* ability power",
+         "imageId":"bl_3_3",
+         "data1":4.95,
+         "data2":0
+      },
+      {
+         "runeId":5358,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"bl_4_3",
+         "data1":0.43,
+         "data2":7.74
+      },
+      {
+         "runeId":5359,
+         "description":"+* mana",
+         "imageId":"bl_1_3",
+         "data1":37.5,
+         "data2":0
+      },
+      {
+         "runeId":5360,
+         "description":"+* mana per level (+75.06 at champion level 18)",
+         "imageId":"bl_2_3",
+         "data1":4.17,
+         "data2":0
+      },
+      {
+         "runeId":5361,
+         "description":"+* mana regen / 5 sec.",
+         "imageId":"bl_3_3",
+         "data1":1.25,
+         "data2":0
+      },
+      {
+         "runeId":5362,
+         "description":"+* mana regen / 5 sec. per level (+# at champion level 18)",
+         "imageId":"bl_4_3",
+         "data1":0.24,
+         "data2":4.32
+      },
+      {
+         "runeId":5363,
+         "description":"+* magic penetration",
+         "imageId":"bl_1_3",
+         "data1":2.01,
+         "data2":0
+      },
+      {
+         "runeId":5365,
+         "description":"+*% movement speed",
+         "imageId":"bl_3_3",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":5366,
+         "description":"-*% time dead",
+         "imageId":"bl_1_3",
+         "data1":5,
+         "data2":0
+      },
+      {
+         "runeId":5367,
+         "description":"+* gold / 10 sec.",
+         "imageId":"bl_4_3",
+         "data1":1,
+         "data2":0
+      },
+      {
+         "runeId":5368,
+         "description":"+*% experience gained",
+         "imageId":"bl_2_3",
+         "data1":2,
+         "data2":0
+      },
+      {
+         "runeId":5369,
+         "description":"+* Energy regen/5 sec",
+         "imageId":"y_1_3",
+         "data1":0.63,
+         "data2":0
+      },
+      {
+         "runeId":5370,
+         "description":"+* Energy regen/5 sec per level (+# at champion level 18)",
+         "imageId":"y_3_3",
+         "data1":0.064,
+         "data2":1.15
+      },
+      {
+         "runeId":5371,
+         "description":"+* Energy",
+         "imageId":"b_3_3",
+         "data1":2.2,
+         "data2":0
+      },
+      {
+         "runeId":5372,
+         "description":"+* Energy/level (+2.89 at level 18)",
+         "imageId":"b_2_3",
+         "data1":0.161,
+         "data2":0
+      },
+      {
+         "runeId":5373,
+         "description":"+* Energy regen/5 sec",
+         "imageId":"bl_2_3",
+         "data1":1.575,
+         "data2":0
+      },
+      {
+         "runeId":5374,
+         "description":"+* Energy",
+         "imageId":"bl_3_3",
+         "data1":5.4,
+         "data2":0
+      },
+      {
+         "runeId":5400,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"r_1_1",
+         "data1":0.5,
+         "data2":0.34
+      },
+      {
+         "runeId":5401,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"r_1_2",
+         "data1":0.7,
+         "data2":0.48
+      },
+      {
+         "runeId":5402,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"r_1_3",
+         "data1":0.9,
+         "data2":0.62
+      },
+      {
+         "runeId":5403,
+         "description":"+* gold / 10 sec.",
+         "imageId":"y_3_3",
+         "data1":0.25,
+         "data2":0
+      },
+      {
+         "runeId":5404,
+         "description":"+*% increased health.",
+         "imageId":"bl_2_1",
+         "data1":0.84,
+         "data2":0
+      },
+      {
+         "runeId":5405,
+         "description":"+*% increased health.",
+         "imageId":"bl_2_2",
+         "data1":1.17,
+         "data2":0
+      },
+      {
+         "runeId":5406,
+         "description":"+*% increased health.",
+         "imageId":"bl_3_3",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":5407,
+         "description":"+*% Spellvamp.",
+         "imageId":"bl_4_1",
+         "data1":1.12,
+         "data2":0
+      },
+      {
+         "runeId":5408,
+         "description":"+*% Spellvamp.",
+         "imageId":"bl_4_2",
+         "data1":1.56,
+         "data2":0
+      },
+      {
+         "runeId":5409,
+         "description":"+*% Spellvamp.",
+         "imageId":"bl_4_3",
+         "data1":2,
+         "data2":0
+      },
+      {
+         "runeId":5410,
+         "description":"+*% Life Steal",
+         "imageId":"bl_1_1",
+         "data1":0.84,
+         "data2":0
+      },
+      {
+         "runeId":5411,
+         "description":"+*% Life Steal",
+         "imageId":"bl_1_2",
+         "data1":1.17,
+         "data2":0
+      },
+      {
+         "runeId":5412,
+         "description":"+*% Life Steal.",
+         "imageId":"bl_1_3",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":5413,
+         "description":"+*% Health.",
+         "imageId":"y_2_1",
+         "data1":0.28,
+         "data2":0
+      },
+      {
+         "runeId":5414,
+         "description":"+*% Health.",
+         "imageId":"y_2_2",
+         "data1":0.39,
+         "data2":0
+      },
+      {
+         "runeId":5415,
+         "description":"+*% Health.",
+         "imageId":"y_3_3",
+         "data1":0.5,
+         "data2":0
+      },
+      {
+         "runeId":5416,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"bl_4_1",
+         "data1":0.99,
+         "data2":0.78
+      },
+      {
+         "runeId":5417,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"bl_4_2",
+         "data1":1.39,
+         "data2":1.09
+      },
+      {
+         "runeId":5418,
+         "description":"+* Armor Penetration / +# Magic Penetration",
+         "imageId":"bl_4_3",
+         "data1":1.79,
+         "data2":1.4
+      },
+      {
+         "runeId":8001,
+         "description":"+*% critical damage",
+         "imageId":"8001",
+         "data1":2,
+         "data2":0
+      },
+      {
+         "runeId":8002,
+         "description":"+*% critical chance",
+         "imageId":"8002",
+         "data1":0.62,
+         "data2":0
+      },
+      {
+         "runeId":8003,
+         "description":"-*% cooldowns",
+         "imageId":"8003",
+         "data1":0.75,
+         "data2":0
+      },
+      {
+         "runeId":8005,
+         "description":"+* ability power per level (+# at champion level 18)",
+         "imageId":"8005",
+         "data1":0.12,
+         "data2":2.16
+      },
+      {
+         "runeId":8006,
+         "description":"+* health per level (+# at champion level 18)",
+         "imageId":"8006",
+         "data1":0.72,
+         "data2":12.96
+      },
+      {
+         "runeId":8007,
+         "description":"+*% attack speed",
+         "imageId":"8007",
+         "data1":1.13,
+         "data2":0
+      },
+      {
+         "runeId":8008,
+         "description":"+*% critical damage",
+         "imageId":"8008",
+         "data1":2,
+         "data2":0
+      },
+      {
+         "runeId":8009,
+         "description":"+* health",
+         "imageId":"8009",
+         "data1":3.56,
+         "data2":0
+      },
+      {
+         "runeId":8011,
+         "description":"+* ability power",
+         "imageId":"8011",
+         "data1":0.66,
+         "data2":0
+      },
+      {
+         "runeId":8012,
+         "description":"-*% cooldowns",
+         "imageId":"8012",
+         "data1":0.75,
+         "data2":0
+      },
+      {
+         "runeId":8013,
+         "description":"+* armor penetration",
+         "imageId":"8013",
+         "data1":2.37,
+         "data2":0
+      },
+      {
+         "runeId":8014,
+         "description":"+* magic penetration",
+         "imageId":"8014",
+         "data1":1.85,
+         "data2":0
+      },
+      {
+         "runeId":8015,
+         "description":"+* health",
+         "imageId":"8015",
+         "data1":24,
+         "data2":0
+      },
+      {
+         "runeId":8016,
+         "description":"+*% movement speed",
+         "imageId":"8016",
+         "data1":1.39,
+         "data2":0
+      },
+      {
+         "runeId":8017,
+         "description":"+* ability power",
+         "imageId":"8017",
+         "data1":4.56,
+         "data2":0
+      },
+      {
+         "runeId":8019,
+         "description":"+* magic penetration",
+         "imageId":"8019",
+         "data1":2.01,
+         "data2":0
+      },
+      {
+         "runeId":8020,
+         "description":"+* armor penetration",
+         "imageId":"8020",
+         "data1":2.56,
+         "data2":0
+      },
+      {
+         "runeId":8021,
+         "description":"+* health",
+         "imageId":"8021",
+         "data1":26,
+         "data2":0
+      },
+      {
+         "runeId":8022,
+         "description":"+*% movement speed",
+         "imageId":"8022",
+         "data1":1.5,
+         "data2":0
+      },
+      {
+         "runeId":8035,
+         "description":"+*% movement speed",
+         "imageId":"8035",
+         "data1":1.5,
+         "data2":0
+      }
+   ]
+}
