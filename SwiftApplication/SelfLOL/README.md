@@ -12,17 +12,17 @@ Look LOL is an IOS application which can look up your current season rank status
 - show allies and enemy current rank and their runes 
 
 #ScreenShots:
-- Inital screen (Portrait)
+- Inital screen (Portrait)<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/initialScreen.png)
 
-- Inital screen (landscrape)
+- Inital screen (landscrape)<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/initial%20Screen%20landscape.png)
 
-- Current Game 1
+- Current Game 1<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/CurrentGame1.png)
 
-- Current Game 2
+- Current Game 2<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/CurrentGame2.png)
 
-- Runes Page
+- Runes Page<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/runes.png)
