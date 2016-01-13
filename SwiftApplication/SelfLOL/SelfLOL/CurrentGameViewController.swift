@@ -7,7 +7,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         willSet{
             indicator.startAnimating()
             if newValue?.id != summoner?.id {
-                if Reachability.isConnectedToNetwork() {
+                if CheckReachability.isConnectedToNetwork() {
                     fetchCurrentGame((newValue?.id)!)
                 }
                 else {
@@ -54,7 +54,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     override func shouldAutorotate() -> Bool {
         return false
     }
-    
+        
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "participant"

@@ -65,7 +65,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     
     var summoner: Summoner? {
         didSet{
-            if Reachability.isConnectedToNetwork() {
+            if CheckReachability.isConnectedToNetwork() {
                 indicator.startAnimating()
                 getRankInfo(summoner!.id)
                 getChampionRankInfo(summoner!.id)
@@ -127,7 +127,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     @IBAction func searchSummoner(sender: UIButton) {
         reset()
         self.view.endEditing(true)
-        if Reachability.isConnectedToNetwork() && summonerNameTextField.text != nil && summonerNameTextField.text != "" {
+        if CheckReachability.isConnectedToNetwork() && summonerNameTextField.text != nil && summonerNameTextField.text != "" {
             let fetchRequest = fetchPlayersRequest()
             do {
                 let result: NSArray = try context.executeFetchRequest(fetchRequest)
