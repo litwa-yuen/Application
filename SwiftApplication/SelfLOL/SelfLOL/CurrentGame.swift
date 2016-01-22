@@ -3,7 +3,7 @@ import Foundation
 
 var currentGame: CurrentGameInfo? = nil
 var map = [CLong:JsonRune]()
-
+var region = "na"
 class CurrentGameInfo {
     var gameId: CLong
     var bannedChampions: [BannedChampion]?

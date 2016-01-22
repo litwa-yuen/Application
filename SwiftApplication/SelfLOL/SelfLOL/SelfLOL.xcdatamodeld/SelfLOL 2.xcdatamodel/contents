@@ -3,8 +3,9 @@
     <entity name="Players" representedClassName=".Player" syncable="YES">
         <attribute name="id" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="region" optional="YES" attributeType="String" defaultValueString="na" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Players" positionX="-63" positionY="-18" width="128" height="73"/>
+        <element name="Players" positionX="-63" positionY="-18" width="128" height="90"/>
     </elements>
 </model>

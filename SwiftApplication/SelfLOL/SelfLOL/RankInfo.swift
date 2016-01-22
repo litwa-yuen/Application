@@ -17,7 +17,7 @@ class RankInfo {
     
     func getRankWithLP() -> String {
         if tier == "provisional" {
-            return "UnRank"
+            return "Unranked"
         }
         else if tier == "MASTER" || tier == "CHALLENGER" {
             return "\(tier) (\(entry!.leaguePoints) LP)"

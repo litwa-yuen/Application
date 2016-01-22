@@ -5,5 +5,6 @@ extension Player {
 
     @NSManaged var name: String?
     @NSManaged var id: NSNumber?
+    @NSManaged var region: String?
 
 }

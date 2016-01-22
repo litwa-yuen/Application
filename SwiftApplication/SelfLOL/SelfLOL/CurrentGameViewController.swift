@@ -38,10 +38,6 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         participantTableView.estimatedRowHeight = participantTableView.rowHeight
         participantTableView.rowHeight = UITableViewAutomaticDimension
         participantTableView.registerClass(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
-        
-        // Do any additional setup after loading the view.
-        let value = UIInterfaceOrientation.LandscapeLeft.rawValue
-        UIDevice.currentDevice().setValue(value, forKey: "orientation")
         indicator.center = view.center
         view.addSubview(indicator)
     }
@@ -51,10 +47,6 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         // Dispose of any resources that can be recreated.
     }
     
-    override func shouldAutorotate() -> Bool {
-        return false
-    }
-        
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "participant"
@@ -211,10 +203,12 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     func fetchRankInfo(participant: CurrentGameParticipant){
         if participant.summonerId == (summoner?.id)! {
-            participant.rankInfo = summoner!.rankInfo
-            return
+            if summoner?.rankInfo != nil {
+                participant.rankInfo = summoner!.rankInfo
+                return
+            }
         }
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/\(participant.summonerId)/entry?api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(participant.summonerId)/entry?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -255,7 +249,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     func fetchCurrentGame(summonerId: CLong) {
         
-        let url = NSURL(string: "https://na.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/NA1/\(summonerId)?api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/\(region.uppercaseString)1/\(summonerId)?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in

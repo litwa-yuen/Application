@@ -11,6 +11,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     @IBOutlet weak var averageStatus: UILabel!
     @IBOutlet weak var winRate: UILabel!
     @IBOutlet weak var searchSummoner: UIButton!
+    @IBOutlet weak var segmentBar: UISegmentedControl!
+    @IBOutlet weak var barItem: UIBarButtonItem!
 
     
     var summonerName: String = ""{
@@ -59,6 +61,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             rankLabel.text = rankInfo!.getRankWithLP()
             rankLabel.textColor = UIColor.blackColor()
             gameButton.hidden = false
+            segmentBar.hidden = false
             rankLabel.hidden = false
         }
     }
@@ -68,6 +71,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             if CheckReachability.isConnectedToNetwork() {
                 indicator.startAnimating()
                 getRankInfo(summoner!.id)
+                getRecentGamesInfo(summoner!.id)
                 getChampionRankInfo(summoner!.id)
             }
             else {
@@ -88,12 +92,15 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         }
     }
     
+    var recentGames = [GameDto]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         gameButton.hidden = true
         rankLabel.hidden = true
         averageStatus.hidden = true
         winRate.hidden = true
+        segmentBar.hidden = true
         indicator.center = view.center
         view.addSubview(indicator)
         championsTable.estimatedRowHeight = championsTable.rowHeight
@@ -107,10 +114,18 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                 let res = result[0] as! NSManagedObject
                 let playerName: String = res.valueForKey("name")! as! String
                 summonerNameTextField.text = playerName
+                if let playerRegion = res.valueForKey("region") as! String? {
+                    region = playerRegion
+                }
+                else {
+                    region = "na"
+                }
             }
     
         }catch _ {}
         toggleAddButton()
+        barItem.title = region.uppercaseString
+
         if summonerName != "" {
             summonerNameTextField?.text = summonerName
         }
@@ -124,7 +139,39 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         // Dispose of any resources that can be recreated.
     }
     
+    @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
+        championsTable.reloadData()
+    }
+    
     @IBAction func searchSummoner(sender: UIButton) {
+        performAction()
+    }
+    
+    @IBAction func changeRegion(sender: UIBarButtonItem) {
+        var regionTitle = "EUW"
+        
+        if region == "euw" {
+            regionTitle = "NA"
+        }
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
+        alert.addAction(UIAlertAction(
+            title: regionTitle, style: .Default) { (action) -> Void in
+                region = regionTitle.lowercaseString
+                self.barItem.title = regionTitle
+                self.deleteCoreData()
+            })
+        alert.addAction(UIAlertAction(
+            title: "Cancel",
+            style: .Cancel)
+            { (action) in
+                // do nothing
+            })
+        alert.modalPresentationStyle = .Popover
+        let ppc = alert.popoverPresentationController
+        ppc?.barButtonItem = barItem
+        presentViewController(alert, animated: true, completion: nil)
+    }
+    func performAction() {
         reset()
         self.view.endEditing(true)
         if CheckReachability.isConnectedToNetwork() && summonerNameTextField.text != nil && summonerNameTextField.text != "" {
@@ -160,12 +207,14 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     
     func reset() {
         gameButton.hidden = true
+        segmentBar.hidden = true
         rankLabel.hidden = true
         averageStatus.hidden = true
         winRate.hidden = true
         imageView.hidden = true
         searchSummoner.enabled = false
         champions.removeAll()
+        recentGames.removeAll()
         indicator.startAnimating()
         showReponseMessage("")
         championsTable.reloadData()
@@ -184,8 +233,53 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         return newImage
     }
     
+    func getRecentGamesInfo(summonerId: CLong) {
+        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
+        let request = NSURLRequest(URL: url!)
+        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                if(error == nil) {
+                    do {
+                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                            self.indicator.stopAnimating()
+                            switch(httpReponse.statusCode) {
+                            case 200:
+                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                if let resultDict = object as? NSDictionary {
+                                    if let entries = resultDict["games"] as? NSArray {
+                                        for entry in entries {
+                                            let game:GameDto = GameDto(entry: entry as! NSDictionary)
+                                            self.recentGames.append(game)
+                                            self.recentGames.sortInPlace({ (c1:GameDto, c2:GameDto) -> Bool in
+                                                return c1.createDate > c2.createDate
+                                            })
+                                            
+                                            self.championsTable.reloadData()
+                                        }
+                                        
+                                    }
+                                }
+                            case 404:
+                                self.showReponseMessage("Not found a game")
+                            case 429:
+                                self.showReponseMessage("Rate Limit Exceeded")
+                            case 503, 500:
+                                self.showReponseMessage("Service Unavailable.")
+                            default:
+                                print(httpReponse.statusCode)
+                            }
+                        }
+                        
+                    } catch {}
+                }
+            })
+        }
+        task.resume()
+
+    }
+    
     func getChampionRankInfo(summonerId: CLong) {
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2015&api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2016&api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -220,7 +314,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     
     
     func getRankInfo(summonerId: CLong) {
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -229,7 +323,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
                             self.indicator.stopAnimating()
                             self.searchSummoner.enabled = true
+                        
                             switch(httpReponse.statusCode) {
+                            
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
                                 if let resultDict = object as? NSDictionary {
@@ -238,9 +334,10 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                     }
                                 }
                             case 404:
-                                self.rankLabel.text = "UnRank"
+                                self.rankLabel.text = "Unranked"
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = false
+                            
                                 self.image = UIImage(named: "provisional")
                             case 429:
                                 self.showReponseMessage("Rate Limit Exceeded")
@@ -263,7 +360,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
         let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
         
-        let url = NSURL(string: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
@@ -284,6 +381,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                         let nPlayer = Player(entity: ent!, insertIntoManagedObjectContext: context)
                                         nPlayer.name = self.summonerNameTextField.text!
                                         nPlayer.id = self.summoner?.id
+                                        nPlayer.region = region
 
                                         do {
                                             try context.save()
@@ -296,6 +394,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = true
+                                self.segmentBar.hidden = true
+                                
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
                             default: print(httpReponse.statusCode)
@@ -324,16 +424,39 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "champion"
+        static let ReuseMatchCellIdentifer = "match"
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
-        cell?.champion = champions[indexPath.row]
-        return cell!
+        switch segmentBar.selectedSegmentIndex {
+        case 0:
+            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseMatchCellIdentifer) as! RecentGameTableViewCell?
+            cell?.game = recentGames[indexPath.row]
+            cell?.layer.borderColor = UIColor.grayColor().CGColor
+            cell?.layer.borderWidth = 2.0
+            if cell?.game?.stats?.win == true {
+                cell?.backgroundColor = UIColor.greenColor()
+            }
+            else {
+                cell?.backgroundColor = UIColor.redColor()
+            }
+            return cell!
+        case 1:
+            fallthrough
+        default:
+            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
+            cell?.champion = champions[indexPath.row]
+            return cell!
+            
+        }
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return champions.count
+        switch segmentBar.selectedSegmentIndex {
+        case 0: return recentGames.count
+        case 1: return champions.count
+        default: return 0
+        }
     }
     
     
@@ -351,6 +474,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     // MARK: - UITextFieldDelegate
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         textField.resignFirstResponder()
+        performAction()
         return true
     }
     
