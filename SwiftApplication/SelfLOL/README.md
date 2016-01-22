@@ -1,5 +1,5 @@
 # Look LOL
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/icon/Icon%402x.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/Icon-Small-40%402x.png)
 
 #Description:
 Look LOL is an IOS application which can look up your current season rank status and current game status.  
