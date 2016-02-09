@@ -45,6 +45,7 @@ class RawStatsDto {
     var assists: Int
     var championsKilled: Int
     var numDeaths: Int
+    var timePlayed: Int
     var win: Bool
     var item0: Int?
     var item1: Int?
@@ -55,6 +56,7 @@ class RawStatsDto {
     var item6: Int?
     
     init(status: NSDictionary) {
+        self.timePlayed = (status["timePlayed"] as? Int)!
         if let assists = status["assists"] as? Int {
             self.assists = assists
         }

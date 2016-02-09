@@ -24,6 +24,8 @@ class RecentGameTableViewCell: UITableViewCell {
     @IBOutlet weak var space1View: UIView!
     @IBOutlet weak var space2View: UIView!
     @IBOutlet weak var resultLabel: UILabel!
+    @IBOutlet weak var createTimeLabel: UILabel!
+    @IBOutlet weak var timePlayedLabel: UILabel!
     
   
     var game: GameDto? {
@@ -43,6 +45,8 @@ class RecentGameTableViewCell: UITableViewCell {
                 space1View.backgroundColor = UIColor.redColor()
                 space2View.backgroundColor = UIColor.redColor()
             }
+            createTimeLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)(game.createDate/1000)))
+            timePlayedLabel.text = "\(Int((game.stats?.timePlayed)!/60))m \((game.stats?.timePlayed)!%60)s"
             if let champion = championsMap[game.championId] {
                 let image = UIImage(named: champion)
                 championImage?.image = resizeImage(image!, newWidth: 50)
@@ -157,18 +161,6 @@ class RecentGameTableViewCell: UITableViewCell {
             }
         }
         
-    }
-    
-    func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
-        
-        let scale = newWidth / image.size.width
-        let newHeight = image.size.height * scale
-        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
-        image.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return newImage
     }
 
 }

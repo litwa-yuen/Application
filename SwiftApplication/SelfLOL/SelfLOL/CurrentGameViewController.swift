@@ -231,10 +231,12 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                 participant.rankInfo = RankInfo(data: obj)
                                 self.participantTableView.reloadData()
                             case 429:
-                                self.showReponseMessage("Rate Limit Exceeded")
+                                self.showReponseMessage("Rate Limit Exceeded.")
                             case 503, 500:
                                 self.showReponseMessage( "Service Unavailable.")
-                            default: print(httpReponse.statusCode)
+                            default:
+                                self.showReponseMessage("Wait for Update.")
+
                                 
                             }
                         }
@@ -267,13 +269,13 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                     }
                                 }
                             case 404:
-                                self.showReponseMessage("Not in a game")
+                                self.showReponseMessage("Not in a game.")
                             case 429:
-                                self.showReponseMessage("Rate Limit Exceeded")
+                                self.showReponseMessage("Rate Limit Exceeded.")
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
                             default:
-                                print(httpReponse.statusCode)
+                                self.showReponseMessage("Wait for Update.")
                             }
                         }
                         

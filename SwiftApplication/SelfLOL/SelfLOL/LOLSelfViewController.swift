@@ -220,19 +220,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         championsTable.reloadData()
 
     }
-    
-    func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
         
-        let scale = newWidth / image.size.width
-        let newHeight = image.size.height * scale
-        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
-        image.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return newImage
-    }
-    
     func getRecentGamesInfo(summonerId: CLong) {
         let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
@@ -260,13 +248,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                     }
                                 }
                             case 404:
-                                self.showReponseMessage("Not found a game")
+                                self.showReponseMessage("Not found a game.")
                             case 429:
-                                self.showReponseMessage("Rate Limit Exceeded")
+                                self.showReponseMessage("Rate Limit Exceeded.")
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
                             default:
-                                print(httpReponse.statusCode)
+                                self.showReponseMessage("Wait for Update.")
                             }
                         }
                         
@@ -340,11 +328,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                             
                                 self.image = UIImage(named: "provisional")
                             case 429:
-                                self.showReponseMessage("Rate Limit Exceeded")
+                                self.showReponseMessage("Rate Limit Exceeded.")
                             case 500, 503:
                                 self.showReponseMessage("Service Unavailable.")
-                            default: print(httpReponse.statusCode)
-
+                            default:
+                                self.showReponseMessage("Wait for Update.")
                                 
                             }
                         }
@@ -398,7 +386,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
-                            default: print(httpReponse.statusCode)
+                            default:
+                                self.showReponseMessage("Wait for Update.")
                             }
                         }
                         

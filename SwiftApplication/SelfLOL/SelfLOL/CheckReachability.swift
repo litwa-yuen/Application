@@ -8,6 +8,7 @@
 
 import Foundation
 
+
 public class CheckReachability {
     class func isConnectedToNetwork() -> Bool {
         let reachability: Reachability = Reachability.reachabilityForInternetConnection()
