@@ -23,6 +23,7 @@ class RuneTableViewCell: UITableViewCell {
         runeLabel.text = nil
         
         if let rune = self.rune {
+            
             if let runeData = map[rune.runeId] {
                 runeImageView.image = resizeImage(UIImage(named: runeData.imageId)!, newWidth: 40)
                 runeLabel.text = retrieveRune(runeData, runeCounter: rune.count)
@@ -32,7 +33,7 @@ class RuneTableViewCell: UITableViewCell {
                 runeImageView.image = resizeImage(UIImage(named: "unknown")!, newWidth: 40)
                 runeLabel.text = "unknown X \(rune.count)"
             }
-            
+            runeLabel.font = UIFont(name: "Helvetica", size: 15)
         }
     }
         

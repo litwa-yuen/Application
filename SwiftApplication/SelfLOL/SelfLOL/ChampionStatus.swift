@@ -6,6 +6,14 @@ class ChampionStatus {
     var id: Int
     var name: String?
     var aggregatedStatsDto: AggregatedStatsDto?
+    var image: UIImage? {
+        if let championString = championsMap[id] {
+            return UIImage(named: championString)
+        }
+        else {
+            return UIImage(named: "unknown")
+        }
+    }
     
     init(entry: NSDictionary) {
         
@@ -42,14 +50,30 @@ class AggregatedStatsDto {
     }
     
     func getWinRate() -> String {
-        return "\(roundToPercent(Double(totalSessionsWon), dec: Double(totalSessionsPlayed)))% \(totalSessionsPlayed) Played"
+        return "Win Ratio \(getWinRatePercent()) \(getTimesOfWL())"
+    }
+    
+    func getWinRatePercent() -> String {
+        return  "\(roundToPercent(Double(totalSessionsWon), dec: Double(totalSessionsPlayed)))%"
+    }
+    
+    func getTimesOfWL() -> String {
+        return "\(totalSessionsWon)W\(totalSessionsLost)L"
     }
     
     func getAverageStatus() -> String {
+        return "\(getAverageKDA()) - \(calculateKDA()) KDA"
+    }
+    
+    func getAverageKDA() -> String {
         let averageKills = roundToOneDecimal(Double(totalChampionKills), dec: Double(totalSessionsPlayed))
         let averageDeath = roundToOneDecimal(Double(totalDeathsPerSession), dec: Double(totalSessionsPlayed))
         let averageAssists = roundToOneDecimal(Double(totalAssists), dec: Double(totalSessionsPlayed))
-        return "\(averageKills)/\(averageDeath)/\(averageAssists) \(calculateKDA()) KDA"
+        return "\(averageKills) / \(averageDeath) / \(averageAssists)"
+    }
+    
+    func getCS() -> String {
+        return "\(roundToOneDecimal(Double(totalMinionKills), dec: Double(totalSessionsPlayed)))"
     }
     
     func roundToOneDecimal(num: Double, dec: Double) -> Double {

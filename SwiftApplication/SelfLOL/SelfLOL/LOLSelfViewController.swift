@@ -1,23 +1,26 @@
 import UIKit
 import CoreData
 
-class LOLSelfViewController: UIViewController, UITableViewDataSource {
+class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var gameButton: UIButton!
     @IBOutlet weak var championsTable: UITableView!
-    @IBOutlet weak var summonerNameTextField: UITextField!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var rankLabel: UILabel!
     @IBOutlet weak var averageStatus: UILabel!
     @IBOutlet weak var winRate: UILabel!
-    @IBOutlet weak var searchSummoner: UIButton!
     @IBOutlet weak var segmentBar: UISegmentedControl!
-    @IBOutlet weak var barItem: UIBarButtonItem!
+    @IBOutlet weak var regionBarItem: UIBarButtonItem!
+    @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
+    
+    
+    var selectedIndexPath: NSIndexPath?
+    let searchText: UITextField = UITextField(frame: CGRectMake(0,0,280,25))
 
     
     var summonerName: String = ""{
         didSet{
-            summonerNameTextField?.text = summonerName
+            searchText.text = summonerName
         }
     }
 
@@ -60,15 +63,16 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             summoner!.rankInfo = rankInfo
             rankLabel.text = rankInfo!.getRankWithLP()
             rankLabel.textColor = UIColor.blackColor()
-            gameButton.hidden = false
             segmentBar.hidden = false
             rankLabel.hidden = false
+            championsTable.hidden = false
         }
     }
     
     var summoner: Summoner? {
         didSet{
             if CheckReachability.isConnectedToNetwork() {
+                currentSummoner = (summoner?.name, summoner?.id)
                 indicator.startAnimating()
                 getRankInfo(summoner!.id)
                 getRecentGamesInfo(summoner!.id)
@@ -98,14 +102,22 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         super.viewDidLoad()
         gameButton.hidden = true
         rankLabel.hidden = true
+        rankLabel.font = Storyboard.TitleFont
         averageStatus.hidden = true
+        averageStatus.font = Storyboard.DetailFont
         winRate.hidden = true
+        winRate.font = Storyboard.DetailFont
         segmentBar.hidden = true
+        championsTable.hidden = true
+        setUpSearchBar()
+        navigationItem.titleView = searchText
+        
         indicator.center = view.center
         view.addSubview(indicator)
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
-        championsTable.dataSource = self
+        
+        
         let fetchRequest = fetchPlayersRequest()
         
         do {
@@ -113,7 +125,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             if result.count > 0 {
                 let res = result[0] as! NSManagedObject
                 let playerName: String = res.valueForKey("name")! as! String
-                summonerNameTextField.text = playerName
+                searchText.text = playerName
                 if let playerRegion = res.valueForKey("region") as! String? {
                     region = playerRegion
                 }
@@ -124,28 +136,42 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     
         }catch _ {}
         toggleAddButton()
-        barItem.title = region.uppercaseString
+        regionBarItem.title = region.uppercaseString
 
         if summonerName != "" {
-            summonerNameTextField?.text = summonerName
+            searchText.text = summonerName
         }
 
         championsTable.reloadData()
         // Do any additional setup after loading the view.
     }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
+        
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        segmentBar.selectedSegmentIndex = 0
         championsTable.reloadData()
     }
     
-    @IBAction func searchSummoner(sender: UIButton) {
+    
+    
+    @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
+        if segmentBar.selectedSegmentIndex == 0 || segmentBar.selectedSegmentIndex == 1 {
+            championsTable.reloadData()
+        }
+        else {
+            let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("CurrentGameViewController") as? CurrentGameViewController
+            tvc?.summoner = self.summoner
+            self.navigationController?.pushViewController(tvc!, animated: true)
+
+        }
+        
+    }
+    
+    
+    @IBAction func searchSummonerBarAction(sender: UIBarButtonItem) {
         performAction()
     }
+    
     
     @IBAction func changeRegion(sender: UIBarButtonItem) {
         var regionTitle = "EUW"
@@ -157,7 +183,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         alert.addAction(UIAlertAction(
             title: regionTitle, style: .Default) { (action) -> Void in
                 region = regionTitle.lowercaseString
-                self.barItem.title = regionTitle
+                self.regionBarItem.title = regionTitle
                 self.deleteCoreData()
             })
         alert.addAction(UIAlertAction(
@@ -168,13 +194,14 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
             })
         alert.modalPresentationStyle = .Popover
         let ppc = alert.popoverPresentationController
-        ppc?.barButtonItem = barItem
+        ppc?.barButtonItem = regionBarItem
         presentViewController(alert, animated: true, completion: nil)
     }
+    
     func performAction() {
+        searchText.endEditing(true)
         reset()
-        self.view.endEditing(true)
-        if CheckReachability.isConnectedToNetwork() && summonerNameTextField.text != nil && summonerNameTextField.text != "" {
+        if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
             let fetchRequest = fetchPlayersRequest()
             do {
                 let result: NSArray = try context.executeFetchRequest(fetchRequest)
@@ -182,43 +209,59 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                     let res = result[0] as! NSManagedObject
                     let playerName: String = res.valueForKey("name")! as! String
                     let playerId: NSNumber = res.valueForKey("id")! as! NSNumber
-                    if playerName == summonerNameTextField.text! {
+                    if playerName == searchText.text! {
                         let obj:NSDictionary = ["name":playerName, "id":playerId]
                         self.summoner = Summoner(data: obj)
                     }
                     else {
                         deleteCoreData()
-                        getSummonerId(summonerNameTextField.text!)
+                        getSummonerId(searchText.text!)
                     }
                     
                 }
                 else {
-                    getSummonerId(summonerNameTextField.text!)
+                    getSummonerId(searchText.text!)
                 }
             }catch _ {
             }
         }
         else {
             indicator.stopAnimating()
+            championsTable.hidden = false
             showReponseMessage("Network Unavailable.")
-            searchSummoner.enabled = true
+            searchSummonerButton.enabled = true
         }
     }
     
+    func setUpSearchBar() {
+        searchText.delegate = self
+        searchText.placeholder = "Enter the Summoner's name"
+        searchText.contentHorizontalAlignment = .Center
+        searchText.contentVerticalAlignment = .Center
+        searchText.borderStyle = .RoundedRect
+        searchText.font = UIFont(name: "Helvetica", size: 14)
+        searchText.clearButtonMode = .WhileEditing
+        searchText.textAlignment = .Center
+        searchText.returnKeyType = .Search
+        searchText.enablesReturnKeyAutomatically = true
+    }
+    
     func reset() {
+        //championsTable.allowsSelection = false
         gameButton.hidden = true
         segmentBar.hidden = true
+        championsTable.hidden = true
         rankLabel.hidden = true
         averageStatus.hidden = true
         winRate.hidden = true
         imageView.hidden = true
-        searchSummoner.enabled = false
+        searchSummonerButton.enabled = false
         champions.removeAll()
         recentGames.removeAll()
         indicator.startAnimating()
+        segmentBar.selectedSegmentIndex = 0
         showReponseMessage("")
         championsTable.reloadData()
-
     }
         
     func getRecentGamesInfo(summonerId: CLong) {
@@ -310,7 +353,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                     do {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
                             self.indicator.stopAnimating()
-                            self.searchSummoner.enabled = true
+                            self.searchSummonerButton.enabled = true
                         
                             switch(httpReponse.statusCode) {
                             
@@ -325,7 +368,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.text = "Unranked"
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = false
-                            
+                                self.championsTable.hidden = false
                                 self.image = UIImage(named: "provisional")
                             case 429:
                                 self.showReponseMessage("Rate Limit Exceeded.")
@@ -356,7 +399,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                     do {
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
                             self.indicator.stopAnimating()
-                            self.searchSummoner.enabled = true
+                            self.searchSummonerButton.enabled = true
 
                             switch(httpReponse.statusCode) {
                             case 200:
@@ -367,7 +410,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                         let context = self.context
                                         let ent = NSEntityDescription.entityForName("Players", inManagedObjectContext: context)
                                         let nPlayer = Player(entity: ent!, insertIntoManagedObjectContext: context)
-                                        nPlayer.name = self.summonerNameTextField.text!
+                                        nPlayer.name = self.searchText.text!
                                         nPlayer.id = self.summoner?.id
                                         nPlayer.region = region
 
@@ -382,6 +425,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
                                 self.gameButton.hidden = true
+                                self.championsTable.hidden = true
                                 self.segmentBar.hidden = true
                                 
                             case 503, 500:
@@ -402,6 +446,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
         messageLabel.text = message
         messageLabel.textColor = UIColor.blackColor()
+        messageLabel.font = UIFont(name: "Helvetica", size: 15)
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = NSTextAlignment.Center
         self.championsTable.backgroundView = messageLabel
@@ -414,6 +459,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
     private struct Storyboard {
         static let ReuseCellIdentifier = "champion"
         static let ReuseMatchCellIdentifer = "match"
+        static let MatchDetailIdentifier = "matchDetail"
+        static let BorderColor = "607D8B"
+        static let TitleFont = UIFont(name: "Helvetica-Bold", size: 18)
+        static let DetailFont = UIFont(name: "Helvetica", size: 16)
+
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -421,19 +471,15 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         case 0:
             let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseMatchCellIdentifer) as! RecentGameTableViewCell?
             cell?.game = recentGames[indexPath.row]
-            cell?.layer.borderColor = UIColor.grayColor().CGColor
-            cell?.layer.borderWidth = 2.0
-            if cell?.game?.stats?.win == true {
-                cell?.backgroundColor = UIColor.greenColor()
-            }
-            else {
-                cell?.backgroundColor = UIColor.redColor()
-            }
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            cell?.layer.borderWidth = 1.0
             return cell!
         case 1:
             fallthrough
         default:
             let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            cell?.layer.borderWidth = 1.0
             cell?.champion = champions[indexPath.row]
             return cell!
             
@@ -448,16 +494,29 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         }
     }
     
-    
-    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
-        let DestViewController: CurrentGameViewController = segue.destinationViewController as! CurrentGameViewController
-        DestViewController.summoner = self.summoner
+        if let identifier = segue.identifier {
+            switch identifier {
+            case Storyboard.MatchDetailIdentifier:
+                let cell = sender as? RecentGameTableViewCell
+                let seguedToDetail = segue.destinationViewController as? MatchViewController
+                guard let matchId = cell?.game?.gameId else { return }
+                guard let fellowPlayers = cell?.game?.fellowPlayers else { return }
+                let matchDetail = (fellowPlayers, matchId, searchText.text!)
+                seguedToDetail?.matchInit = matchDetail
+                
+            default: break
+            }
+        }
+        else {
+            let DestViewController: CurrentGameViewController = segue.destinationViewController as! CurrentGameViewController
+            DestViewController.summoner = self.summoner
+        }
     }
     
     // MARK: - UITextFieldDelegate
@@ -467,53 +526,32 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource {
         return true
     }
     
+
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        self.view.endEditing(true)
+        self.searchText.endEditing(true)
     }
     
     func toggleAddButton() {
-        if summonerNameTextField.text!.isEmpty {
-            searchSummoner.enabled = false
+        if searchText.text!.isEmpty {
+            searchSummonerButton.enabled = false
         }
         else {
-            searchSummoner.enabled = true
+            searchSummonerButton.enabled = true
         }
     }
     
     func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
-        if textField == summonerNameTextField {
+        if textField == searchText {
             let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
             if !text.isEmpty {
-                searchSummoner.enabled = true
+                searchSummonerButton.enabled = true
+                
             }
             else {
-                searchSummoner.enabled = false
+                searchSummonerButton.enabled = false
             }
         }
         return true
     }
-
-}
-
-extension RankInfo {
-    var image: UIImage? {
-        let rank = getRank().lowercaseString
-        if let image = UIImage(named: rank){
-            return image
-        }
-        else {
-            return UIImage(named: "provisional")
-        }
-    }
-}
-
-extension ChampionStatus {
-    var image: UIImage? {
-        if let championString = championsMap[id] {
-            return UIImage(named: championString)
-        }
-        else {
-            return UIImage(named: "unknown")
-        }
-    }
+    
 }

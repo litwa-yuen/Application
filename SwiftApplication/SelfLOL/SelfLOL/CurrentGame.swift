@@ -46,8 +46,6 @@ class CurrentGameInfo {
         }
         table?.append(blueTeam)
         table?.append(purpleTeam)
-        
-        
     }
     
 }
@@ -70,8 +68,8 @@ class CurrentGameParticipant {
     var teamId: Int
     var spell1Id: CLong
     var spell2Id: CLong
-    var summonerId: CLong
-    var summonerName: String
+    var summonerId: CLong = 0
+    var summonerName: String = ""
     var masteries: [Mastery]?
     var runes: [Rune]?
     var rankInfo: RankInfo?
@@ -81,8 +79,12 @@ class CurrentGameParticipant {
         self.teamId = (participant["teamId"] as? CLong)!
         self.spell1Id = (participant["spell1Id"] as? CLong)!
         self.spell2Id = (participant["spell2Id"] as? CLong)!
-        self.summonerId = (participant["summonerId"] as? CLong)!
-        self.summonerName = (participant["summonerName"] as? String)!
+        if let id = participant["summonerId"] as? CLong {
+            self.summonerId = id
+        }
+        if let name = participant["summonerName"] as? String {
+            self.summonerName = name
+        }
         
         if let participantMasteries = participant["masteries"] as? NSArray {
             self.masteries = []
@@ -114,7 +116,12 @@ class Rune {
     var count: Int
     var runeId: CLong
     init(rune: NSDictionary) {
-        self.count = (rune["count"] as? Int)!
+        if rune["count"] != nil {
+            self.count = (rune["count"] as? Int)!
+        }
+        else {
+            self.count = (rune["rank"] as? Int)!
+        }
         self.runeId = (rune["runeId"] as? CLong)!
     }
 }

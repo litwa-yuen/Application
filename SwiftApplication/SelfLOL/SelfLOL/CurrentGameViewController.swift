@@ -24,6 +24,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                 for participant in (game?.participants)! {
                     fetchRankInfo(participant)
                 }
+                currentGame = self.game
             }
             else {
                 indicator.stopAnimating()
@@ -41,19 +42,12 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         indicator.center = view.center
         view.addSubview(indicator)
     }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
+        
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "participant"
         static let ReuseFooterIdentifier = "banned"
         static let DetailIdentifier = "detail"
-
-
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -134,8 +128,8 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             h.backgroundView = UIView()
             h.backgroundView?.backgroundColor = UIColor.blackColor()
             let lab = UILabel()
-            lab.font = UIFont(name:"Georgia-Bold", size:12)
-            lab.textColor = UIColor.greenColor()
+            lab.font = UIFont(name:"Helvetica-Bold", size:12)
+            lab.textColor = UIColorFromRGB("D50000")
             lab.text = "Ban:"
             lab.backgroundColor = UIColor.clearColor()
             h.contentView.addSubview(lab)
@@ -222,7 +216,6 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                 if let resultDict = object as? NSDictionary {
                                     if let entries = resultDict["\(participant.summonerId)"] as? NSArray {
                                         participant.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
-                                        currentGame = self.game
                                         self.participantTableView.reloadData()
                                     }
                                 }
@@ -291,6 +284,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         indicator.stopAnimating()
         let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
         messageLabel.text = message
+        messageLabel.font = UIFont(name: "Helvetica", size: 15)
         messageLabel.textColor = UIColor.blackColor()
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = NSTextAlignment.Center

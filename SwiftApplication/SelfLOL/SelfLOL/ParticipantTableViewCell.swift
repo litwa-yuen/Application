@@ -10,6 +10,12 @@ class ParticipantTableViewCell: UITableViewCell {
     @IBOutlet weak var rankLabel: UILabel!
     @IBOutlet weak var summorName: UILabel!
     @IBOutlet weak var runeButton: UIButton!
+    
+    struct TableCellProperties {
+        static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 16)
+        static let CellFont = UIFont(name: "Helvetica", size: 15)
+    }
+
     var participant: CurrentGameParticipant? {
         didSet{
             updateUI()
@@ -17,10 +23,6 @@ class ParticipantTableViewCell: UITableViewCell {
     }
     
     func updateUI(){
-        championImageView?.image = nil
-        summorName?.text = nil
-        spell1Image.image = nil
-        spell2Image.image = nil
         
         if let participant = self.participant {
             if let participantChampion = championsMap[participant.championId] {
@@ -34,6 +36,7 @@ class ParticipantTableViewCell: UITableViewCell {
             }
             
             summorName?.text = "\(participant.summonerName)"
+            summorName.font = TableCellProperties.CellBoldFont
             
             if let spell1 = summonerSpellMap[participant.spell1Id] {
                 spell1Image.image = resizeImage(UIImage(named: spell1)!, newWidth: 25)
@@ -50,6 +53,7 @@ class ParticipantTableViewCell: UITableViewCell {
 
             if let rankinfo = self.participant?.rankInfo {
                 rankLabel?.text = "\(rankinfo.getRankWithLP())"
+                rankLabel.font = TableCellProperties.CellFont
             }
             
             if let rankimage = self.participant?.rankInfo?.image {

@@ -1,22 +1,13 @@
-//
-//  RecentGamesDto.swift
-//  Look LOL
-//
-//  Created by Lit Wa Yuen on 1/18/16.
-//  Copyright © 2016 lit.wa.yuen. All rights reserved.
-//
-
 import Foundation
-
 
 class GameDto {
     var championId: Int
     var createDate: CLong
     var gameId: CLong
-    var gameMode: String
     var spell1: Int
     var spell2: Int
     var teamId: Int
+    var subType: String
     var fellowPlayers: [PlayerDto]?
     var stats: RawStatsDto?
     
@@ -24,10 +15,10 @@ class GameDto {
         self.championId = (entry["championId"] as? Int)!
         self.createDate = (entry["createDate"] as? CLong)!
         self.gameId = (entry["gameId"] as? CLong)!
-        self.gameMode = (entry["gameMode"] as? String)!
         self.spell1 = (entry["spell1"] as? Int)!
         self.spell2 = (entry["spell2"] as? Int)!
         self.teamId = (entry["teamId"] as? Int)!
+        self.subType = (entry["subType"] as? String)!
         if let fellowPlayers = entry["fellowPlayers"] as? NSArray {
             self.fellowPlayers = []
             for player in fellowPlayers {
@@ -45,8 +36,10 @@ class RawStatsDto {
     var assists: Int
     var championsKilled: Int
     var numDeaths: Int
-    var timePlayed: Int
+    var timePlayed: Int = 0
     var win: Bool
+    var goldEarned: Int
+    var minionsKilled: Int
     var item0: Int?
     var item1: Int?
     var item2: Int?
@@ -56,7 +49,24 @@ class RawStatsDto {
     var item6: Int?
     
     init(status: NSDictionary) {
-        self.timePlayed = (status["timePlayed"] as? Int)!
+        
+        if status["minionsKilled"] != nil {
+            self.minionsKilled = (status["minionsKilled"] as? Int)!
+        }
+        else {
+            self.minionsKilled = 0
+        }
+
+        if status["goldEarned"] != nil {
+            self.goldEarned = (status["goldEarned"] as? Int)!
+        }
+        else {
+            self.goldEarned = 0
+        }
+
+        if let time = status["timePlayed"] as? Int {
+            self.timePlayed = time
+        }
         if let assists = status["assists"] as? Int {
             self.assists = assists
         }
@@ -66,16 +76,29 @@ class RawStatsDto {
         if let killed = status["championsKilled"] as? Int {
             self.championsKilled = killed
         }
+        else if  let killed = status["kills"] as? Int {
+            self.championsKilled = killed
+        }
         else {
             self.championsKilled = 0
         }
         if let death = status["numDeaths"] as? Int {
             self.numDeaths = death
         }
+        else if let death = status["deaths"] as? Int {
+            self.numDeaths = death
+        }
         else {
             self.numDeaths = 0
         }
-        self.win = (status["win"] as? Bool)!
+        
+        if status["win"] != nil {
+            self.win = (status["win"] as? Bool)!
+        }
+        else {
+            self.win = (status["winner"] as? Bool)!
+        }
+        
         if let item0 = status["item0"] as? Int {
             self.item0 = item0
         }

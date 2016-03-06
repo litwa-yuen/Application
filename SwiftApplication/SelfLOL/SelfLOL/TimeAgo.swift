@@ -59,11 +59,11 @@ public func timeAgoSince(date: NSDate) -> String {
     }
     
     if components.minute >= 2 {
-        return "\(components.minute) minutes ago"
+        return "\(components.minute) mins ago"
     }
     
     if components.minute >= 1 {
-        return "A minute ago"
+        return "A min ago"
     }
     
     if components.second >= 3 {
