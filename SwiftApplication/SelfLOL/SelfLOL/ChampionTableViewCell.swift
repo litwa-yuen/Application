@@ -10,6 +10,7 @@ class ChampionTableViewCell: UITableViewCell {
     var champion: ChampionStatus? {
         didSet{
             adjustViewLayout(UIScreen.mainScreen().bounds.size)
+            aroundBorder(championImageView)
             updateUI()
         }
     }

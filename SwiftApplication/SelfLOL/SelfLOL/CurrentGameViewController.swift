@@ -262,7 +262,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                                     }
                                 }
                             case 404:
-                                self.showReponseMessage("Not in a game.")
+                                self.showReponseMessage("\((self.summoner?.name)!) is not currently in a game.")
                             case 429:
                                 self.showReponseMessage("Rate Limit Exceeded.")
                             case 503, 500:

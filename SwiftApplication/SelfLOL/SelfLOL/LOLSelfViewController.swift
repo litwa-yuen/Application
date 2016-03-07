@@ -3,7 +3,7 @@ import CoreData
 
 class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
     
-    @IBOutlet weak var gameButton: UIButton!
+    // MARK: - Outlet
     @IBOutlet weak var championsTable: UITableView!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var rankLabel: UILabel!
@@ -13,10 +13,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var regionBarItem: UIBarButtonItem!
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
     
-    
+    // MARK: - Properties
     var selectedIndexPath: NSIndexPath?
     let searchText: UITextField = UITextField(frame: CGRectMake(0,0,280,25))
-
     
     var summonerName: String = ""{
         didSet{
@@ -24,29 +23,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
 
-    // MARK: - NSFetchedResultsControllerDelegate
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
-    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
-    func deleteCoreData() {
-        var playerData = [Player]()
-        let fetchRequest = NSFetchRequest(entityName: "Players")
-        playerData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
-        for player in playerData {
-            context.deleteObject(player)
-        }
-        do {
-            try context.save()
-        } catch _ {
-        }
-    }
-    
-    func fetchPlayersRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Players")
-        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        return fetchRequest
-    }
-    
     var image: UIImage? {
         get{
             return imageView.image
@@ -98,25 +74,42 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     var recentGames = [GameDto]()
     
+    // MARK: - NSFetchedResultsControllerDelegate
+    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+    func deleteCoreData() {
+        var playerData = [Player]()
+        let fetchRequest = NSFetchRequest(entityName: "Players")
+        playerData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+        for player in playerData {
+            context.deleteObject(player)
+        }
+        do {
+            try context.save()
+        } catch _ {
+        }
+    }
+    
+    func fetchPlayersRequest() -> NSFetchRequest {
+        let fetchRequest = NSFetchRequest(entityName: "Players")
+        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        return fetchRequest
+    }
+
+    // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
-        gameButton.hidden = true
-        rankLabel.hidden = true
         rankLabel.font = Storyboard.TitleFont
-        averageStatus.hidden = true
         averageStatus.font = Storyboard.DetailFont
-        winRate.hidden = true
         winRate.font = Storyboard.DetailFont
-        segmentBar.hidden = true
-        championsTable.hidden = true
         setUpSearchBar()
         navigationItem.titleView = searchText
-        
         indicator.center = view.center
         view.addSubview(indicator)
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
-        
+        reset()
         
         let fetchRequest = fetchPlayersRequest()
         
@@ -135,43 +128,79 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             }
     
         }catch _ {}
-        toggleAddButton()
         regionBarItem.title = region.uppercaseString
 
         if summonerName != "" {
             searchText.text = summonerName
         }
-
-        championsTable.reloadData()
-        // Do any additional setup after loading the view.
+        toggleAddButton(searchText.text!)
     }
         
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         segmentBar.selectedSegmentIndex = 0
+        championsTable.allowsSelection = true
         championsTable.reloadData()
     }
     
+    func setUpSearchBar() {
+        searchText.delegate = self
+        searchText.placeholder = "Enter the Summoner's name"
+        searchText.contentHorizontalAlignment = .Center
+        searchText.contentVerticalAlignment = .Center
+        searchText.borderStyle = .RoundedRect
+        searchText.font = UIFont(name: "Helvetica", size: 14)
+        searchText.clearButtonMode = .WhileEditing
+        searchText.textAlignment = .Center
+        searchText.returnKeyType = .Search
+        searchText.enablesReturnKeyAutomatically = true
+    }
     
+    func reset() {
+        championsTable.allowsSelection = true
+        segmentBar.setWidth(0, forSegmentAtIndex: 1)
+        segmentBar.setEnabled(true, forSegmentAtIndex: 1)
+        segmentBar.hidden = true
+        championsTable.hidden = true
+        rankLabel.hidden = true
+        averageStatus.hidden = true
+        winRate.hidden = true
+        imageView.hidden = true
+        searchSummonerButton.enabled = true
+        champions.removeAll()
+        recentGames.removeAll()
+        segmentBar.selectedSegmentIndex = 0
+        showReponseMessage("")
+        searchText.endEditing(true)
+        championsTable.reloadData()
+    }
     
+    func loading() {
+        searchSummonerButton.enabled = false
+        indicator.startAnimating()
+    }
+    
+    // MARK: - Button Action
     @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
-        if segmentBar.selectedSegmentIndex == 0 || segmentBar.selectedSegmentIndex == 1 {
+        if segmentBar.selectedSegmentIndex == 0 {
+            championsTable.allowsSelection = true
+            championsTable.reloadData()
+        }
+            
+        else if segmentBar.selectedSegmentIndex == 1 {
+            championsTable.allowsSelection = false
             championsTable.reloadData()
         }
         else {
             let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("CurrentGameViewController") as? CurrentGameViewController
             tvc?.summoner = self.summoner
             self.navigationController?.pushViewController(tvc!, animated: true)
-
         }
-        
     }
-    
     
     @IBAction func searchSummonerBarAction(sender: UIBarButtonItem) {
         performAction()
     }
-    
     
     @IBAction func changeRegion(sender: UIBarButtonItem) {
         var regionTitle = "EUW"
@@ -199,8 +228,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func performAction() {
-        searchText.endEditing(true)
         reset()
+        loading()
         if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
             let fetchRequest = fetchPlayersRequest()
             do {
@@ -217,7 +246,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                         deleteCoreData()
                         getSummonerId(searchText.text!)
                     }
-                    
                 }
                 else {
                     getSummonerId(searchText.text!)
@@ -232,38 +260,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             searchSummonerButton.enabled = true
         }
     }
-    
-    func setUpSearchBar() {
-        searchText.delegate = self
-        searchText.placeholder = "Enter the Summoner's name"
-        searchText.contentHorizontalAlignment = .Center
-        searchText.contentVerticalAlignment = .Center
-        searchText.borderStyle = .RoundedRect
-        searchText.font = UIFont(name: "Helvetica", size: 14)
-        searchText.clearButtonMode = .WhileEditing
-        searchText.textAlignment = .Center
-        searchText.returnKeyType = .Search
-        searchText.enablesReturnKeyAutomatically = true
-    }
-    
-    func reset() {
-        //championsTable.allowsSelection = false
-        gameButton.hidden = true
-        segmentBar.hidden = true
-        championsTable.hidden = true
-        rankLabel.hidden = true
-        averageStatus.hidden = true
-        winRate.hidden = true
-        imageView.hidden = true
-        searchSummonerButton.enabled = false
-        champions.removeAll()
-        recentGames.removeAll()
-        indicator.startAnimating()
-        segmentBar.selectedSegmentIndex = 0
-        showReponseMessage("")
-        championsTable.reloadData()
-    }
-        
+    // MARK: - League of Lengends API
     func getRecentGamesInfo(summonerId: CLong) {
         let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
@@ -284,10 +281,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                             self.recentGames.sortInPlace({ (c1:GameDto, c2:GameDto) -> Bool in
                                                 return c1.createDate > c2.createDate
                                             })
-                                            
                                             self.championsTable.reloadData()
                                         }
-                                        
                                     }
                                 }
                             case 404:
@@ -306,7 +301,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             })
         }
         task.resume()
-
     }
     
     func getChampionRankInfo(summonerId: CLong) {
@@ -332,9 +326,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                     }
                                     self.championsTable.reloadData()
                                 }
-                                
                             }
-                            
                         }
                     } catch {}
                 }
@@ -367,7 +359,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                             case 404:
                                 self.rankLabel.text = "Unranked"
                                 self.rankLabel.hidden = false
-                                self.gameButton.hidden = false
+                                self.segmentBar.setEnabled(false, forSegmentAtIndex: 1)
+                                self.segmentBar.setWidth(0.1, forSegmentAtIndex: 1)
+                                self.segmentBar.hidden = false
                                 self.championsTable.hidden = false
                                 self.image = UIImage(named: "provisional")
                             case 429:
@@ -424,7 +418,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 self.rankLabel.text = "Not Found"
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
-                                self.gameButton.hidden = true
                                 self.championsTable.hidden = true
                                 self.segmentBar.hidden = true
                                 
@@ -451,9 +444,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         messageLabel.textAlignment = NSTextAlignment.Center
         self.championsTable.backgroundView = messageLabel
         self.championsTable.separatorStyle = .None
-        
     }
-
     
     // MARK: - UITableViewDataSource
     private struct Storyboard {
@@ -494,6 +485,39 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
     
+    // MARK: - UITextFieldDelegate
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        performAction()
+        return true
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        self.searchText.endEditing(true)
+    }
+    
+    func toggleAddButton(text: String) {
+        if text.isEmpty {
+            searchSummonerButton.enabled = false
+        }
+        else {
+            searchSummonerButton.enabled = true
+        }
+    }
+    
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        if textField == searchText {
+            let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            toggleAddButton(text)
+        }
+        return true
+    }
+    
+    func textFieldShouldClear(textField: UITextField) -> Bool {
+        searchSummonerButton.enabled = false
+        return true
+    }
+    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -518,40 +542,4 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             DestViewController.summoner = self.summoner
         }
     }
-    
-    // MARK: - UITextFieldDelegate
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        performAction()
-        return true
-    }
-    
-
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        self.searchText.endEditing(true)
-    }
-    
-    func toggleAddButton() {
-        if searchText.text!.isEmpty {
-            searchSummonerButton.enabled = false
-        }
-        else {
-            searchSummonerButton.enabled = true
-        }
-    }
-    
-    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
-        if textField == searchText {
-            let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
-            if !text.isEmpty {
-                searchSummonerButton.enabled = true
-                
-            }
-            else {
-                searchSummonerButton.enabled = false
-            }
-        }
-        return true
-    }
-    
 }

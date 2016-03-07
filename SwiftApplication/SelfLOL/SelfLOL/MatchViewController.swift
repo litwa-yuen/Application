@@ -126,7 +126,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! MatchTableViewCell
-        
+        cell.maxDamage = (match?.maxDamage)!
         cell.participant = match?.table![indexPath.section][indexPath.row]
         return cell
     }

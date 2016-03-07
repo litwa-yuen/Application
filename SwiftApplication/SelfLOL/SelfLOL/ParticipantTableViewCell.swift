@@ -18,6 +18,9 @@ class ParticipantTableViewCell: UITableViewCell {
 
     var participant: CurrentGameParticipant? {
         didSet{
+            aroundBorder(championImageView)
+            aroundBorder(spell1Image)
+            aroundBorder(spell2Image)
             updateUI()
         }
     }

@@ -13,10 +13,8 @@ import UIKit
 
 public func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
     
-    let scale = newWidth / image.size.width
-    let newHeight = image.size.height * scale
-    UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
-    image.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
+    UIGraphicsBeginImageContext(CGSizeMake(newWidth, newWidth))
+    image.drawInRect(CGRectMake(0, 0, newWidth, newWidth))
     let newImage = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     

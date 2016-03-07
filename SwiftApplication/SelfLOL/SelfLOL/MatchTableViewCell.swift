@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MatchTableViewCell: UITableViewCell {
+class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     
     @IBOutlet weak var championImageView: UIImageView!
     @IBOutlet weak var spell1ImageView: UIImageView!
@@ -22,6 +22,19 @@ class MatchTableViewCell: UITableViewCell {
     @IBOutlet weak var item5Image: UIImageView!
     @IBOutlet weak var item6Image: UIImageView!
     @IBOutlet weak var KDALabel: UILabel!
+    @IBOutlet weak var damageView: DamageView!{
+        didSet{
+            damageView.dataSource = self
+        }
+    }
+    var damage: CGFloat = 0.5 {
+        didSet {
+            damage = min(max(damage,0), 1)
+            updateDamageUI()
+        }
+    }
+    
+    var damageLabel: String = "0"
     
     struct TableCellProperties {
         static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 16)
@@ -29,6 +42,8 @@ class MatchTableViewCell: UITableViewCell {
         static let VictoryColor = UIColorFromRGB("00C853")
         static let DefeatColor = UIColorFromRGB("D50000")
     }
+    
+    var maxDamage: CLong = 1
 
     var participant: Participant? {
         didSet{
@@ -39,6 +54,9 @@ class MatchTableViewCell: UITableViewCell {
             aroundBorder(item4Image)
             aroundBorder(item5Image)
             aroundBorder(item6Image)
+            aroundBorder(championImageView)
+            aroundBorder(spell1ImageView)
+            aroundBorder(spell2ImageView)
             updateUI()
         }
     }
@@ -151,7 +169,8 @@ class MatchTableViewCell: UITableViewCell {
                     item5Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
                 }
             }
-            
+            damageLabel = "\(participant.participantStats.totalDamageDealtToChampions)"
+            damage = CGFloat(Double(participant.participantStats.totalDamageDealtToChampions) / Double(maxDamage))
             summonerNameLabel.text = participant.summonerName
             summonerNameLabel.font = TableCellProperties.CellFont
             KDALabel.text = "\(participant.participantStats.championsKilled) / \(participant.participantStats.numDeaths) / \(participant.participantStats.assists)"
@@ -159,4 +178,17 @@ class MatchTableViewCell: UITableViewCell {
             
         }
     }
+    
+    func updateDamageUI() {
+        damageView.setNeedsDisplay()
+    }
+    
+    func damagePercentForDamageView(sender: DamageView) -> CGFloat? {
+        return damage
+    }
+    
+    func damageForDamageLabel(sender: DamageView) -> String? {
+        return damageLabel
+    }
+
 }

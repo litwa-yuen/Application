@@ -13,6 +13,7 @@ class MatchDetail {
     var teams: [Team]?
     var table:[[Participant]]?
     var blueTeamId: CLong?
+    var maxDamage: CLong?
     
     init(match: NSDictionary) {
         self.matchCreation = (match["matchCreation"] as? CLong)!
@@ -53,8 +54,11 @@ class MatchDetail {
                 foundPlayer.summonerId = player.summonerId
             }
         }
-        
+        maxDamage = participants?.first?.participantStats.totalDamageDealtToChampions
         for participant in participants! {
+            if maxDamage < participant.participantStats.totalDamageDealtToChampions {
+                maxDamage = participant.participantStats.totalDamageDealtToChampions
+            }
             if participant.teamId == blueTeamId! {
                 blueTeam.append(participant)
             }

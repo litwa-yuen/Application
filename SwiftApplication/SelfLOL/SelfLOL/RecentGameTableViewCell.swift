@@ -50,6 +50,9 @@ class RecentGameTableViewCell: UITableViewCell {
             aroundBorder(item4Image)
             aroundBorder(item5Image)
             aroundBorder(item6Image)
+            aroundBorder(championImage)
+            aroundBorder(spell2Image)
+            aroundBorder(spell1Image)
             updateUI()
         }
     }
