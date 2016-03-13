@@ -36,7 +36,7 @@ class RawStatsDto {
     var assists: Int
     var championsKilled: Int
     var numDeaths: Int
-    var timePlayed: Int = 0
+    var timePlayed: Int
     var win: Bool
     var goldEarned: Int
     var minionsKilled: Int
@@ -50,29 +50,14 @@ class RawStatsDto {
     
     init(status: NSDictionary) {
         
-        if status["minionsKilled"] != nil {
-            self.minionsKilled = (status["minionsKilled"] as? Int)!
-        }
-        else {
-            self.minionsKilled = 0
-        }
+        self.minionsKilled = status["minionsKilled"] as? Int ?? 0
 
-        if status["goldEarned"] != nil {
-            self.goldEarned = (status["goldEarned"] as? Int)!
-        }
-        else {
-            self.goldEarned = 0
-        }
+        self.goldEarned = status["goldEarned"] as? Int ?? 0
 
-        if let time = status["timePlayed"] as? Int {
-            self.timePlayed = time
-        }
-        if let assists = status["assists"] as? Int {
-            self.assists = assists
-        }
-        else {
-            self.assists = 0
-        }
+        self.timePlayed = status["timePlayed"] as? Int ?? 0
+        
+        self.assists = status["assists"] as? Int ?? 0
+        
         if let killed = status["championsKilled"] as? Int {
             self.championsKilled = killed
         }
@@ -92,12 +77,7 @@ class RawStatsDto {
             self.numDeaths = 0
         }
         
-        if status["win"] != nil {
-            self.win = (status["win"] as? Bool)!
-        }
-        else {
-            self.win = (status["winner"] as? Bool)!
-        }
+        self.win = status["win"] as? Bool ?? (status["winner"] as? Bool)!
         
         if let item0 = status["item0"] as? Int {
             self.item0 = item0

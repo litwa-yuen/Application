@@ -116,12 +116,7 @@ class Rune {
     var count: Int
     var runeId: CLong
     init(rune: NSDictionary) {
-        if rune["count"] != nil {
-            self.count = (rune["count"] as? Int)!
-        }
-        else {
-            self.count = (rune["rank"] as? Int)!
-        }
+        self.count = rune["count"] as? Int ?? (rune["rank"] as? Int)!
         self.runeId = (rune["runeId"] as? CLong)!
     }
 }

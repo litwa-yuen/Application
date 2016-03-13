@@ -4,10 +4,38 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     
     
     @IBOutlet weak var matchTable: UITableView!
+    @IBOutlet weak var resultLabel: UILabel!
+    @IBOutlet weak var queueTypeLabel: UILabel!
+    @IBOutlet weak var playedTimeLabel: UILabel!
+    @IBOutlet weak var timeAgoLabel: UILabel!
     var match: MatchDetail? {
         didSet{
+            
+            if match?.queueType.containsString("ARAM") == true {
+                queueTypeLabel.text = "ARAM"
+            }
+            else if match?.queueType.containsString("RANK") == true {
+                queueTypeLabel.text = "Ranked"
+            }
+            else if match?.queueType.containsString("BOT") == true {
+                queueTypeLabel.text = "BOT"
+            }
+            else {
+                queueTypeLabel.text = "Normal"
+            }
+            queueTypeLabel.font = Storyboard.CellFont
+            timeAgoLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)((match?.matchCreation)!/1000)))
+            timeAgoLabel.font = Storyboard.CellFont
+            playedTimeLabel.text = "\(Int((match?.matchDuration)!/60))m \((match?.matchDuration)!%60)s"
+            playedTimeLabel.font = Storyboard.CellFont
+
             match!.split(fellowPlayers)
-            matchTable.reloadData()
+            resultLabel.text = match?.getResult()
+            resultLabel.font = Storyboard.CellBoldFont
+            queueTypeLabel.hidden = false
+            playedTimeLabel.hidden = false
+            timeAgoLabel.hidden = false
+            resultLabel.hidden = false
             if match != nil && matchDetail?.matchId != match?.matchId {
                 for participant in (match?.participants)! {
                     if participant.summonerId == 0 {
@@ -24,6 +52,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
             else {
                 indicator.stopAnimating()
             }
+            matchTable.reloadData()
         }
     }
 
@@ -55,6 +84,10 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        queueTypeLabel.hidden = true
+        playedTimeLabel.hidden = true
+        timeAgoLabel.hidden = true
+        resultLabel.hidden = true
         matchTable.estimatedRowHeight = matchTable.rowHeight
         matchTable.rowHeight = UITableViewAutomaticDimension
         indicator.center = view.center
@@ -107,48 +140,53 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     private struct Storyboard {
         static let ReuseCellIdentifier = "player"
         static let SummonerIdentifier = "summoner"
-        
+        static let BorderColor = "607D8B"
+        static let CellFont = UIFont(name: "Helvetica", size: 15)
+        static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 16)
+
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        
-        guard let section = match?.table?.count else { return 0 }
-        return section
+        return match?.table?.count ?? 0
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let counter = match?.table![section].count
-            else {
-                return 0
-        }
-        return counter
+        return match?.table![section].count ?? 0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! MatchTableViewCell
         cell.maxDamage = (match?.maxDamage)!
         cell.participant = match?.table![indexPath.section][indexPath.row]
+        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+        cell.layer.borderWidth = 1.0
+        
         return cell
     }
     
     func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        let team = match?.table![section].first
+        if match?.table![section].isEmpty == true {
+            return nil
+        }
+        
+        let team = match?.teams![section]
         var result  = ""
-        if team?.participantStats.win == true {
+        if team!.winner == true {
             result = "Victory"
         }
         else {
             result = "Defeat"
         }
-        if team?.teamId == match!.blueTeamId {
+        if team!.teamId == match!.blueTeamId {
             
             return "Blue Team \(result)"
         }
         else {
             return "Purple Team \(result)"
         }
+        
     }
-
+    
     
     func showReponseMessage(message: String) {
         indicator.stopAnimating()

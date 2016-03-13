@@ -52,16 +52,11 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         
-        guard let section = game?.table?.count else { return 0 }
-        return section
+        return game?.table?.count ?? 0
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let counter = game?.table![section].count
-            else {
-                return 0
-        }
-        return counter
+        return game?.table![section].count ?? 0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -93,9 +88,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             self.navigationController?.pushViewController(tvc!, animated: true)
 
         }
-       
     }
-    
     
     func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         if game?.bannedChampions?.count > 0 {

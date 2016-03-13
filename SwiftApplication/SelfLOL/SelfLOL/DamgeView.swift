@@ -6,11 +6,10 @@ protocol DamageViewDataSource: class {
 
 @IBDesignable
 class DamageView: UIView {
-    
     @IBInspectable
     var lineWidth: CGFloat = 2 {didSet{setNeedsDisplay()}}
     @IBInspectable
-    var color: UIColor = UIColor.redColor() {didSet{setNeedsDisplay()}}
+    var color: UIColor = UIColorFromRGB("00C853") {didSet{setNeedsDisplay()}}
     
     weak var dataSource: DamageViewDataSource?
     var damageLabelSet = Bool()
@@ -44,7 +43,7 @@ class DamageView: UIView {
         let r = CGRectMake(0, 0, bounds.size.width*damgePercent, 20)
         let damgePath = UIBezierPath(roundedRect: r, byRoundingCorners: [UIRectCorner.TopLeft , UIRectCorner.BottomLeft], cornerRadii: CGSizeMake(1.0, 1.0))
         damgePath.lineWidth = lineWidth
-        UIColor.redColor().setFill()
+        UIColorFromRGB("00C853").setFill()
         damgePath.fill()
         return damgePath
     }

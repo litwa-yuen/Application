@@ -49,6 +49,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         didSet{
             if CheckReachability.isConnectedToNetwork() {
                 currentSummoner = (summoner?.name, summoner?.id)
+                searchText.text = summoner?.name
                 indicator.startAnimating()
                 getRankInfo(summoner!.id)
                 getRecentGamesInfo(summoner!.id)

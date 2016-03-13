@@ -8,6 +8,7 @@ class MatchDetail {
     var matchCreation: CLong
     var matchDuration: CLong
     var matchId: CLong
+    var queueType: String
     var participantIdentities: [ParticipantIdentity]?
     var participants: [Participant]?
     var teams: [Team]?
@@ -18,6 +19,7 @@ class MatchDetail {
     init(match: NSDictionary) {
         self.matchCreation = (match["matchCreation"] as? CLong)!
         self.matchDuration = (match["matchDuration"] as? CLong)!
+        self.queueType = (match["queueType"] as? String)!
         self.matchId = (match["matchId"] as? CLong)!
         if let teams = match["teams"] as? NSArray {
             self.teams = []
@@ -59,6 +61,9 @@ class MatchDetail {
             if maxDamage < participant.participantStats.totalDamageDealtToChampions {
                 maxDamage = participant.participantStats.totalDamageDealtToChampions
             }
+            if participant.spell1Id == 0 {
+                continue
+            }
             if participant.teamId == blueTeamId! {
                 blueTeam.append(participant)
             }
@@ -69,6 +74,7 @@ class MatchDetail {
         
         table?.append(blueTeam)
         table?.append(purpleTeam)
+        
         return true
     }
     
@@ -80,16 +86,35 @@ class MatchDetail {
         }
         return nil
     }
+    
+    func getResult() -> String {
+        var resultNumber = [(0, 0, 0),(0, 0, 0)]
+        for p in participants! {
+            var teamIndex: Int
+            if p.teamId == blueTeamId {
+                teamIndex = 0
+            }
+            else {
+                teamIndex = 1
+            }
+            resultNumber[teamIndex].0 += p.participantStats.championsKilled
+            resultNumber[teamIndex].1 += p.participantStats.numDeaths
+            resultNumber[teamIndex].2 += p.participantStats.assists
+        }
+        return "\(resultNumber[0].0) / \(resultNumber[0].1) / \(resultNumber[0].2) vs \(resultNumber[1].0) / \(resultNumber[1].1) / \(resultNumber[1].2)"
+    }
 }
 
 class Participant: CurrentGameParticipant {
     var participantId: Int
-    var highestAchievedSeasonTier: String
+    var highestAchievedSeasonTier: String?
     var participantStats: ParticipantStats
 
     init(participant: NSDictionary, identities: [ParticipantIdentity]) {
         self.participantId = (participant["participantId"] as? Int)!
-        self.highestAchievedSeasonTier = (participant["highestAchievedSeasonTier"] as? String)!
+        if let highestTier = participant["highestAchievedSeasonTier"] as? String {
+            self.highestAchievedSeasonTier = highestTier
+        }
         self.participantStats = ParticipantStats(status: (participant["stats"] as? NSDictionary)!)
         super.init(participant: participant)
         let found: Int = identities.indexOf { (identity) -> Bool in
@@ -151,7 +176,7 @@ class Team {
         self.baronKills = (team["baronKills"] as? Int)!
         self.dragonKills = (team["dragonKills"] as? Int)!
         self.teamId = (team["teamId"] as? Int)!
-        self.riftHeraldKills = (team["riftHeraldKills"] as? Int)!
+        self.riftHeraldKills = team["riftHeraldKills"] as? Int ?? 0
         self.towerKills = (team["towerKills"] as? Int)!
         self.winner = (team["winner"] as? Bool)!
     }

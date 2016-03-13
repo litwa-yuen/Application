@@ -21,13 +21,12 @@ class RecentGameTableViewCell: UITableViewCell {
     @IBOutlet weak var item3Image: UIImageView!
     @IBOutlet weak var item4Image: UIImageView!
     @IBOutlet weak var item5Image: UIImageView!
-    @IBOutlet weak var space1View: UIView!
-    @IBOutlet weak var space2View: UIView!
     @IBOutlet weak var resultLabel: UILabel!
     @IBOutlet weak var createTimeLabel: UILabel!
     @IBOutlet weak var timePlayedLabel: UILabel!
     @IBOutlet weak var csLabel: UILabel!
     @IBOutlet weak var ResultView: UIView!
+    @IBOutlet weak var itemStackView: UIStackView!
     @IBOutlet weak var gameType: UILabel!
     var isObserving = false
 
@@ -57,11 +56,19 @@ class RecentGameTableViewCell: UITableViewCell {
         }
     }
     
+    
     func updateUI() {
         adjustViewLayout(UIScreen.mainScreen().bounds.size)
         if let game = self.game {
             gameType.font = TableCellProperties.CellSmallFont
-            if game.subType == "RANKED_SOLO_5x5" {
+            
+            if game.subType.containsString("ARAM") {
+                gameType.text = "ARAM"
+            }
+            else if game.subType.containsString("BOT") {
+                gameType.text = "BOT"
+            }
+            else if game.subType.containsString("RANK") {
                 gameType.text = "Ranked"
             }
             else {
@@ -217,8 +224,6 @@ class RecentGameTableViewCell: UITableViewCell {
         item5Image.hidden = !hiddenSelf
         item6Image.hidden = !hiddenSelf
         KDALabel.hidden = !hiddenSelf
-        space1View.hidden = !hiddenSelf
-        space2View.hidden = !hiddenSelf
     }
     
     func watchFrameChanges(){
@@ -245,32 +250,14 @@ class RecentGameTableViewCell: UITableViewCell {
         
         switch(size.width, size.height) {
         case (480, 320), (568, 320):                        // iPhone 4S, 5s in landscape
-            item0Image.hidden = false
-            item1Image.hidden = false
-            item2Image.hidden = false
-            item3Image.hidden = false
-            item4Image.hidden = false
-            item5Image.hidden = false
-            item6Image.hidden = false
-            space1View.hidden = false
-            space2View.hidden = false
-            
+            itemStackView.hidden = true
         case (320, 480), (320, 568):                        // iPhone 4S in portrait
-            item0Image.hidden = true
-            item0Image.hidden = true
-            item1Image.hidden = true
-            item2Image.hidden = true
-            item3Image.hidden = true
-            item4Image.hidden = true
-            item5Image.hidden = true
-            item6Image.hidden = true
-            space1View.hidden = true
-            space2View.hidden = true
+            itemStackView.hidden = true
         default:
             break
         }
     }
     
     
-
+    
 }

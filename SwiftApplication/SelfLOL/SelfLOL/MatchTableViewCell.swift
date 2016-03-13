@@ -21,6 +21,9 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     @IBOutlet weak var item4Image: UIImageView!
     @IBOutlet weak var item5Image: UIImageView!
     @IBOutlet weak var item6Image: UIImageView!
+    @IBOutlet weak var CSLabel: UILabel!
+    @IBOutlet weak var goldLabel: UILabel!
+    @IBOutlet weak var ResultView: UIView!
     @IBOutlet weak var KDALabel: UILabel!
     @IBOutlet weak var damageView: DamageView!{
         didSet{
@@ -37,8 +40,9 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     var damageLabel: String = "0"
     
     struct TableCellProperties {
-        static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 16)
+        static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 15)
         static let CellFont = UIFont(name: "Helvetica", size: 15)
+        static let CellSmallFont = UIFont(name: "Helvetica", size: 12)
         static let VictoryColor = UIColorFromRGB("00C853")
         static let DefeatColor = UIColorFromRGB("D50000")
     }
@@ -62,6 +66,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     }
 
     func updateUI() {
+        adjustViewLayout(UIScreen.mainScreen().bounds.size)
         if let participant = self.participant {
             if let champion = championsMap[participant.championId] {
                 let image = UIImage(named: champion)
@@ -172,9 +177,19 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             damageLabel = "\(participant.participantStats.totalDamageDealtToChampions)"
             damage = CGFloat(Double(participant.participantStats.totalDamageDealtToChampions) / Double(maxDamage))
             summonerNameLabel.text = participant.summonerName
-            summonerNameLabel.font = TableCellProperties.CellFont
+            summonerNameLabel.font = TableCellProperties.CellBoldFont
             KDALabel.text = "\(participant.participantStats.championsKilled) / \(participant.participantStats.numDeaths) / \(participant.participantStats.assists)"
             KDALabel.font = TableCellProperties.CellFont
+            CSLabel.text = "\(participant.participantStats.minionsKilled) CS"
+            CSLabel.font = TableCellProperties.CellSmallFont
+            goldLabel.text = "\(roundToOneDecimal(Double(participant.participantStats.goldEarned),dec: 1000))k gold"
+            goldLabel.font = TableCellProperties.CellSmallFont
+            if participant.participantStats.win == true {
+                ResultView.backgroundColor = TableCellProperties.VictoryColor
+            }
+            else {
+                ResultView.backgroundColor = TableCellProperties.DefeatColor
+            }
             
         }
     }
@@ -190,5 +205,24 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     func damageForDamageLabel(sender: DamageView) -> String? {
         return damageLabel
     }
+    
+    func roundToOneDecimal(num: Double, dec: Double) -> Double {
+        let result = num/dec
+        return NSString(format: "%.01f", result).doubleValue
+    }
+    
+    func adjustViewLayout(size: CGSize) {
+        
+        switch(size.width, size.height) {
+        case (480, 320), (568, 320):                        // iPhone 4S, 5s in landscape
+            summonerNameLabel.hidden = true
+            
+        case (320, 480), (320, 568):                        // iPhone 4S in portrait
+            summonerNameLabel.hidden = true
+        default:
+            break
+        }
+    }
+
 
 }
