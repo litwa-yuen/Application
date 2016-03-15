@@ -28,6 +28,7 @@ class RunesViewController: UIViewController, UITableViewDataSource, UITableViewD
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "rune"
+        static let BorderColor = "607D8B"
     }
 
     
@@ -37,6 +38,8 @@ class RunesViewController: UIViewController, UITableViewDataSource, UITableViewD
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! RuneTableViewCell
+        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+        cell.layer.borderWidth = 1.0
         cell.rune = runes![indexPath.row]
         return cell
     }

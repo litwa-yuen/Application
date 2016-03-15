@@ -149,3 +149,8 @@ var summonerSpellMap = [
     32:"SummonerSnowball"
 ]
 
+var regionMap = [
+    "na":0,
+    "euw":1
+]
+

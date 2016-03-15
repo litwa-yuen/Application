@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
+class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
     
     // MARK: - Outlet
     @IBOutlet weak var championsTable: UITableView!
@@ -12,6 +12,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var segmentBar: UISegmentedControl!
     @IBOutlet weak var regionBarItem: UIBarButtonItem!
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
+    @IBOutlet weak var regionTextField: UITextField!
     
     // MARK: - Properties
     var selectedIndexPath: NSIndexPath?
@@ -48,7 +49,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     var summoner: Summoner? {
         didSet{
             if CheckReachability.isConnectedToNetwork() {
-                currentSummoner = (summoner?.name, summoner?.id)
                 searchText.text = summoner?.name
                 indicator.startAnimating()
                 getRankInfo(summoner!.id)
@@ -56,7 +56,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                 getChampionRankInfo(summoner!.id)
             }
             else {
-                indicator.stopAnimating()
                 showReponseMessage("Network Unavailable.")
             }
             
@@ -74,6 +73,14 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     var recentGames = [GameDto]()
+    
+    var regionData = ["na", "euw"]
+    
+    var regionPicker = UIPickerView()
+    
+    var regionToolBar = UIToolbar()
+    
+    var regionTitle = "NA"
     
     // MARK: - NSFetchedResultsControllerDelegate
     let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
@@ -105,6 +112,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         averageStatus.font = Storyboard.DetailFont
         winRate.font = Storyboard.DetailFont
         setUpSearchBar()
+        setUpRegionPicker()
         navigationItem.titleView = searchText
         indicator.center = view.center
         view.addSubview(indicator)
@@ -129,6 +137,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             }
     
         }catch _ {}
+        regionPicker.selectRow(regionMap[region]!, inComponent: 0, animated: true)
         regionBarItem.title = region.uppercaseString
 
         if summonerName != "" {
@@ -141,6 +150,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         super.viewWillAppear(animated)
         segmentBar.selectedSegmentIndex = 0
         championsTable.allowsSelection = true
+        discardKeyboard()
         championsTable.reloadData()
     }
     
@@ -157,6 +167,22 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         searchText.enablesReturnKeyAutomatically = true
     }
     
+    func setUpRegionPicker() {
+        regionPicker.delegate = self
+        regionPicker.dataSource = self
+        regionToolBar.barStyle = .Default
+        regionToolBar.translucent = true
+        regionToolBar.sizeToFit()
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: "regionDoneClicked")
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: "regionCancelClicked")
+        regionToolBar.setItems([cancelButton, spaceButton, doneButton], animated: false)
+        regionToolBar.userInteractionEnabled = true
+        regionTextField.inputView = regionPicker
+        regionTextField.inputAccessoryView = regionToolBar
+
+    }
+    
     func reset() {
         championsTable.allowsSelection = true
         segmentBar.setWidth(0, forSegmentAtIndex: 1)
@@ -164,6 +190,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         segmentBar.hidden = true
         championsTable.hidden = true
         rankLabel.hidden = true
+        rankLabel.textColor = UIColor.blackColor()
         averageStatus.hidden = true
         winRate.hidden = true
         imageView.hidden = true
@@ -171,9 +198,15 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         champions.removeAll()
         recentGames.removeAll()
         segmentBar.selectedSegmentIndex = 0
+        discardKeyboard()
         showReponseMessage("")
-        searchText.endEditing(true)
         championsTable.reloadData()
+    }
+    
+    func discardKeyboard() {
+        searchText.endEditing(true)
+        regionTextField.endEditing(true)
+
     }
     
     func loading() {
@@ -183,6 +216,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // MARK: - Button Action
     @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
+        discardKeyboard()
         if segmentBar.selectedSegmentIndex == 0 {
             championsTable.allowsSelection = true
             championsTable.reloadData()
@@ -204,28 +238,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     @IBAction func changeRegion(sender: UIBarButtonItem) {
-        var regionTitle = "EUW"
-        
-        if region == "euw" {
-            regionTitle = "NA"
-        }
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
-        alert.addAction(UIAlertAction(
-            title: regionTitle, style: .Default) { (action) -> Void in
-                region = regionTitle.lowercaseString
-                self.regionBarItem.title = regionTitle
-                self.deleteCoreData()
-            })
-        alert.addAction(UIAlertAction(
-            title: "Cancel",
-            style: .Cancel)
-            { (action) in
-                // do nothing
-            })
-        alert.modalPresentationStyle = .Popover
-        let ppc = alert.popoverPresentationController
-        ppc?.barButtonItem = regionBarItem
-        presentViewController(alert, animated: true, completion: nil)
+        regionTextField.becomeFirstResponder()
     }
     
     func performAction() {
@@ -437,6 +450,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func showReponseMessage(message: String) {
+        indicator.stopAnimating()
         let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
         messageLabel.text = message
         messageLabel.textColor = UIColor.blackColor()
@@ -486,6 +500,38 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
     
+    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+        discardKeyboard()
+    }
+    
+    // MARK: - UIPickerViewDataSource
+    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return regionData[row].uppercaseString
+    }
+    
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        regionTitle = regionData[row]
+    }
+    
+    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return regionData.count
+    }
+    
+    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func regionCancelClicked() {
+        regionTextField.resignFirstResponder()
+    }
+    
+    func regionDoneClicked() {
+        regionTextField.resignFirstResponder()
+        region = regionTitle
+        regionBarItem.title = regionTitle.uppercaseString
+        self.deleteCoreData()
+    }
+    
     // MARK: - UITextFieldDelegate
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         textField.resignFirstResponder()
@@ -495,6 +541,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         self.searchText.endEditing(true)
+        self.regionTextField.endEditing(true)
     }
     
     func toggleAddButton(text: String) {
@@ -525,6 +572,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        discardKeyboard()
         if let identifier = segue.identifier {
             switch identifier {
             case Storyboard.MatchDetailIdentifier:
@@ -532,7 +580,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                 let seguedToDetail = segue.destinationViewController as? MatchViewController
                 guard let matchId = cell?.game?.gameId else { return }
                 guard let fellowPlayers = cell?.game?.fellowPlayers else { return }
-                let matchDetail = (fellowPlayers, matchId, searchText.text!)
+                let matchDetail = (fellowPlayers, matchId, (summoner?.name)!, (summoner?.id)!)
                 seguedToDetail?.matchInit = matchDetail
                 
             default: break

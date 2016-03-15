@@ -2,7 +2,6 @@
 import Foundation
 
 var matchDetail: MatchDetail? = nil
-var currentSummoner: (String?, CLong?) = (nil, nil)
 
 class MatchDetail {
     var matchCreation: CLong
