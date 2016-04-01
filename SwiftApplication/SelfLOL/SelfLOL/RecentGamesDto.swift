@@ -79,28 +79,14 @@ class RawStatsDto {
         
         self.win = status["win"] as? Bool ?? (status["winner"] as? Bool)!
         
-        if let item0 = status["item0"] as? Int {
-            self.item0 = item0
-        }
-        if let item1 = status["item1"] as? Int {
-            self.item1 = item1
-        }
-        if let item2 = status["item2"] as? Int {
-            self.item2 = item2
-        }
-        if let item3 = status["item3"] as? Int {
-            self.item3 = item3
-        }
-        if let item4 = status["item4"] as? Int {
-            self.item4 = item4
-        }
-        if let item5 = status["item5"] as? Int {
-            self.item5 = item5
-        }
-        if let item6 = status["item6"] as? Int {
-            self.item6 = item6
-        }
-        
+        self.item0 = getValue(status, fieldName: "item0")
+        self.item1 = getValue(status, fieldName: "item1")
+        self.item2 = getValue(status, fieldName: "item2")
+        self.item3 = getValue(status, fieldName: "item3")
+        self.item4 = getValue(status, fieldName: "item4")
+        self.item5 = getValue(status, fieldName: "item5")
+        self.item6 = getValue(status, fieldName: "item6")
+
     }
 }
 

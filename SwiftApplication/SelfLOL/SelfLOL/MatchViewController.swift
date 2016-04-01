@@ -173,7 +173,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
                                     self.indicator.stopAnimating()
                                 }
                             case 404:
-                                self.showReponseMessage("Not in a game.")
+                                self.showReponseMessage("Game Detail not found.")
                             case 429:
                                 self.showReponseMessage("Rate Limit Exceeded.")
                             case 503, 500:

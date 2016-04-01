@@ -74,8 +74,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     var recentGames = [GameDto]()
     
-    var regionData = ["na", "euw"]
-    
     var regionPicker = UIPickerView()
     
     var regionToolBar = UIToolbar()
@@ -137,7 +135,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             }
     
         }catch _ {}
-        regionPicker.selectRow(regionMap[region]!, inComponent: 0, animated: true)
+        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         regionBarItem.title = region.uppercaseString
 
         if summonerName != "" {
@@ -173,9 +171,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         regionToolBar.barStyle = .Default
         regionToolBar.translucent = true
         regionToolBar.sizeToFit()
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: "regionDoneClicked")
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: #selector(LOLSelfViewController.regionDoneClicked))
         let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: "regionCancelClicked")
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: #selector(LOLSelfViewController.regionCancelClicked))
         regionToolBar.setItems([cancelButton, spaceButton, doneButton], animated: false)
         regionToolBar.userInteractionEnabled = true
         regionTextField.inputView = regionPicker
@@ -204,6 +202,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func discardKeyboard() {
+        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         searchText.endEditing(true)
         regionTextField.endEditing(true)
 
@@ -506,15 +505,16 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // MARK: - UIPickerViewDataSource
     func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return regionData[row].uppercaseString
+        let mapResult : String = regionMap[row]
+        return regionTuples[mapResult]?.title
     }
     
     func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        regionTitle = regionData[row]
+        regionTitle = regionMap[row]
     }
     
     func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return regionData.count
+        return regionMap.count
     }
     
     func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
@@ -527,8 +527,12 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func regionDoneClicked() {
         regionTextField.resignFirstResponder()
+        if region != regionTitle {
+            reset()
+        }
         region = regionTitle
         regionBarItem.title = regionTitle.uppercaseString
+        
         self.deleteCoreData()
     }
     
@@ -540,6 +544,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         self.searchText.endEditing(true)
         self.regionTextField.endEditing(true)
     }

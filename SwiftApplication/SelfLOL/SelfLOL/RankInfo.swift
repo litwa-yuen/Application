@@ -20,9 +20,9 @@ class RankInfo {
         if let array = data["entries"] as? NSArray {
             self.entry = LeagueEntryDto(entry: array[0] as! NSDictionary)
         }
-        self.name = (data["name"] as? String)!
-        self.queue = (data["queue"] as? String)!
-        self.tier = (data["tier"] as? String)!
+        self.name = getValue(data, fieldName: "name")!
+        self.queue = getValue(data, fieldName: "queue")!
+        self.tier = getValue(data, fieldName: "tier")!
     }
     
     func getRankWithLP() -> String {
@@ -70,10 +70,10 @@ class LeagueEntryDto {
     
     init(entry: NSDictionary) {
         
-        self.division = (entry["division"] as? String)!
-        self.leaguePoints = (entry["leaguePoints"] as? Int)!
-        self.losses = (entry["losses"] as? Int)!
-        self.wins = (entry["wins"] as? Int)!
+        self.division = getValue(entry, fieldName: "division")!
+        self.leaguePoints = getValue(entry, fieldName: "leaguePoints")!
+        self.losses = getValue(entry, fieldName: "losses")!
+        self.wins = getValue(entry, fieldName: "wins")!
         if let dict = entry["miniSeries"] as? NSDictionary {
             self.miniSeries = MiniSeriesDto(series: dict)
         }
@@ -88,9 +88,9 @@ class MiniSeriesDto {
     var wins: Int
     
     init(series: NSDictionary) {
-        self.losses = (series["losses"] as? Int)!
-        self.wins = (series["wins"] as? Int)!
-        self.target = (series["target"] as? Int)!
-        self.progress = (series["progress"] as? String)!
+        self.losses = getValue(series, fieldName: "losses")!
+        self.wins = getValue(series, fieldName: "wins")!
+        self.target = getValue(series, fieldName: "target")!
+        self.progress = getValue(series, fieldName: "progress")!
     }
 }

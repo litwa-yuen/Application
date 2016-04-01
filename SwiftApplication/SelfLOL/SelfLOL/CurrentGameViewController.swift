@@ -70,7 +70,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
         cell.layer.borderWidth = 1.0
         cell.runeButton.tag = indexPath.row
-        cell.runeButton.addTarget(self, action: "checkRune:", forControlEvents: .TouchUpInside)
+        cell.runeButton.addTarget(self, action: #selector(CurrentGameViewController.checkRune(_:)), forControlEvents: .TouchUpInside)
         return cell
     }
     

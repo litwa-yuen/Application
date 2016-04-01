@@ -17,7 +17,7 @@ class ChampionStatus {
     
     init(entry: NSDictionary) {
         
-        self.id = (entry["id"] as? Int)!
+        self.id = getValue(entry, fieldName: "id")!
         if let championName = championsMap[self.id] {
             self.name = championName
         }

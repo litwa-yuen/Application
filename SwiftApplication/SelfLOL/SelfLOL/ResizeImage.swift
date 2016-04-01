@@ -62,4 +62,13 @@ public func getEmptyItemImage() -> UIImage {
     return resizeImage(UIImage(named: "empty")!, newWidth: 25)
 }
 
+public func getValue<T>(jsonData: NSDictionary, fieldName: String) -> T? {
+    if let value: T? = jsonData.objectForKey(fieldName) as? T? {
+        return value
+    }
+    else {
+        return nil
+    }
+}
+
 

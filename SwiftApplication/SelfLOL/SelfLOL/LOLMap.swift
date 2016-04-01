@@ -107,6 +107,7 @@ var championsMap = [
     131:"Diana",
     133:"Quinn",
     134:"Syndra",
+    136:"AurelionSol",
     143:"Zyra",
     150:"Gnar",
     154:"Zac",
@@ -128,7 +129,7 @@ var championsMap = [
     420:"Illaoi",
     421:"RekSai",
     429:"Kalista",
-    432:"Bard",
+    432:"Bard"
 ]
 
 var summonerSpellMap = [
@@ -150,7 +151,31 @@ var summonerSpellMap = [
 ]
 
 var regionMap = [
-    "na":0,
-    "euw":1
+    "na",
+    "euw",
+    "kr",
+    "eune",
+    "oce",
+    "br",
+    "las",
+    "lan",
+    "ru",
+    "tr"
 ]
+
+let regionTuples:[String:(index:Int, title:String)] = [
+    "na":(0, "North America"),
+    "euw":(1, "EU West"),
+    "kr":(2, "Korea"),
+    "eune":(3, "EU Nordic & East"),
+    "oce":(4, "Oceania"),
+    "br":(5, "Brazil"),
+    "las":(6, "Latin America South"),
+    "lan":(7, "Latin America North"),
+    "ru":(8, "Russia"),
+    "tr":(9, "Turkey")
+    
+]
+
+
 
