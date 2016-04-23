@@ -1,7 +1,8 @@
 import UIKit
 import CoreData
+import GoogleMobileAds
 
-class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource, GADBannerViewDelegate {
     
     // MARK: - Outlet
     @IBOutlet weak var championsTable: UITableView!
@@ -13,6 +14,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var regionBarItem: UIBarButtonItem!
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
     @IBOutlet weak var regionTextField: UITextField!
+    @IBOutlet weak var googleBannerView: GADBannerView!
+    
     
     // MARK: - Properties
     var selectedIndexPath: NSIndexPath?
@@ -23,7 +26,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             searchText.text = summonerName
         }
     }
-
+    
     var image: UIImage? {
         get{
             return imageView.image
@@ -83,32 +86,30 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     // MARK: - NSFetchedResultsControllerDelegate
     let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
-    func deleteCoreData() {
-        var playerData = [Player]()
-        let fetchRequest = NSFetchRequest(entityName: "Players")
-        playerData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
-        for player in playerData {
-            context.deleteObject(player)
-        }
-        do {
-            try context.save()
-        } catch _ {
-        }
-    }
+    
     
     func fetchPlayersRequest() -> NSFetchRequest {
         let fetchRequest = NSFetchRequest(entityName: "Players")
-        let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         return fetchRequest
     }
-
+    
     // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
         rankLabel.font = Storyboard.TitleFont
         averageStatus.font = Storyboard.DetailFont
         winRate.font = Storyboard.DetailFont
+        googleBannerView.adUnitID = AdMobAdUnitID
+        //googleBannerView.hidden = true
+        googleBannerView.adSize = kGADAdSizeSmartBannerPortrait
+        googleBannerView.delegate = self
+        googleBannerView.rootViewController = self
+        let request = GADRequest()
+        request.testDevices = [testDevice]
+        googleBannerView.loadRequest(request)
+        
         setUpSearchBar()
         setUpRegionPicker()
         navigationItem.titleView = searchText
@@ -117,39 +118,44 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
         reset()
-        
-        let fetchRequest = fetchPlayersRequest()
-        
-        do {
-            let result: NSArray = try context.executeFetchRequest(fetchRequest)
-            if result.count > 0 {
-                let res = result[0] as! NSManagedObject
-                let playerName: String = res.valueForKey("name")! as! String
-                searchText.text = playerName
-                if let playerRegion = res.valueForKey("region") as! String? {
-                    region = playerRegion
+        if summoner?.id != nil {
+            regionBarItem.title = region.uppercaseString
+        }
+        else {
+            let fetchRequest = fetchPlayersRequest()
+            do {
+                let result: NSArray = try context.executeFetchRequest(fetchRequest)
+                if result.count > 0 {
+                    let res = result[0] as! NSManagedObject
+                    if let playerRegion = res.valueForKey("region") as! String? {
+                        region = playerRegion
+                    }
+                    else {
+                        region = "na"
+                    }
                 }
-                else {
-                    region = "na"
-                }
-            }
-    
-        }catch _ {}
+                
+            }catch _ {}
+        }
         regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         regionBarItem.title = region.uppercaseString
-
+        
         if summonerName != "" {
             searchText.text = summonerName
         }
         toggleAddButton(searchText.text!)
     }
-        
+    
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         segmentBar.selectedSegmentIndex = 0
         championsTable.allowsSelection = true
         discardKeyboard()
         championsTable.reloadData()
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        tryToRateApp()
     }
     
     func setUpSearchBar() {
@@ -163,6 +169,19 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         searchText.textAlignment = .Center
         searchText.returnKeyType = .Search
         searchText.enablesReturnKeyAutomatically = true
+        
+        let rightView = UIView()
+        
+        rightView.frame = CGRectMake(0, 0, 20, 20)
+        rightView.translatesAutoresizingMaskIntoConstraints = false
+        
+        
+        let button = UIButton(frame: CGRectMake(-1, 2, 14, 14))
+        button.setBackgroundImage(UIImage(named: "clock"), forState: .Normal)
+        button.addTarget(self, action: #selector(LOLSelfViewController.recentSearch), forControlEvents: UIControlEvents.TouchUpInside)
+        rightView.addSubview(button)
+        searchText.rightViewMode = UITextFieldViewMode.UnlessEditing
+        searchText.rightView = rightView
     }
     
     func setUpRegionPicker() {
@@ -178,7 +197,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         regionToolBar.userInteractionEnabled = true
         regionTextField.inputView = regionPicker
         regionTextField.inputAccessoryView = regionToolBar
-
+        
     }
     
     func reset() {
@@ -205,7 +224,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         searchText.endEditing(true)
         regionTextField.endEditing(true)
-
+        
     }
     
     func loading() {
@@ -240,31 +259,30 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         regionTextField.becomeFirstResponder()
     }
     
+    func recentSearch() {
+        let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("RecentSearchesViewController") as? RecentSearchesViewController
+        self.navigationController?.pushViewController(tvc!, animated: true)
+    }
+    
     func performAction() {
         reset()
         loading()
         if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
             let fetchRequest = fetchPlayersRequest()
-            do {
-                let result: NSArray = try context.executeFetchRequest(fetchRequest)
-                if result.count > 0 {
-                    let res = result[0] as! NSManagedObject
-                    let playerName: String = res.valueForKey("name")! as! String
-                    let playerId: NSNumber = res.valueForKey("id")! as! NSNumber
-                    if playerName == searchText.text! {
-                        let obj:NSDictionary = ["name":playerName, "id":playerId]
-                        self.summoner = Summoner(data: obj)
-                    }
-                    else {
-                        deleteCoreData()
-                        getSummonerId(searchText.text!)
-                    }
+            
+            let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+            var found = false
+            for player in playersData {
+                if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
+                    found = true
+                    let obj:NSDictionary = ["name":player.name!, "id":player.id!]
+                    self.summoner = Summoner(data: obj)
                 }
-                else {
-                    getSummonerId(searchText.text!)
-                }
-            }catch _ {
             }
+            if found == false {
+                getSummonerId(searchText.text!)
+            }
+            
         }
         else {
             indicator.stopAnimating()
@@ -359,9 +377,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
                             self.indicator.stopAnimating()
                             self.searchSummonerButton.enabled = true
-                        
-                            switch(httpReponse.statusCode) {
                             
+                            switch(httpReponse.statusCode) {
+                                
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
                                 if let resultDict = object as? NSDictionary {
@@ -407,7 +425,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                         if let httpReponse = reponse as! NSHTTPURLResponse? {
                             self.indicator.stopAnimating()
                             self.searchSummonerButton.enabled = true
-
+                            
                             switch(httpReponse.statusCode) {
                             case 200:
                                 let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
@@ -420,7 +438,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                         nPlayer.name = self.searchText.text!
                                         nPlayer.id = self.summoner?.id
                                         nPlayer.region = region
-
+                                        nPlayer.date = NSDate()
+                                        
                                         do {
                                             try context.save()
                                         } catch _ {
@@ -448,6 +467,10 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         task.resume()
     }
     
+    func uniformName(summonerName: String) -> String {
+        return summonerName.stringByReplacingOccurrencesOfString(" ", withString: "").lowercaseString
+    }
+    
     func showReponseMessage(message: String) {
         indicator.stopAnimating()
         let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
@@ -468,7 +491,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         static let BorderColor = "607D8B"
         static let TitleFont = UIFont(name: "Helvetica-Bold", size: 18)
         static let DetailFont = UIFont(name: "Helvetica", size: 16)
-
+        
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -528,12 +551,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     func regionDoneClicked() {
         regionTextField.resignFirstResponder()
         if region != regionTitle {
+            searchText.text = ""
             reset()
         }
         region = regionTitle
         regionBarItem.title = regionTitle.uppercaseString
-        
-        self.deleteCoreData()
     }
     
     // MARK: - UITextFieldDelegate
@@ -571,6 +593,54 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         return true
     }
     
+    // MARK: - GADBannerViewDelegate
+    func adViewDidReceiveAd(bannerView: GADBannerView!) {
+        bannerView.hidden = false
+        bannerView.alpha = 0
+        UIView.animateWithDuration(1, animations: {
+            bannerView.alpha = 1
+        })
+    }
+    
+    func adView(bannerView: GADBannerView!,
+                didFailToReceiveAdWithError error: GADRequestError!) {
+        bannerView.alpha = 1
+        UIView.animateWithDuration(1, animations: {
+            bannerView.alpha = 0
+        })
+        bannerView.hidden = true
+    }
+    
+    func showRateAppAlert() {
+        let alert = UIAlertController(title: "Rate \(APP_NAME)", message: "If you enjoy using \(APP_NAME), would you mind taking a moment to rate it? It wouldn't take more than a minute. Thanks for your support!", preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "Rate It Now", style: UIAlertActionStyle.Default, handler: { alertAction in
+            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "neverRate")
+            UIApplication.sharedApplication().openURL(NSURL(string : "itms-apps://itunes.apple.com/app/id\(APP_ID)")!)
+            alert.dismissViewControllerAnimated(true, completion: nil)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Remind me later", style: UIAlertActionStyle.Default, handler: { alertAction in
+            NSUserDefaults.standardUserDefaults().setInteger(0, forKey: "numLaunches")
+            alert.dismissViewControllerAnimated(true, completion: nil)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "No thanks", style: UIAlertActionStyle.Default, handler: { alertAction in
+            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "neverRate")       // Hide the Alert
+            alert.dismissViewControllerAnimated(true, completion: nil)
+        }))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func tryToRateApp() {
+        let neverRate = NSUserDefaults.standardUserDefaults().boolForKey("neverRate")
+        let numLaunches = NSUserDefaults.standardUserDefaults().integerForKey("numLaunches") + 1
+        if (!neverRate && (numLaunches >= minNumberOfSessions))
+        {
+            showRateAppAlert()
+        }
+        NSUserDefaults.standardUserDefaults().setInteger(numLaunches, forKey: "numLaunches")
+    }
+    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -590,10 +660,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                 
             default: break
             }
-        }
-        else {
-            let DestViewController: CurrentGameViewController = segue.destinationViewController as! CurrentGameViewController
-            DestViewController.summoner = self.summoner
         }
     }
 }
