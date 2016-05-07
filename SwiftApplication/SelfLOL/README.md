@@ -2,7 +2,7 @@
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/Icon-Small-40%402x.png)
 
 #Description:
-Look LOL is an IOS application which can look up your current season rank status and current game status.  
+Look LOL is an IOS application which can look up your current season rank statistics and current game status.  
 - Search Summoner Name (NA an EUW only)
 - Show 10 recent games played   
 - Show current seaion rank status (current Rank and KDA)
