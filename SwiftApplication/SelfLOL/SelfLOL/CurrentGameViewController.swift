@@ -4,6 +4,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     // MARK: - UI Outlet
     @IBOutlet weak var participantTableView: UITableView!
+    @IBOutlet weak var statusBarButton: UIBarButtonItem!
     
     // MARK: - Properties 
     var summoner: Summoner? {
@@ -33,6 +34,8 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
     
+    var isMainPage = false 
+    
     let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
     var messageLabel = UILabel()
     
@@ -42,6 +45,11 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         participantTableView.rowHeight = UITableViewAutomaticDimension
         participantTableView.registerClass(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
         indicator.center = view.center
+        self.navigationItem.setHidesBackButton(false, animated: false)
+        if !isMainPage && CheckReachability.isConnectedToNetwork(){
+            statusBarButton.enabled = false
+            statusBarButton.title = ""
+        }
         
         view.addSubview(indicator)
     }
@@ -51,6 +59,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         static let ReuseCellIdentifier = "participant"
         static let ReuseFooterIdentifier = "banned"
         static let DetailIdentifier = "detail"
+        static let StatusIdentifier = "status"
         static let BorderColor = "607D8B"
     }
     
@@ -281,6 +290,10 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                     seguedToDetail?.summonerName = participant.summonerName
                     self.participantTableView.deselectRowAtIndexPath(indexPath, animated: true)
                 }
+            case Storyboard.StatusIdentifier:
+                let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
+                seguedToDetail?.summoner = summoner
+                seguedToDetail?.summonerName = (summoner?.name)!
             default: break
             }
         }

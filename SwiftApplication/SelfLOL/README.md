@@ -16,6 +16,9 @@ Look LOL is an IOS application which can look up your current season rank status
 - Inital screen<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/newItialScreen.png)
 
+- Settings<br/>
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/Settings.png)
+
 - Match Detail<br/>
 ![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/CurrentGame2.png)
 

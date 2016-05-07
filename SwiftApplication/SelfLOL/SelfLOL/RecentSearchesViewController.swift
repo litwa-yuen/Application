@@ -13,8 +13,7 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
 
     @IBOutlet weak var recentSearchTableView: UITableView!
     @IBOutlet weak var clearButton: UIBarButtonItem!
-    
-    
+        
     let context: NSManagedObjectContext = (UIApplication.sharedApplication()
         .delegate as! AppDelegate).managedObjectContext
     var frc: NSFetchedResultsController = NSFetchedResultsController()
@@ -74,7 +73,8 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
     }
     
     @IBAction func done(sender: UIBarButtonItem) {
-        self.navigationController?.popToRootViewControllerAnimated(true)
+        
+        self.navigationController?.popViewControllerAnimated(true)
     }
     
     // MARK: - UITableViewDelegate
@@ -149,8 +149,12 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
                     let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
                     let player: Player = frc.objectAtIndexPath(indexPath) as! Player
                     let obj:NSDictionary = ["name":player.name!, "id":player.id!]
+                    player.date = NSDate()
+                    do {
+                        try context.save()
+                    } catch _ {
+                    }
                     region = player.region!
-
                     seguedToDetail?.summoner = Summoner(data: obj)
                     seguedToDetail?.summonerName = player.name!
                     self.recentSearchTableView.deselectRowAtIndexPath(indexPath, animated: true)

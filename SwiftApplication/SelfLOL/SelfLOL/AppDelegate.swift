@@ -6,7 +6,8 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    
+    
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         let globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
@@ -29,10 +30,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 catch _ {}
             }
         }
+        let context = self.managedObjectContext
+        let result: NSArray = (try! context.executeFetchRequest(fetchMeRequest())) as! [Player]
+        if result.count > 0 {
+            // mainStoryboard
+            let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
+            
+            // rootViewController
+            let rootViewController = mainStoryboard.instantiateViewControllerWithIdentifier("CurrentGameViewController") as? CurrentGameViewController
+            let id = result[0].valueForKey("id") as! NSNumber
+            let myRegion = result[0].valueForKey("region") as! String
+            region = myRegion
+            let obj:NSDictionary = ["name":result[0].name, "id":id]
+
+            rootViewController?.summoner = Summoner(data:obj)
+            rootViewController?.isMainPage = true
+            // navigationController
+            let navigationController = UINavigationController(rootViewController: rootViewController!)
+        
+            // self.window
+            self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
+            
+            self.window!.rootViewController = navigationController
+            
+            self.window!.makeKeyAndVisible()
+
+   
+        }
+
        
 
         return true
     }
+
+    func fetchMeRequest() -> NSFetchRequest {
+        let fetchRequest = NSFetchRequest(entityName: "Me")
+        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        return fetchRequest
+    }
+    
 
     func applicationWillResignActive(application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

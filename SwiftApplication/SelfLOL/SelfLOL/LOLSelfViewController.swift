@@ -2,7 +2,7 @@ import UIKit
 import CoreData
 import GoogleMobileAds
 
-class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource, GADBannerViewDelegate {
+class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, GADBannerViewDelegate {
     
     // MARK: - Outlet
     @IBOutlet weak var championsTable: UITableView!
@@ -11,10 +11,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var averageStatus: UILabel!
     @IBOutlet weak var winRate: UILabel!
     @IBOutlet weak var segmentBar: UISegmentedControl!
-    @IBOutlet weak var regionBarItem: UIBarButtonItem!
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
-    @IBOutlet weak var regionTextField: UITextField!
     @IBOutlet weak var googleBannerView: GADBannerView!
+    @IBOutlet weak var settingBarButton: UIBarButtonItem!
     
     
     // MARK: - Properties
@@ -24,6 +23,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     var summonerName: String = ""{
         didSet{
             searchText.text = summonerName
+            searchSummonerButton.enabled = true
         }
     }
     
@@ -77,11 +77,9 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     var recentGames = [GameDto]()
     
-    var regionPicker = UIPickerView()
-    
-    var regionToolBar = UIToolbar()
-    
     var regionTitle = "NA"
+    
+    var messageLabel = UILabel()
     
     // MARK: - NSFetchedResultsControllerDelegate
     let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
@@ -102,47 +100,38 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         averageStatus.font = Storyboard.DetailFont
         winRate.font = Storyboard.DetailFont
         googleBannerView.adUnitID = AdMobAdUnitID
-        //googleBannerView.hidden = true
         googleBannerView.adSize = kGADAdSizeSmartBannerPortrait
         googleBannerView.delegate = self
         googleBannerView.rootViewController = self
         let request = GADRequest()
         request.testDevices = [testDevice]
         googleBannerView.loadRequest(request)
+        googleBannerView.hidden = true
         
         setUpSearchBar()
-        setUpRegionPicker()
         navigationItem.titleView = searchText
         indicator.center = view.center
         view.addSubview(indicator)
         championsTable.estimatedRowHeight = championsTable.rowHeight
         championsTable.rowHeight = UITableViewAutomaticDimension
         reset()
-        if summoner?.id != nil {
-            regionBarItem.title = region.uppercaseString
-        }
-        else {
-            let fetchRequest = fetchPlayersRequest()
-            do {
-                let result: NSArray = try context.executeFetchRequest(fetchRequest)
-                if result.count > 0 {
-                    let res = result[0] as! NSManagedObject
-                    if let playerRegion = res.valueForKey("region") as! String? {
-                        region = playerRegion
-                    }
-                    else {
-                        region = "na"
-                    }
+        if summoner?.id == nil {
+            let result: [Player] = (try! context.executeFetchRequest(fetchPlayersRequest())) as! [Player]
+            if !result.isEmpty {
+                if let playerRegion = result.first?.region {
+                    region = playerRegion
                 }
-                
-            }catch _ {}
+                else {
+                    region = "na"
+                }
+            }
         }
-        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
-        regionBarItem.title = region.uppercaseString
-        
+        regionTitle = region
         if summonerName != "" {
             searchText.text = summonerName
         }
+        settingBarButton.title = "\u{2699}"
+        
         toggleAddButton(searchText.text!)
     }
     
@@ -150,6 +139,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         super.viewWillAppear(animated)
         segmentBar.selectedSegmentIndex = 0
         championsTable.allowsSelection = true
+        if regionTitle != region {
+            regionTitle = region
+            searchText.text = ""
+            reset()
+        }
         discardKeyboard()
         championsTable.reloadData()
     }
@@ -184,22 +178,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         searchText.rightView = rightView
     }
     
-    func setUpRegionPicker() {
-        regionPicker.delegate = self
-        regionPicker.dataSource = self
-        regionToolBar.barStyle = .Default
-        regionToolBar.translucent = true
-        regionToolBar.sizeToFit()
-        let doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: #selector(LOLSelfViewController.regionDoneClicked))
-        let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .Cancel, target: self, action: #selector(LOLSelfViewController.regionCancelClicked))
-        regionToolBar.setItems([cancelButton, spaceButton, doneButton], animated: false)
-        regionToolBar.userInteractionEnabled = true
-        regionTextField.inputView = regionPicker
-        regionTextField.inputAccessoryView = regionToolBar
-        
-    }
-    
     func reset() {
         championsTable.allowsSelection = true
         segmentBar.setWidth(0, forSegmentAtIndex: 1)
@@ -216,15 +194,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         recentGames.removeAll()
         segmentBar.selectedSegmentIndex = 0
         discardKeyboard()
+        messageLabel.hidden = true
         showReponseMessage("")
         championsTable.reloadData()
     }
     
     func discardKeyboard() {
-        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         searchText.endEditing(true)
-        regionTextField.endEditing(true)
-        
     }
     
     func loading() {
@@ -255,10 +231,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         performAction()
     }
     
-    @IBAction func changeRegion(sender: UIBarButtonItem) {
-        regionTextField.becomeFirstResponder()
-    }
-    
     func recentSearch() {
         let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("RecentSearchesViewController") as? RecentSearchesViewController
         self.navigationController?.pushViewController(tvc!, animated: true)
@@ -276,6 +248,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                 if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
                     found = true
                     let obj:NSDictionary = ["name":player.name!, "id":player.id!]
+                    player.date = NSDate()
+                    do {
+                        try context.save()
+                    } catch _ {
+                    }
                     self.summoner = Summoner(data: obj)
                 }
             }
@@ -473,14 +450,16 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func showReponseMessage(message: String) {
         indicator.stopAnimating()
-        let messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
         messageLabel.text = message
-        messageLabel.textColor = UIColor.blackColor()
         messageLabel.font = UIFont(name: "Helvetica", size: 15)
+        messageLabel.textColor = UIColor.blackColor()
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = NSTextAlignment.Center
-        self.championsTable.backgroundView = messageLabel
-        self.championsTable.separatorStyle = .None
+        messageLabel.hidden = false
+        championsTable.hidden = true
+        view.addSubview(messageLabel)
+
     }
     
     // MARK: - UITableViewDataSource
@@ -526,37 +505,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         discardKeyboard()
     }
     
-    // MARK: - UIPickerViewDataSource
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        let mapResult : String = regionMap[row]
-        return regionTuples[mapResult]?.title
-    }
-    
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        regionTitle = regionMap[row]
-    }
-    
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return regionMap.count
-    }
-    
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
-        return 1
-    }
-    
-    func regionCancelClicked() {
-        regionTextField.resignFirstResponder()
-    }
-    
-    func regionDoneClicked() {
-        regionTextField.resignFirstResponder()
-        if region != regionTitle {
-            searchText.text = ""
-            reset()
-        }
-        region = regionTitle
-        regionBarItem.title = regionTitle.uppercaseString
-    }
+
     
     // MARK: - UITextFieldDelegate
     func textFieldShouldReturn(textField: UITextField) -> Bool {
@@ -566,9 +515,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        regionPicker.selectRow((regionTuples[region]?.index)!, inComponent: 0, animated: true)
         self.searchText.endEditing(true)
-        self.regionTextField.endEditing(true)
     }
     
     func toggleAddButton(text: String) {

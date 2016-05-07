@@ -151,29 +151,31 @@ var summonerSpellMap = [
 ]
 
 var regionMap = [
-    "na",
-    "euw",
-    "kr",
-    "eune",
-    "oce",
     "br",
     "las",
     "lan",
     "ru",
-    "tr"
+    "tr",
+    "na",
+    "euw",
+    "kr",
+    "jp",
+    "eune",
+    "oce"
 ]
 
 let regionTuples:[String:(index:Int, title:String)] = [
-    "na":(0, "North America"),
-    "euw":(1, "EU West"),
-    "kr":(2, "Korea"),
-    "eune":(3, "EU Nordic & East"),
-    "oce":(4, "Oceania"),
-    "br":(5, "Brazil"),
-    "las":(6, "Latin America South"),
-    "lan":(7, "Latin America North"),
-    "ru":(8, "Russia"),
-    "tr":(9, "Turkey")
+    "br":(0, "Brazil"),
+    "las":(1, "Latin America South"),
+    "lan":(2, "Latin America North"),
+    "ru":(3, "Russia"),
+    "tr":(4, "Turkey"),
+    "na":(5, "North America"),
+    "euw":(6, "EU West"),
+    "kr":(7, "Korea"),
+    "jp":(8, "Japan"),
+    "eune":(9, "EU Nordic & East"),
+    "oce":(10, "Oceania"),
     
 ]
 
