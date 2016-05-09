@@ -25,7 +25,7 @@ class RuneTableViewCell: UITableViewCell {
         if let rune = self.rune {
             
             if let runeData = map[rune.runeId] {
-                runeImageView.image = resizeImage(UIImage(named: runeData.imageId)!, newWidth: 40)
+                runeImageView.image = UIImage(named: runeData.imageId)
                 runeLabel.text = retrieveRune(runeData, runeCounter: rune.count)
 
             }

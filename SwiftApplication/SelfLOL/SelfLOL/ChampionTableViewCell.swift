@@ -27,7 +27,7 @@ class ChampionTableViewCell: UITableViewCell {
     func updateUI() {
         
         if let champion = self.champion {
-            championImageView?.image = resizeImage(champion.image!, newWidth: 50)
+            championImageView?.image = champion.image
 
             championNameLabel.font = TableCellProperties.CellBoldFont
             championNameLabel?.text = "\((champion.name)!)"

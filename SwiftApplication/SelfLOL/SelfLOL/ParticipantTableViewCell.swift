@@ -29,26 +29,23 @@ class ParticipantTableViewCell: UITableViewCell {
         
         if let participant = self.participant {
             if let participantChampion = championsMap[participant.championId] {
-                let image = UIImage(named: participantChampion)
-                championImageView?.image = resizeImage(image!, newWidth: 50)
-
+                championImageView?.image = UIImage(named: participantChampion)
             }
             else {
-                let image = UIImage(named: "unknown")
-                championImageView?.image = resizeImage(image!, newWidth: 50)
+                championImageView?.image = UIImage(named: "unknown")
             }
             
             summorName?.text = "\(participant.summonerName)"
             summorName.font = TableCellProperties.CellBoldFont
             
             if let spell1 = summonerSpellMap[participant.spell1Id] {
-                spell1Image.image = resizeImage(UIImage(named: spell1)!, newWidth: 25)
+                spell1Image.image = UIImage(named: spell1)
             }
             else {
                 spell1Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
             }
             if let spell2 = summonerSpellMap[participant.spell2Id] {
-                spell2Image.image = resizeImage(UIImage(named: spell2)!, newWidth: 25)
+                spell2Image.image = UIImage(named: spell2)
             }
             else {
                 spell2Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -60,7 +57,7 @@ class ParticipantTableViewCell: UITableViewCell {
             }
             
             if let rankimage = self.participant?.rankInfo?.image {
-                rankImageView?.image = resizeImage(rankimage, newWidth: 50)
+                rankImageView?.image = rankimage
             }
         }
     }

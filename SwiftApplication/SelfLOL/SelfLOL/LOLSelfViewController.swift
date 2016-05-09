@@ -14,6 +14,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
     @IBOutlet weak var googleBannerView: GADBannerView!
     @IBOutlet weak var settingBarButton: UIBarButtonItem!
+    @IBOutlet weak var favoriteButton: UIButton!
     
     
     // MARK: - Properties
@@ -32,7 +33,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             return imageView.image
         }
         set{
-            imageView.image = resizeImage(newValue!, newWidth: 50)
+            imageView.image = newValue
             imageView.hidden = false
         }
     }
@@ -43,7 +44,11 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             summoner!.rankInfo = rankInfo
             rankLabel.text = rankInfo!.getRankWithLP()
             rankLabel.textColor = UIColor.blackColor()
+            if isFavorite() {
+                favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+            }
             segmentBar.hidden = false
+            favoriteButton.hidden = false
             rankLabel.hidden = false
             championsTable.hidden = false
         }
@@ -93,6 +98,24 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         return fetchRequest
     }
     
+    func fetchMeRequest() -> NSFetchRequest {
+        let fetchRequest = NSFetchRequest(entityName: "Me")
+        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        return fetchRequest
+    }
+    
+    func deleteMeCoreData() {
+        let result: NSArray = (try! context.executeFetchRequest(fetchMeRequest())) as! [Player]
+        for me in result {
+            context.deleteObject(me as! NSManagedObject)
+        }
+        do {
+            try context.save()
+        } catch _ {
+        }
+    }
+    
     // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -106,7 +129,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         let request = GADRequest()
         request.testDevices = [testDevice]
         googleBannerView.loadRequest(request)
-        googleBannerView.hidden = true
+        view.bringSubviewToFront(favoriteButton)
+        favoriteButton.contentEdgeInsets = UIEdgeInsetsMake(7, 7, 7, 7)
         
         setUpSearchBar()
         navigationItem.titleView = searchText
@@ -130,8 +154,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         if summonerName != "" {
             searchText.text = summonerName
         }
-        settingBarButton.title = "\u{2699}"
-        
         toggleAddButton(searchText.text!)
     }
     
@@ -183,6 +205,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         segmentBar.setWidth(0, forSegmentAtIndex: 1)
         segmentBar.setEnabled(true, forSegmentAtIndex: 1)
         segmentBar.hidden = true
+        favoriteButton.hidden = true
+        favoriteButton.setImage(UIImage(named: "star"), forState: .Normal)
         championsTable.hidden = true
         rankLabel.hidden = true
         rankLabel.textColor = UIColor.blackColor()
@@ -236,36 +260,76 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         self.navigationController?.pushViewController(tvc!, animated: true)
     }
     
+    @IBAction func favorite(sender: UIButton) {
+        if isFavorite() {
+            favoriteButton.setImage(UIImage(named: "star"), forState: .Normal)
+            deleteMeCoreData()
+        }
+        else {
+            deleteMeCoreData()
+            let ent = NSEntityDescription.entityForName("Me", inManagedObjectContext: context)
+            let me = Me(entity: ent!, insertIntoManagedObjectContext: context)
+            me.name = summoner!.name
+            me.id = summoner!.id
+            me.region = region
+            me.date = NSDate()
+            me.homePage = 1
+            do {
+                try context.save()
+                favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+            } catch _ {
+            }
+
+        }
+    }
+    
+    func isFavorite() -> Bool {
+        let result: [Me] = (try! context.executeFetchRequest(fetchMeRequest())) as! [Me]
+        if !result.isEmpty {
+            if result.first?.id == summoner?.id && result.first?.region == region {
+                return true
+            }
+        }
+        return false
+    }
+    
     func performAction() {
-        reset()
-        loading()
-        if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
-            let fetchRequest = fetchPlayersRequest()
-            
-            let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
-            var found = false
-            for player in playersData {
-                if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
-                    found = true
-                    let obj:NSDictionary = ["name":player.name!, "id":player.id!]
-                    player.date = NSDate()
-                    do {
-                        try context.save()
-                    } catch _ {
+        if summoner?.name != searchText.text {
+            reset()
+            loading()
+            if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
+                let fetchRequest = fetchPlayersRequest()
+                
+                let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+                var found = false
+                for player in playersData {
+                    if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
+                        found = true
+                        let obj:NSDictionary = ["name":player.name!, "id":player.id!]
+                        player.date = NSDate()
+                        do {
+                            try context.save()
+                        } catch _ {
+                        }
+                        self.summoner = Summoner(data: obj)
                     }
-                    self.summoner = Summoner(data: obj)
                 }
+                if found == false {
+                    getSummonerId(searchText.text!)
+                }
+                
             }
-            if found == false {
-                getSummonerId(searchText.text!)
+            else {
+                indicator.stopAnimating()
+                championsTable.hidden = false
+                showReponseMessage("Network Unavailable.")
+                searchSummonerButton.enabled = true
             }
-            
         }
         else {
             indicator.stopAnimating()
-            championsTable.hidden = false
-            showReponseMessage("Network Unavailable.")
             searchSummonerButton.enabled = true
+            
         }
     }
     // MARK: - League of Lengends API
@@ -287,7 +351,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                             let game:GameDto = GameDto(entry: entry as! NSDictionary)
                                             self.recentGames.append(game)
                                             self.recentGames.sortInPlace({ (c1:GameDto, c2:GameDto) -> Bool in
-                                                return c1.createDate > c2.createDate
+                                                return c1.createDate.longLongValue > c2.createDate.longLongValue
                                             })
                                             self.championsTable.reloadData()
                                         }
@@ -369,8 +433,12 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 self.rankLabel.hidden = false
                                 self.segmentBar.setEnabled(false, forSegmentAtIndex: 1)
                                 self.segmentBar.setWidth(0.1, forSegmentAtIndex: 1)
+                                self.favoriteButton.hidden = false
                                 self.segmentBar.hidden = false
                                 self.championsTable.hidden = false
+                                if self.isFavorite() {
+                                    self.favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+                                }
                                 self.image = UIImage(named: "provisional")
                             case 429:
                                 self.showReponseMessage("Rate Limit Exceeded.")
@@ -429,6 +497,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 self.rankLabel.hidden = false
                                 self.championsTable.hidden = true
                                 self.segmentBar.hidden = true
+                                self.favoriteButton.hidden = true
                                 
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
@@ -459,7 +528,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         messageLabel.hidden = false
         championsTable.hidden = true
         view.addSubview(messageLabel)
-
+        
     }
     
     // MARK: - UITableViewDataSource
@@ -505,7 +574,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         discardKeyboard()
     }
     
-
+    
     
     // MARK: - UITextFieldDelegate
     func textFieldShouldReturn(textField: UITextField) -> Bool {

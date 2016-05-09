@@ -27,7 +27,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
                 queueTypeLabel.text = "Normal"
             }
             queueTypeLabel.font = Storyboard.CellFont
-            timeAgoLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)((match?.matchCreation)!/1000)))
+            timeAgoLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)((match?.matchCreation.longLongValue)!/1000)))
             timeAgoLabel.font = Storyboard.CellFont
             playedTimeLabel.text = "\(Int((match?.matchDuration)!/60))m \((match?.matchDuration)!%60)s"
             playedTimeLabel.font = Storyboard.CellFont
@@ -55,7 +55,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
         }
     }
 
-    var matchId:CLong = 0 {
+    var matchId:NSNumber = 0 {
         willSet{
             if newValue != matchDetail?.matchId {
                 if CheckReachability.isConnectedToNetwork() {
@@ -75,7 +75,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     
     var searchedSummonerId = CLong()
     
-    var matchInit = ([PlayerDto](),0,"",0) {
+    var matchInit = ([PlayerDto](),NSNumber(),"",0) {
         didSet {
             fellowPlayers = matchInit.0
             matchId = matchInit.1
@@ -154,7 +154,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     }
     
     // MARK: - League of Lengends API
-    func fetchMatchDetail(matchId: CLong) {
+    func fetchMatchDetail(matchId: NSNumber) {
         indicator.startAnimating()
         let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.2/match/\(matchId)?api_key=\(api_key)")
         

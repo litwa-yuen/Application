@@ -87,26 +87,24 @@ class RecentGameTableViewCell: UITableViewCell {
                 
             }
             
-            createTimeLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)(game.createDate/1000)))
+            createTimeLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)(game.createDate.longLongValue/1000)))
             createTimeLabel.font = TableCellProperties.CellSmallFont
             timePlayedLabel.text = "\(Int((game.stats?.timePlayed)!/60))m \((game.stats?.timePlayed)!%60)s"
             timePlayedLabel.font = TableCellProperties.CellFont
             if let champion = championsMap[game.championId] {
-                let image = UIImage(named: champion)
-                championImage?.image = resizeImage(image!, newWidth: 50)
+                championImage?.image =  UIImage(named: champion)
             }
             else {
-                let image = UIImage(named: "unknown")
-                championImage?.image = resizeImage(image!, newWidth: 50)
+                championImage?.image = UIImage(named: "unknown")
             }
             if let spell1 = summonerSpellMap[game.spell1] {
-                spell1Image.image = resizeImage(UIImage(named: spell1)!, newWidth: 25)
+                spell1Image.image = UIImage(named: spell1)
             }
             else {
                 spell1Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
             }
             if let spell2 = summonerSpellMap[game.spell2] {
-                spell2Image.image = resizeImage(UIImage(named: spell2)!, newWidth: 25)
+                spell2Image.image = UIImage(named: spell2)
             }
             else {
                 spell2Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -115,7 +113,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item6 = game.stats?.item6?.description {
                 if let image = UIImage(named: item6) {
-                    item6Image.image = resizeImage(image, newWidth: 25)
+                    item6Image.image = image
                     
                 }
                 else {
@@ -128,7 +126,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item0 = game.stats?.item0?.description {
                 if let image = UIImage(named: item0) {
-                    item0Image.image = resizeImage(image, newWidth: 25)
+                    item0Image.image = image
                 }
                 else {
                     item0Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -140,7 +138,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item1 = game.stats?.item1?.description {
                 if let image = UIImage(named: item1) {
-                    item1Image.image = resizeImage(image, newWidth: 25)
+                    item1Image.image = image
                 }
                 else {
                     item1Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -152,7 +150,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item2 = game.stats?.item2?.description {
                 if let image = UIImage(named: item2) {
-                    item2Image.image = resizeImage(image, newWidth: 25)
+                    item2Image.image = image
                 }
                 else {
                     item2Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -164,7 +162,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item3 = game.stats?.item3?.description {
                 if let image = UIImage(named: item3) {
-                    item3Image.image = resizeImage(image, newWidth: 25)
+                    item3Image.image = image
                 }
                 else {
                     item3Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -177,7 +175,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item4 = game.stats?.item4?.description {
                 if let image = UIImage(named: item4) {
-                    item4Image.image = resizeImage(image, newWidth: 25)
+                    item4Image.image = image
                 }
                 else {
                     item4Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -190,7 +188,7 @@ class RecentGameTableViewCell: UITableViewCell {
             
             if let item5 = game.stats?.item5?.description {
                 if let image = UIImage(named: item5) {
-                    item5Image.image = resizeImage(image, newWidth: 25)
+                    item5Image.image = image
                 }
                 else {
                     item5Image.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)

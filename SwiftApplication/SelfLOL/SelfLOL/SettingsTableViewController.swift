@@ -19,6 +19,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     var tap: UITapGestureRecognizer? = nil
     var showSummoner = Bool()
     let sectionMap = [2,3,1]
+    var  mySummoner: Summoner?
     
     // MARK: - Setup
     override func viewDidLoad() {
@@ -34,6 +35,9 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
         let result: [Me] = (try! context.executeFetchRequest(fetchMeRequest())) as! [Me]
         if !result.isEmpty {
             summonerTextField.text = result.first?.name
+            let obj:NSDictionary = ["name":(result.first?.name)!, "id":(result.first?.id)!]
+            mySummoner = Summoner(data: obj)
+            mySummoner?.region = result.first?.region
             summonerTextField.rightView?.hidden = false
             showSummoner = true
             GameCell.accessoryType = .Checkmark
@@ -97,7 +101,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
                 showSummoner = false
                 summonerTextField.rightView?.hidden = true
                 messageCell.hidden = true
-                deleteCoreData()
+                deleteMeCoreData()
             case 1:
                 showSummoner = true
                 toggleAddButton(summonerTextField.text!)
@@ -120,7 +124,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
         return fetchRequest
     }
     
-    func deleteCoreData() {
+    func deleteMeCoreData() {
         let result: NSArray = (try! context.executeFetchRequest(fetchMeRequest())) as! [Player]
         for me in result {
             context.deleteObject(me as! NSManagedObject)
@@ -190,7 +194,9 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     
     func discardKeyboard() {
         summonerTextField.endEditing(true)
-        view.removeGestureRecognizer(tap!)
+        if tap != nil {
+            view.removeGestureRecognizer(tap!)
+        }
     }
     
     
@@ -198,69 +204,77 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     func getSummonerId(summonerName: String) {
         messageCell.hidden = true
         discardKeyboard()
-        if CheckReachability.isConnectedToNetwork() {
-            let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
-            let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
-            
-            let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
-            let request = NSURLRequest(URL: url!)
-            let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    if(error == nil) {
-                        do {
-                            if let httpReponse = reponse as! NSHTTPURLResponse? {
-                                self.indicator.stopAnimating()
-                                self.indicator.hidden = true
-                                self.verifyButton.enabled = true
-                                self.verifyButton.hidden = false
-                                switch(httpReponse.statusCode) {
-                                case 200:
-                                    self.deleteCoreData()
-                                    let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
-                                    if let resultDict = object as? NSDictionary {
-                                        if let dataSet = resultDict.objectForKey(trimmedSummonerName.lowercaseString) as? NSDictionary {
-                                            let summoner = Summoner(data: dataSet)
-                                            
-                                            let context = self.context
-                                            let ent = NSEntityDescription.entityForName("Me", inManagedObjectContext: context)
-                                            let me = Me(entity: ent!, insertIntoManagedObjectContext: context)
-                                            me.name = summoner.name
-                                            self.summonerTextField.text = summoner.name
-                                            me.id = summoner.id
-                                            me.region = region
-                                            me.date = NSDate()
-                                            me.homePage = 1
-                                            do {
-                                                try context.save()
-                                                self.summonerTextField.rightView?.hidden = false
+        if mySummoner?.name != summonerTextField.text || mySummoner?.region != region {
+            if CheckReachability.isConnectedToNetwork() {
+                let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
+                let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
+                
+                let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
+                let request = NSURLRequest(URL: url!)
+                let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        if(error == nil) {
+                            do {
+                                if let httpReponse = reponse as! NSHTTPURLResponse? {
+                                    self.indicator.stopAnimating()
+                                    self.indicator.hidden = true
+                                    self.verifyButton.enabled = true
+                                    self.verifyButton.hidden = false
+                                    switch(httpReponse.statusCode) {
+                                    case 200:
+                                        self.deleteMeCoreData()
+                                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                        if let resultDict = object as? NSDictionary {
+                                            if let dataSet = resultDict.objectForKey(trimmedSummonerName.lowercaseString) as? NSDictionary {
+                                                let summoner = Summoner(data: dataSet)
                                                 
-                                            } catch _ {
+                                                let context = self.context
+                                                let ent = NSEntityDescription.entityForName("Me", inManagedObjectContext: context)
+                                                let me = Me(entity: ent!, insertIntoManagedObjectContext: context)
+                                                me.name = summoner.name
+                                                self.summonerTextField.text = summoner.name
+                                                me.id = summoner.id
+                                                me.region = region
+                                                me.date = NSDate()
+                                                me.homePage = 1
+                                                do {
+                                                    try context.save()
+                                                    self.summonerTextField.rightView?.hidden = false
+                                                    
+                                                } catch _ {
+                                                }
                                             }
                                         }
+                                    case 404:
+                                        self.showReponseMessage("Not Found")
+                                        
+                                    case 503, 500:
+                                        self.showReponseMessage("Service Unavailable")
+                                    default:
+                                        self.showReponseMessage("Wait for Update")
                                     }
-                                case 404:
-                                    self.showReponseMessage("Not Found")
-                                    
-                                case 503, 500:
-                                    self.showReponseMessage("Service Unavailable")
-                                default:
-                                    self.showReponseMessage("Wait for Update")
                                 }
-                            }
-                            
-                        } catch {}
-                    }
-                })
+                                
+                            } catch {}
+                        }
+                    })
+                }
+                task.resume()
             }
-            task.resume()
+            else {
+                self.indicator.stopAnimating()
+                self.indicator.hidden = true
+                self.verifyButton.enabled = true
+                self.verifyButton.hidden = false
+                
+                showReponseMessage("Network Unavailable")
+            }
         }
         else {
             self.indicator.stopAnimating()
             self.indicator.hidden = true
             self.verifyButton.enabled = true
             self.verifyButton.hidden = false
-            
-            showReponseMessage("Network Unavailable")
         }
     }
     

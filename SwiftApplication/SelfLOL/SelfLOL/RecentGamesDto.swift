@@ -2,8 +2,8 @@ import Foundation
 
 class GameDto {
     var championId: Int
-    var createDate: CLong
-    var gameId: CLong
+    var createDate: NSNumber
+    var gameId: NSNumber
     var spell1: Int
     var spell2: Int
     var teamId: Int
@@ -13,8 +13,8 @@ class GameDto {
     
     init(entry: NSDictionary){
         self.championId = (entry["championId"] as? Int)!
-        self.createDate = (entry["createDate"] as? CLong)!
-        self.gameId = (entry["gameId"] as? CLong)!
+        self.createDate = (entry["createDate"] as? NSNumber)!
+        self.gameId = (entry["gameId"] as? NSNumber)!
         self.spell1 = (entry["spell1"] as? Int)!
         self.spell2 = (entry["spell2"] as? Int)!
         self.teamId = (entry["teamId"] as? Int)!

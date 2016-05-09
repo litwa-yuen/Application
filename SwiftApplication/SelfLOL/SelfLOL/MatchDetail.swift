@@ -4,9 +4,9 @@ import Foundation
 var matchDetail: MatchDetail? = nil
 
 class MatchDetail {
-    var matchCreation: CLong
+    var matchCreation: NSNumber
     var matchDuration: CLong
-    var matchId: CLong
+    var matchId: NSNumber
     var queueType: String
     var participantIdentities: [ParticipantIdentity]?
     var participants: [Participant]?
@@ -16,10 +16,10 @@ class MatchDetail {
     var maxDamage: CLong?
     
     init(match: NSDictionary) {
-        self.matchCreation = (match["matchCreation"] as? CLong)!
+        self.matchCreation = (match["matchCreation"] as? NSNumber)!
         self.matchDuration = (match["matchDuration"] as? CLong)!
         self.queueType = (match["queueType"] as? String)!
-        self.matchId = (match["matchId"] as? CLong)!
+        self.matchId = (match["matchId"] as? NSNumber)!
         if let teams = match["teams"] as? NSArray {
             self.teams = []
             for team in teams {

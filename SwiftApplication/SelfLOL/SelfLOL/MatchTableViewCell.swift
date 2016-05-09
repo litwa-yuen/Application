@@ -69,21 +69,19 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
         adjustViewLayout(UIScreen.mainScreen().bounds.size)
         if let participant = self.participant {
             if let champion = championsMap[participant.championId] {
-                let image = UIImage(named: champion)
-                championImageView?.image = resizeImage(image!, newWidth: 50)
+                championImageView?.image = UIImage(named: champion)
             }
             else {
-                let image = UIImage(named: "unknown")
-                championImageView?.image = resizeImage(image!, newWidth: 50)
+                championImageView?.image = UIImage(named: "unknown")
             }
             if let spell1 = summonerSpellMap[participant.spell1Id] {
-                spell1ImageView.image = resizeImage(UIImage(named: spell1)!, newWidth: 25)
+                spell1ImageView.image = UIImage(named: spell1)
             }
             else {
                 spell1ImageView.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
             }
             if let spell2 = summonerSpellMap[participant.spell2Id] {
-                spell2ImageView.image = resizeImage(UIImage(named: spell2)!, newWidth: 25)
+                spell2ImageView.image = UIImage(named: spell2)
             }
             else {
                 spell2ImageView.image = resizeImage(UIImage(named: "unknown")!, newWidth: 25)
@@ -91,7 +89,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             }
             if let item6 = participant.participantStats.item6?.description {
                 if let image = UIImage(named: item6) {
-                    item6Image.image = resizeImage(image, newWidth: 25)
+                    item6Image.image = image
                 }
                 else if item6 == "0" {
                     item6Image.image = getEmptyItemImage()
@@ -103,7 +101,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item0 = participant.participantStats.item0?.description {
                 if let image = UIImage(named: item0) {
-                    item0Image.image = resizeImage(image, newWidth: 25)
+                    item0Image.image = image
                 }
                 else if item0 == "0" {
                     item0Image.image = getEmptyItemImage()
@@ -116,7 +114,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item1 = participant.participantStats.item1?.description {
                 if let image = UIImage(named: item1) {
-                    item1Image.image = resizeImage(image, newWidth: 25)
+                    item1Image.image = image
                 }
                 else if item1 == "0" {
                     item1Image.image = getEmptyItemImage()
@@ -128,7 +126,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item2 = participant.participantStats.item2?.description {
                 if let image = UIImage(named: item2) {
-                    item2Image.image = resizeImage(image, newWidth: 25)
+                    item2Image.image = image
                 }
                 else if item2 == "0" {
                     item2Image.image = getEmptyItemImage()
@@ -140,7 +138,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item3 = participant.participantStats.item3?.description {
                 if let image = UIImage(named: item3) {
-                    item3Image.image = resizeImage(image, newWidth: 25)
+                    item3Image.image = image
                 }
                 else if item3 == "0" {
                     item3Image.image = getEmptyItemImage()
@@ -152,7 +150,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item4 = participant.participantStats.item4?.description {
                 if let image = UIImage(named: item4) {
-                    item4Image.image = resizeImage(image, newWidth: 25)
+                    item4Image.image = image
                 }
                 else if item4 == "0" {
                     item4Image.image = getEmptyItemImage()
@@ -165,7 +163,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
             
             if let item5 = participant.participantStats.item5?.description {
                 if let image = UIImage(named: item5) {
-                    item5Image.image = resizeImage(image, newWidth: 25)
+                    item5Image.image = image
                 }
                 else if item5 == "0" {
                     item5Image.image = getEmptyItemImage()

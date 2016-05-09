@@ -4,6 +4,7 @@ import Foundation
 class Summoner {
     var id: CLong
     var name: String
+    var region: String?
     var profileIconId: Int?
     var revisionDate: CLong?
     var summonerLevel: Int?
@@ -16,7 +17,6 @@ class Summoner {
         self.profileIconId = getValue(data, fieldName: "profileIconId")
         self.revisionDate = getValue(data, fieldName: "revisionDate")
         self.summonerLevel = getValue(data, fieldName: "summonerLevel")
-        
     }
     
   
