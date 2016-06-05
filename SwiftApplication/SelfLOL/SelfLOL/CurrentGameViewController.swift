@@ -130,7 +130,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                 }
             }
         }
-        if champs.count > 0 {
+        if !champs.isEmpty {
             let h = tableView
                 .dequeueReusableHeaderFooterViewWithIdentifier(Storyboard.ReuseFooterIdentifier)!
             h.backgroundView = UIView()
@@ -183,8 +183,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
 
     // MARK: - League of Lengends API
     func fetchCurrentGame(summonerId: CLong) {
-        
-        let url = NSURL(string: "https://\(region).api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/\(region.uppercaseString)1/\(summonerId)?api_key=\(api_key)")
+        let url = NSURL(string: "https://\(region).api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/\(platformMap[region]!)/\(summonerId)?api_key=\(api_key)")
         let request = NSURLRequest(URL: url!)
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
             dispatch_async(dispatch_get_main_queue(), { () -> Void in

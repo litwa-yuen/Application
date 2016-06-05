@@ -50,7 +50,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             segmentBar.hidden = false
             favoriteButton.hidden = false
             rankLabel.hidden = false
-            championsTable.hidden = false
         }
     }
     
@@ -62,6 +61,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                 getRankInfo(summoner!.id)
                 getRecentGamesInfo(summoner!.id)
                 getChampionRankInfo(summoner!.id)
+                getChampionMastery(summoner!.id)
             }
             else {
                 showReponseMessage("Network Unavailable.")
@@ -71,6 +71,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     var champions = [ChampionStatus]()
+    var championMastery = [ChampionMasteryDTO]()
     var averageChampion: ChampionStatus? {
         didSet{
             averageStatus.text = "\((averageChampion?.aggregatedStatsDto?.getAverageStatus())!)"
@@ -129,10 +130,19 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         let request = GADRequest()
         request.testDevices = [testDevice]
         googleBannerView.loadRequest(request)
+
         view.bringSubviewToFront(favoriteButton)
         favoriteButton.contentEdgeInsets = UIEdgeInsetsMake(7, 7, 7, 7)
         
         setUpSearchBar()
+        
+        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel.font = UIFont(name: "Helvetica", size: 15)
+        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = NSTextAlignment.Center
+        view.addSubview(messageLabel)
+
         navigationItem.titleView = searchText
         indicator.center = view.center
         view.addSubview(indicator)
@@ -207,19 +217,18 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         segmentBar.hidden = true
         favoriteButton.hidden = true
         favoriteButton.setImage(UIImage(named: "star"), forState: .Normal)
-        championsTable.hidden = true
         rankLabel.hidden = true
         rankLabel.textColor = UIColor.blackColor()
         averageStatus.hidden = true
         winRate.hidden = true
         imageView.hidden = true
         searchSummonerButton.enabled = true
+        messageLabel.text = ""
         champions.removeAll()
         recentGames.removeAll()
+        championMastery.removeAll()
         segmentBar.selectedSegmentIndex = 0
         discardKeyboard()
-        messageLabel.hidden = true
-        showReponseMessage("")
         championsTable.reloadData()
     }
     
@@ -241,6 +250,10 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
             
         else if segmentBar.selectedSegmentIndex == 1 {
+            championsTable.allowsSelection = false
+            championsTable.reloadData()
+        }
+        else if segmentBar.selectedSegmentIndex == 2 {
             championsTable.allowsSelection = false
             championsTable.reloadData()
         }
@@ -294,44 +307,36 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func performAction() {
-        if summoner?.name != searchText.text {
-            reset()
-            loading()
-            if CheckReachability.isConnectedToNetwork() && searchText.text != nil && searchText.text != "" {
-                let fetchRequest = fetchPlayersRequest()
-                
-                let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
-                var found = false
-                for player in playersData {
-                    if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
-                        found = true
-                        let obj:NSDictionary = ["name":player.name!, "id":player.id!]
-                        player.date = NSDate()
-                        do {
-                            try context.save()
-                        } catch _ {
-                        }
-                        self.summoner = Summoner(data: obj)
+        reset()
+        loading()
+        if CheckReachability.isConnectedToNetwork() {
+            let fetchRequest = fetchPlayersRequest()
+            
+            let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+            var found = false
+            for player in playersData {
+                if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
+                    found = true
+                    let obj:NSDictionary = ["name":player.name!, "id":player.id!]
+                    player.date = NSDate()
+                    do {
+                        try context.save()
+                    } catch _ {
                     }
+                    self.summoner = Summoner(data: obj)
                 }
-                if found == false {
-                    getSummonerId(searchText.text!)
-                }
-                
             }
-            else {
-                indicator.stopAnimating()
-                championsTable.hidden = false
-                showReponseMessage("Network Unavailable.")
-                searchSummonerButton.enabled = true
+            if found == false {
+                getSummonerId(searchText.text!)
             }
-        }
-        else {
-            indicator.stopAnimating()
-            searchSummonerButton.enabled = true
             
         }
+        else {
+            showReponseMessage("Network Unavailable.")
+            searchSummonerButton.enabled = true
+        }
     }
+    
     // MARK: - League of Lengends API
     func getRecentGamesInfo(summonerId: CLong) {
         let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
@@ -407,6 +412,31 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         task.resume()
     }
     
+    func getChampionMastery(summonerId: CLong) {
+        let url = NSURL(string: "https://\(region).api.pvp.net/championmastery/location/\(platformMap[region]!)/player/\(summonerId)/champions?api_key=\(api_key)")
+        let request = NSURLRequest(URL: url!)
+        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                if(error == nil) {
+                    do {
+                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                        if let entries = object as? NSArray {
+                            for entry in entries {
+                                let championMastery:ChampionMasteryDTO = ChampionMasteryDTO(data: entry as! NSDictionary)
+                                self.championMastery.append(championMastery)
+                                self.championMastery.sortInPlace({ (c1:ChampionMasteryDTO, c2:ChampionMasteryDTO) -> Bool in
+                                    return c1.championPoints > c2.championPoints
+                                })
+                                self.championsTable.reloadData()
+                            }
+                        }
+                    } catch {}
+                }
+            })
+        }
+        task.resume()
+    }
+    
     
     func getRankInfo(summonerId: CLong) {
         let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
@@ -435,7 +465,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 self.segmentBar.setWidth(0.1, forSegmentAtIndex: 1)
                                 self.favoriteButton.hidden = false
                                 self.segmentBar.hidden = false
-                                self.championsTable.hidden = false
                                 if self.isFavorite() {
                                     self.favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
                                 }
@@ -495,7 +524,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 self.rankLabel.text = "Not Found"
                                 self.rankLabel.textColor = UIColor.redColor()
                                 self.rankLabel.hidden = false
-                                self.championsTable.hidden = true
                                 self.segmentBar.hidden = true
                                 self.favoriteButton.hidden = true
                                 
@@ -518,23 +546,16 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func showReponseMessage(message: String) {
-        indicator.stopAnimating()
-        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
         messageLabel.text = message
-        messageLabel.font = UIFont(name: "Helvetica", size: 15)
-        messageLabel.textColor = UIColor.blackColor()
-        messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = NSTextAlignment.Center
+        indicator.stopAnimating()
         messageLabel.hidden = false
-        championsTable.hidden = true
-        view.addSubview(messageLabel)
-        
     }
     
     // MARK: - UITableViewDataSource
     private struct Storyboard {
         static let ReuseCellIdentifier = "champion"
         static let ReuseMatchCellIdentifer = "match"
+        static let ReuseMasteryCellIdentifer = "mastery"
         static let MatchDetailIdentifier = "matchDetail"
         static let BorderColor = "607D8B"
         static let TitleFont = UIFont(name: "Helvetica-Bold", size: 18)
@@ -551,12 +572,18 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             cell?.layer.borderWidth = 1.0
             return cell!
         case 1:
-            fallthrough
-        default:
             let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
             cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
             cell?.layer.borderWidth = 1.0
             cell?.champion = champions[indexPath.row]
+            return cell!
+        case 2:
+            fallthrough
+        default:
+            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseMasteryCellIdentifer) as! ChampionMasteryTableViewCell?
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            cell?.layer.borderWidth = 1.0
+            cell?.mastery = championMastery[indexPath.row]
             return cell!
             
         }
@@ -566,6 +593,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         switch segmentBar.selectedSegmentIndex {
         case 0: return recentGames.count
         case 1: return champions.count
+        case 2: return championMastery.count
         default: return 0
         }
     }

@@ -19,17 +19,19 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     var tap: UITapGestureRecognizer? = nil
     var showSummoner = Bool()
     let sectionMap = [2,3,1]
+    let maxSelect = 100000
     var  mySummoner: Summoner?
     
     // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
+        let initSelect = maxSelect/regionTuples.count/2*regionTuples.count
         summonerTextField.delegate = self
         regionPicker.delegate = self
         regionPicker.dataSource = self
         messageCell.hidden = true
         indicator.hidden = true
-        regionPicker.selectRow(49995+(regionTuples[region]?.index)!, inComponent: 0, animated: true)
+        regionPicker.selectRow(initSelect+(regionTuples[region]?.index)!, inComponent: 0, animated: true)
         setUpSummonerTextField()
         StatusCell.accessoryType = .Checkmark
         let result: [Me] = (try! context.executeFetchRequest(fetchMeRequest())) as! [Me]
@@ -147,7 +149,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     }
     
     func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return 100000
+        return maxSelect
     }
     
     func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {

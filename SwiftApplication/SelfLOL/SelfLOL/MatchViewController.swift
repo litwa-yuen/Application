@@ -97,6 +97,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
         }
         matchTable.estimatedRowHeight = matchTable.rowHeight
         matchTable.rowHeight = UITableViewAutomaticDimension
+        matchTable.registerClass(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
         indicator.center = view.center
         view.addSubview(indicator)
         matchTable.reloadData()
@@ -106,6 +107,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
     private struct Storyboard {
         static let ReuseCellIdentifier = "player"
         static let SummonerIdentifier = "summoner"
+        static let ReuseFooterIdentifier = "banned"
         static let BorderColor = "607D8B"
         static let CellFont = UIFont(name: "Helvetica", size: 15)
         static let CellBoldFont = UIFont(name: "Helvetica-Bold", size: 16)
@@ -128,6 +130,82 @@ class MatchViewController: UIViewController, UITableViewDataSource {
         cell.layer.borderWidth = 1.0
         
         return cell
+    }
+    
+    func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        let team = match?.teams![section]
+
+        if team?.bans?.count > 0 {
+            return 50
+        }
+        else {
+            return 0
+        }
+    }
+    
+    func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let team = match?.teams![section]
+        
+        var champs:[String] = []
+        if let bannedChampions = team?.bans {
+            for champion in bannedChampions {
+                if let bannedChampion = championsMap[champion.championId] {
+                    champs.append(bannedChampion)
+                }
+                else {
+                    champs.append("unknown")
+                }                
+            }
+        }
+
+        if !champs.isEmpty {
+            let h = tableView
+                .dequeueReusableHeaderFooterViewWithIdentifier(Storyboard.ReuseFooterIdentifier)!
+            h.backgroundView = UIView()
+            h.backgroundView?.backgroundColor = UIColor.blackColor()
+            let lab = UILabel()
+            lab.font = UIFont(name:"Helvetica-Bold", size:12)
+            lab.textColor = UIColorFromRGB("D50000")
+            lab.text = "Ban:"
+            lab.backgroundColor = UIColor.clearColor()
+            h.contentView.addSubview(lab)
+            let champ1 = UIImageView()
+            champ1.image = UIImage(named:champs[0])
+            h.contentView.addSubview(champ1)
+            let champ2 = UIImageView()
+            if champs.count >= 2  {
+                champ2.image = UIImage(named: champs[1])
+            }
+            h.contentView.addSubview(champ2)
+            let champ3 = UIImageView()
+            if champs.count >= 3 {
+                champ3.image = UIImage(named: champs[2])
+            }
+            h.contentView.addSubview(champ3)
+            lab.translatesAutoresizingMaskIntoConstraints = false
+            champ1.translatesAutoresizingMaskIntoConstraints = false
+            champ2.translatesAutoresizingMaskIntoConstraints = false
+            champ3.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activateConstraints([
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "H:[lab(30)]-10-[champ3(50)]-5-[champ2(50)]-5-[champ1(50)]-5-|",
+                    options:[], metrics:nil, views:["champ1":champ1, "lab":lab, "champ2":champ2, "champ3":champ3]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[champ1]|", options:[], metrics:nil, views:["champ1":champ1]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[champ2]|", options:[], metrics:nil, views:["champ2": champ2]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[champ3]|", options:[], metrics:nil, views:["champ3": champ3]),
+                NSLayoutConstraint.constraintsWithVisualFormat(
+                    "V:|[lab]|", options:[], metrics:nil, views:["lab":lab])
+                ].flatten().map{$0})
+            
+            return h
+
+        }
+        else {
+            return nil
+        }
     }
     
     func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {

@@ -113,6 +113,7 @@ var championsMap = [
     154:"Zac",
     157:"Yasuo",
     161:"Velkoz",
+    163:"Taliyah",
     201:"Braum",
     202:"Jhin",
     203:"Kindred",
@@ -152,31 +153,44 @@ var summonerSpellMap = [
 
 var regionMap = [
     "br",
-    "las",
+    "eune",
+    "euw",
     "lan",
+    "las",
+    "na",
+    "oce",
     "ru",
     "tr",
-    "na",
-    "euw",
-    "kr",
     "jp",
-    "eune",
-    "oce"
+    "kr"
+]
+
+var platformMap = [
+    "br":"BR1",
+    "eune":"EUN1",
+    "euw":"ENW1",
+    "lan":"LA1",
+    "las":"LA2",
+    "na":"NA1",
+    "oce":"OC1",
+    "ru":"RU",
+    "tr":"TR1",
+    "jp":"JP1",
+    "kr":"KR"
 ]
 
 let regionTuples:[String:(index:Int, title:String)] = [
     "br":(0, "Brazil"),
-    "las":(1, "Latin America South"),
-    "lan":(2, "Latin America North"),
-    "ru":(3, "Russia"),
-    "tr":(4, "Turkey"),
+    "eune":(1, "EU Nordic & East"),
+    "euw":(2, "EU West"),
+    "lan":(3, "Latin America North"),
+    "las":(4, "Latin America South"),
     "na":(5, "North America"),
-    "euw":(6, "EU West"),
-    "kr":(7, "Korea"),
-    "jp":(8, "Japan"),
-    "eune":(9, "EU Nordic & East"),
-    "oce":(10, "Oceania"),
-    
+    "oce":(6, "Oceania"),
+    "ru":(7, "Russia"),
+    "tr":(8, "Turkey"),
+    "jp":(9, "Japan"),
+    "kr":(10, "Korea")
 ]
 
 

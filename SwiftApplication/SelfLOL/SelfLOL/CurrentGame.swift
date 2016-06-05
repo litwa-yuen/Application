@@ -53,11 +53,13 @@ class CurrentGameInfo {
 class BannedChampion {
     var championId: CLong
     var pickTurn: Int
-    var teamId: CLong
+    var teamId: CLong?
     init(champion: NSDictionary) {
         self.championId = (champion["championId"] as? CLong)!
         self.pickTurn = (champion["pickTurn"] as? Int)!
-        self.teamId = (champion["teamId"] as? CLong)!
+        if let teamId = champion["teamId"] as? CLong {
+            self.teamId = teamId
+        }
         
     }
 }

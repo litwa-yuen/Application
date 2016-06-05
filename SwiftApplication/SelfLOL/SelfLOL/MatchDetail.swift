@@ -171,6 +171,7 @@ class Team {
     var riftHeraldKills: Int
     var towerKills: Int
     var winner: Bool
+    var bans: [BannedChampion]?
     init(team: NSDictionary) {
         self.baronKills = (team["baronKills"] as? Int)!
         self.dragonKills = (team["dragonKills"] as? Int)!
@@ -178,5 +179,13 @@ class Team {
         self.riftHeraldKills = team["riftHeraldKills"] as? Int ?? 0
         self.towerKills = (team["towerKills"] as? Int)!
         self.winner = (team["winner"] as? Bool)!
+        if let bans = team["bans"] as? NSArray {
+            self.bans = []
+            for ban in bans {
+                let champ = BannedChampion(champion: ban as! NSDictionary)
+                champ.teamId = self.teamId
+                self.bans?.append(champ)
+            }
+        }
     }
 }
