@@ -36,7 +36,16 @@ class ChampionTableViewCell: UITableViewCell {
             csLabel.text = "\((champion.aggregatedStatsDto?.getCS())!) CS"
 
             KDRatioLabel.font = TableCellProperties.CellBoldFont
-            KDRatioLabel.text = "\((champion.aggregatedStatsDto?.calculateKDA())!) KDA"
+            if let kda = champion.aggregatedStatsDto?.calculateKDA() {
+                if kda == -1 {
+                    KDRatioLabel.text = "Perfect KDA"
+                }
+                else {
+                    KDRatioLabel.text = "\(kda) KDA"
+
+                }
+
+            }
 
             championKDA.font = TableCellProperties.CellFont
             championKDA?.text = "\((champion.aggregatedStatsDto?.getAverageKDA())!)"

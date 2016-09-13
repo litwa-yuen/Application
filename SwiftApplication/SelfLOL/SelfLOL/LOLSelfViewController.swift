@@ -43,6 +43,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             image = rankInfo?.image
             summoner!.rankInfo = rankInfo
             rankLabel.text = rankInfo!.getRankWithLP()
+
             rankLabel.textColor = UIColor.blackColor()
             if isFavorite() {
                 favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
@@ -256,6 +257,12 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         else if segmentBar.selectedSegmentIndex == 2 {
             championsTable.allowsSelection = false
             championsTable.reloadData()
+        }
+        else if segmentBar.selectedSegmentIndex == 4 {
+            
+            let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TrendingViewController") as? TrendingViewController
+            self.navigationController?.pushViewController(tvc!, animated: true)
+            
         }
         else {
             let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("CurrentGameViewController") as? CurrentGameViewController

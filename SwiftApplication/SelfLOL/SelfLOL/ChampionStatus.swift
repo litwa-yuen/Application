@@ -62,10 +62,13 @@ class AggregatedStatsDto {
     }
     
     func getAverageStatus() -> String {
+
+                
         return "\(getAverageKDA()) - \(calculateKDA()) KDA"
     }
     
     func getAverageKDA() -> String {
+
         let averageKills = roundToOneDecimal(Double(totalChampionKills), dec: Double(totalSessionsPlayed))
         let averageDeath = roundToOneDecimal(Double(totalDeathsPerSession), dec: Double(totalSessionsPlayed))
         let averageAssists = roundToOneDecimal(Double(totalAssists), dec: Double(totalSessionsPlayed))
@@ -87,6 +90,11 @@ class AggregatedStatsDto {
     }
     
     func calculateKDA() -> Double {
+
+        if totalDeathsPerSession == 0 {
+            return -1
+        }
+
         let result = (Double(totalChampionKills) + Double(totalAssists)) / Double(totalDeathsPerSession)
         return NSString(format: "%.02f", result).doubleValue
     }

@@ -121,6 +121,7 @@ var championsMap = [
     223:"TahmKench",
     236:"Lucian",
     238:"Zed",
+    240:"Kled",
     245:"Ekko",
     254:"Vi",
     266:"Aatrox",
