@@ -28,7 +28,7 @@ class CurrentGameInfo {
     }
     
     func split() {
-        participants?.sortInPlace({ (p1:CurrentGameParticipant, p2:CurrentGameParticipant) -> Bool in
+        participants?.sort(by: { (p1:CurrentGameParticipant, p2:CurrentGameParticipant) -> Bool in
             return p1.teamId < p2.teamId
         })
         

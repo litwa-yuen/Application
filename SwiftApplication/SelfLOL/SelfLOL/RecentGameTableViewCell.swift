@@ -58,17 +58,17 @@ class RecentGameTableViewCell: UITableViewCell {
     
     
     func updateUI() {
-        adjustViewLayout(UIScreen.mainScreen().bounds.size)
+        adjustViewLayout(UIScreen.main.bounds.size)
         if let game = self.game {
             gameType.font = TableCellProperties.CellSmallFont
             
-            if game.subType.containsString("ARAM") {
+            if game.subType.contains("ARAM") {
                 gameType.text = "ARAM"
             }
-            else if game.subType.containsString("BOT") {
+            else if game.subType.contains("BOT") {
                 gameType.text = "BOT"
             }
-            else if game.subType.containsString("RANK") {
+            else if game.subType.contains("RANK") {
                 gameType.text = "Ranked"
             }
             else {
@@ -87,7 +87,7 @@ class RecentGameTableViewCell: UITableViewCell {
                 
             }
             
-            createTimeLabel.text = timeAgoSince(NSDate(timeIntervalSince1970: (Double)(game.createDate.longLongValue/1000)))
+            createTimeLabel.text = timeAgoSince(Date(timeIntervalSince1970: (Double)(game.createDate.int64Value/1000)))
             createTimeLabel.font = TableCellProperties.CellSmallFont
             timePlayedLabel.text = "\(Int((game.stats?.timePlayed)!/60))m \((game.stats?.timePlayed)!%60)s"
             timePlayedLabel.font = TableCellProperties.CellFont
@@ -208,25 +208,25 @@ class RecentGameTableViewCell: UITableViewCell {
     
     func checkHeight() {
         let hiddenSelf: Bool = frame.size.height < RecentGameTableViewCell.expandedHeight
-        createTimeLabel.hidden = !hiddenSelf
-        timePlayedLabel.hidden = !hiddenSelf
-        resultLabel.hidden = !hiddenSelf
-        championImage.hidden = !hiddenSelf
-        spell1Image.hidden = !hiddenSelf
-        spell2Image.hidden = !hiddenSelf
-        item0Image.hidden = !hiddenSelf
-        item1Image.hidden = !hiddenSelf
-        item2Image.hidden = !hiddenSelf
-        item3Image.hidden = !hiddenSelf
-        item4Image.hidden = !hiddenSelf
-        item5Image.hidden = !hiddenSelf
-        item6Image.hidden = !hiddenSelf
-        KDALabel.hidden = !hiddenSelf
+        createTimeLabel.isHidden = !hiddenSelf
+        timePlayedLabel.isHidden = !hiddenSelf
+        resultLabel.isHidden = !hiddenSelf
+        championImage.isHidden = !hiddenSelf
+        spell1Image.isHidden = !hiddenSelf
+        spell2Image.isHidden = !hiddenSelf
+        item0Image.isHidden = !hiddenSelf
+        item1Image.isHidden = !hiddenSelf
+        item2Image.isHidden = !hiddenSelf
+        item3Image.isHidden = !hiddenSelf
+        item4Image.isHidden = !hiddenSelf
+        item5Image.isHidden = !hiddenSelf
+        item6Image.isHidden = !hiddenSelf
+        KDALabel.isHidden = !hiddenSelf
     }
     
     func watchFrameChanges(){
         if !isObserving {
-            addObserver(self, forKeyPath: "frame", options: [NSKeyValueObservingOptions.New, NSKeyValueObservingOptions.Initial], context: nil)
+            addObserver(self, forKeyPath: "frame", options: [NSKeyValueObservingOptions.new, NSKeyValueObservingOptions.initial], context: nil)
             isObserving = true
         }
     }
@@ -238,19 +238,19 @@ class RecentGameTableViewCell: UITableViewCell {
         }
     }
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "frame" {
             checkHeight()
         }
     }
     
-    func adjustViewLayout(size: CGSize) {
+    func adjustViewLayout(_ size: CGSize) {
         
         switch(size.width, size.height) {
         case (480, 320), (568, 320):                        // iPhone 4S, 5s in landscape
-            itemStackView.hidden = true
+            itemStackView.isHidden = true
         case (320, 480), (320, 568):                        // iPhone 4S in portrait
-            itemStackView.hidden = true
+            itemStackView.isHidden = true
         default:
             break
         }

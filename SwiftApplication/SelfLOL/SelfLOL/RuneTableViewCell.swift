@@ -37,12 +37,12 @@ class RuneTableViewCell: UITableViewCell {
         }
     }
         
-    func retrieveRune(rune: JsonRune, runeCounter: Int) -> String {
+    func retrieveRune(_ rune: JsonRune, runeCounter: Int) -> String {
         var runeDescription = rune.description
         let runeData1 = rune.data1
         let runeData2 = rune.data2
-        runeDescription = runeDescription.stringByReplacingOccurrencesOfString("*", withString: String(runeData1))
-        runeDescription = runeDescription.stringByReplacingOccurrencesOfString("#", withString: String(runeData2))
+        runeDescription = runeDescription.replacingOccurrences(of: "*", with: String(runeData1))
+        runeDescription = runeDescription.replacingOccurrences(of: "#", with: String(runeData2))
         return runeDescription + " X \(runeCounter)"
     }
 

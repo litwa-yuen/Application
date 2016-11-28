@@ -1,4 +1,25 @@
 import UIKit
+import Firebase
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class CurrentGameViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
@@ -36,18 +57,22 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     
     var isMainPage = false 
     
-    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     var messageLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        FIRAnalytics.logEvent(withName: "game_clicked", parameters: [
+            "region": region as NSObject
+            ])
+
         participantTableView.estimatedRowHeight = participantTableView.rowHeight
         participantTableView.rowHeight = UITableViewAutomaticDimension
-        participantTableView.registerClass(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
+        participantTableView.register(UITableViewHeaderFooterView.self, forHeaderFooterViewReuseIdentifier: Storyboard.ReuseFooterIdentifier)
         indicator.center = view.center
         self.navigationItem.setHidesBackButton(false, animated: false)
         if !isMainPage && CheckReachability.isConnectedToNetwork(){
-            statusBarButton.enabled = false
+            statusBarButton.isEnabled = false
             statusBarButton.title = ""
         }
         
@@ -55,7 +80,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     }
         
     // MARK: - UITableViewDataSource
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "participant"
         static let ReuseFooterIdentifier = "banned"
         static let DetailIdentifier = "detail"
@@ -63,27 +88,27 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         static let BorderColor = "607D8B"
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         
         return game?.table?.count ?? 0
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return game?.table![section].count ?? 0
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ParticipantTableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier) as! ParticipantTableViewCell
     
-        cell.participant = game?.table![indexPath.section][indexPath.row]
-        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+        cell.participant = game?.table![(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row]
+        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
         cell.layer.borderWidth = 1.0
-        cell.runeButton.tag = indexPath.row
-        cell.runeButton.addTarget(self, action: #selector(CurrentGameViewController.checkRune(_:)), forControlEvents: .TouchUpInside)
+        cell.runeButton.tag = (indexPath as NSIndexPath).row
+        cell.runeButton.addTarget(self, action: #selector(CurrentGameViewController.checkRune(_:)), for: .touchUpInside)
         return cell
     }
     
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         let team = game?.table![section].first
         if team?.teamId == game!.blueTeamId {
             return "Blue Team"
@@ -93,11 +118,15 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
     
-    @IBAction func checkRune(sender: UIButton) {
-        let butttonPosition:CGPoint = sender.convertPoint(CGPointZero, toView: self.participantTableView)
-        if let indexPath:NSIndexPath = self.participantTableView.indexPathForRowAtPoint(butttonPosition) {
-            let participant:CurrentGameParticipant = (game?.table![indexPath.section][indexPath.row])!
-            let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("RunesViewController") as? RunesViewController
+    @IBAction func checkRune(_ sender: UIButton) {
+        FIRAnalytics.logEvent(withName: "rune_clicked", parameters: [
+            "region": region as NSObject
+            ])
+
+        let butttonPosition:CGPoint = sender.convert(CGPoint.zero, to: self.participantTableView)
+        if let indexPath:IndexPath = self.participantTableView.indexPathForRow(at: butttonPosition) {
+            let participant:CurrentGameParticipant = (game?.table![(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row])!
+            let tvc = self.storyboard?.instantiateViewController(withIdentifier: "RunesViewController") as? RunesViewController
             tvc?.runes = participant.runes
             tvc?.title = "\(participant.summonerName)'s Rune"
             self.navigationController?.pushViewController(tvc!, animated: true)
@@ -105,7 +134,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
     
-    func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         if game?.bannedChampions?.count > 0 {
             return 50
         }
@@ -114,7 +143,7 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         }
     }
     // MARK: - banned champions table footer view
-    func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         
         let team = game?.table![section].first
         var champs:[String] = []
@@ -132,14 +161,14 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
         }
         if !champs.isEmpty {
             let h = tableView
-                .dequeueReusableHeaderFooterViewWithIdentifier(Storyboard.ReuseFooterIdentifier)!
+                .dequeueReusableHeaderFooterView(withIdentifier: Storyboard.ReuseFooterIdentifier)!
             h.backgroundView = UIView()
-            h.backgroundView?.backgroundColor = UIColor.blackColor()
+            h.backgroundView?.backgroundColor = UIColor.black
             let lab = UILabel()
             lab.font = UIFont(name:"Helvetica-Bold", size:12)
             lab.textColor = UIColorFromRGB("D50000")
             lab.text = "Ban:"
-            lab.backgroundColor = UIColor.clearColor()
+            lab.backgroundColor = UIColor.clear
             h.contentView.addSubview(lab)
             let champ1 = UIImageView()
             champ1.image = UIImage(named:champs[0])
@@ -158,19 +187,19 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
             champ1.translatesAutoresizingMaskIntoConstraints = false
             champ2.translatesAutoresizingMaskIntoConstraints = false
             champ3.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activateConstraints([
-                NSLayoutConstraint.constraintsWithVisualFormat(
-                    "H:[lab(30)]-10-[champ3(50)]-5-[champ2(50)]-5-[champ1(50)]-5-|",
+            NSLayoutConstraint.activate([
+                NSLayoutConstraint.constraints(
+                    withVisualFormat: "H:[lab(30)]-10-[champ3(50)]-5-[champ2(50)]-5-[champ1(50)]-5-|",
                     options:[], metrics:nil, views:["champ1":champ1, "lab":lab, "champ2":champ2, "champ3":champ3]),
-                NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[champ1]|", options:[], metrics:nil, views:["champ1":champ1]),
-                NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[champ2]|", options:[], metrics:nil, views:["champ2": champ2]),
-                NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[champ3]|", options:[], metrics:nil, views:["champ3": champ3]),
-                NSLayoutConstraint.constraintsWithVisualFormat(
-                    "V:|[lab]|", options:[], metrics:nil, views:["lab":lab])
-                ].flatten().map{$0})
+                NSLayoutConstraint.constraints(
+                    withVisualFormat: "V:|[champ1]|", options:[], metrics:nil, views:["champ1":champ1]),
+                NSLayoutConstraint.constraints(
+                    withVisualFormat: "V:|[champ2]|", options:[], metrics:nil, views:["champ2": champ2]),
+                NSLayoutConstraint.constraints(
+                    withVisualFormat: "V:|[champ3]|", options:[], metrics:nil, views:["champ3": champ3]),
+                NSLayoutConstraint.constraints(
+                    withVisualFormat: "V:|[lab]|", options:[], metrics:nil, views:["lab":lab])
+                ].joined().map{$0})
             
             return h
             
@@ -182,18 +211,18 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
     }
 
     // MARK: - League of Lengends API
-    func fetchCurrentGame(summonerId: CLong) {
-        let url = NSURL(string: "https://\(region).api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/\(platformMap[region]!)/\(summonerId)?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func fetchCurrentGame(_ summonerId: CLong) {
+        let url = URL(string: "https://\(region).api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/\(platformMap[region]!)/\(summonerId)?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                        if let httpReponse = reponse as! HTTPURLResponse? {
                             self.indicator.stopAnimating()
                             switch(httpReponse.statusCode) {
                             case 200:
-                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                 if let resultDict = object as? NSDictionary {
                                     self.game = CurrentGameInfo(game: resultDict)
                                     if self.game?.gameId == currentGame?.gameId {
@@ -214,28 +243,28 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func fetchRankInfo(participant: CurrentGameParticipant){
+    func fetchRankInfo(_ participant: CurrentGameParticipant){
         if participant.summonerId == (summoner?.id)! {
             if summoner?.rankInfo != nil {
                 participant.rankInfo = summoner!.rankInfo
                 return
             }
         }
-        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(participant.summonerId)/entry?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(participant.summonerId)/entry?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                        if let httpReponse = reponse as! HTTPURLResponse? {
                             self.indicator.stopAnimating()
                             switch(httpReponse.statusCode) {
                             case 200:
-                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                 if let resultDict = object as? NSDictionary {
                                     if let entries = resultDict["\(participant.summonerId)"] as? NSArray {
                                         participant.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
@@ -258,39 +287,39 @@ class CurrentGameViewController: UIViewController, UITableViewDataSource, UITabl
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func showReponseMessage(message: String) {
+    func showReponseMessage(_ message: String) {
         indicator.stopAnimating()
-        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.size.width, height: self.view.bounds.size.height))
         messageLabel.text = message
         messageLabel.font = UIFont(name: "Helvetica", size: 15)
-        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.textColor = UIColor.black
         messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = NSTextAlignment.Center
-        participantTableView.hidden = true
+        messageLabel.textAlignment = NSTextAlignment.center
+        participantTableView.isHidden = true
         view.addSubview(messageLabel)
     }
     
     // MARK: - Navigation
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let identifier = segue.identifier {
             switch identifier {
             case Storyboard.DetailIdentifier:
                 let cell = sender as? UITableViewCell
-                if let indexPath = participantTableView.indexPathForCell(cell!) {
-                    let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
-                    let participant = (game?.table![indexPath.section][indexPath.row])! as CurrentGameParticipant
+                if let indexPath = participantTableView.indexPath(for: cell!) {
+                    let seguedToDetail = segue.destination as? LOLSelfViewController
+                    let participant = (game?.table![(indexPath as NSIndexPath).section][(indexPath as NSIndexPath).row])! as CurrentGameParticipant
                     let obj:NSDictionary = ["name":participant.summonerName, "id":participant.summonerId]
                     seguedToDetail?.summoner = Summoner(data: obj)
                     seguedToDetail?.summonerName = participant.summonerName
-                    self.participantTableView.deselectRowAtIndexPath(indexPath, animated: true)
+                    self.participantTableView.deselectRow(at: indexPath, animated: true)
                 }
             case Storyboard.StatusIdentifier:
-                let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
+                let seguedToDetail = segue.destination as? LOLSelfViewController
                 seguedToDetail?.summoner = summoner
                 seguedToDetail?.summonerName = (summoner?.name)!
             default: break

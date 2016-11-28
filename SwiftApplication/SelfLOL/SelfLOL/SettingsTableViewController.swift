@@ -15,7 +15,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     @IBOutlet weak var indicator: UIActivityIndicatorView!
     
     // MARK: - Properties
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    let context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).managedObjectContext
     var tap: UITapGestureRecognizer? = nil
     var showSummoner = Bool()
     let sectionMap = [2,3,1]
@@ -29,63 +29,63 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
         summonerTextField.delegate = self
         regionPicker.delegate = self
         regionPicker.dataSource = self
-        messageCell.hidden = true
-        indicator.hidden = true
+        messageCell.isHidden = true
+        indicator.isHidden = true
         regionPicker.selectRow(initSelect+(regionTuples[region]?.index)!, inComponent: 0, animated: true)
         setUpSummonerTextField()
-        StatusCell.accessoryType = .Checkmark
-        let result: [Me] = (try! context.executeFetchRequest(fetchMeRequest())) as! [Me]
+        StatusCell.accessoryType = .checkmark
+        let result: [Me] = (try! context.fetch(fetchMeRequest())) as! [Me]
         if !result.isEmpty {
             summonerTextField.text = result.first?.name
             let obj:NSDictionary = ["name":(result.first?.name)!, "id":(result.first?.id)!]
             mySummoner = Summoner(data: obj)
             mySummoner?.region = result.first?.region
-            summonerTextField.rightView?.hidden = false
+            summonerTextField.rightView?.isHidden = false
             showSummoner = true
-            GameCell.accessoryType = .Checkmark
-            StatusCell.accessoryType = .None
+            GameCell.accessoryType = .checkmark
+            StatusCell.accessoryType = .none
         }
     }
     
-    func handleTap(sender: UIGestureRecognizer) {
+    func handleTap(_ sender: UIGestureRecognizer) {
         discardKeyboard()
     }
     
     func setUpSummonerTextField() {
-        summonerTextField.returnKeyType = .Search
+        summonerTextField.returnKeyType = .search
         summonerTextField.enablesReturnKeyAutomatically = true
         let rightView = UIView()
         
-        rightView.frame = CGRectMake(0, 0, 20, 20)
+        rightView.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
         rightView.translatesAutoresizingMaskIntoConstraints = false
         
         
-        let button = UIButton(frame: CGRectMake(-1, 2, 14, 14))
-        button.setBackgroundImage(UIImage(named: "verified"), forState: .Normal)
-        button.userInteractionEnabled = false
+        let button = UIButton(frame: CGRect(x: -1, y: 2, width: 14, height: 14))
+        button.setBackgroundImage(UIImage(named: "verified"), for: UIControlState())
+        button.isUserInteractionEnabled = false
         rightView.addSubview(button)
-        summonerTextField.rightViewMode = UITextFieldViewMode.UnlessEditing
+        summonerTextField.rightViewMode = UITextFieldViewMode.unlessEditing
         summonerTextField.rightView = rightView
-        summonerTextField.rightView?.hidden = true
+        summonerTextField.rightView?.isHidden = true
         
     }
     
     // MARK: - Button Action
-    @IBAction func verify(sender: UIButton) {
-        indicator.hidden = false
-        verifyButton.hidden = true
+    @IBAction func verify(_ sender: UIButton) {
+        indicator.isHidden = false
+        verifyButton.isHidden = true
         indicator.startAnimating()
         getSummonerId(summonerTextField.text!)
     }
     
     
     // MARK: - Table view data source
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return sectionMap.count
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         if !showSummoner && section == 1 {
             return 0
@@ -93,43 +93,43 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
         return sectionMap[section]
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if indexPath.section == 0 {
-            switch indexPath.row {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if (indexPath as NSIndexPath).section == 0 {
+            switch (indexPath as NSIndexPath).row {
             case 0:
-                StatusCell.accessoryType = .Checkmark
-                GameCell.accessoryType = .None
+                StatusCell.accessoryType = .checkmark
+                GameCell.accessoryType = .none
                 summonerTextField.text = ""
                 showSummoner = false
-                summonerTextField.rightView?.hidden = true
-                messageCell.hidden = true
+                summonerTextField.rightView?.isHidden = true
+                messageCell.isHidden = true
                 deleteMeCoreData()
             case 1:
                 showSummoner = true
                 toggleAddButton(summonerTextField.text!)
-                StatusCell.accessoryType = .None
-                GameCell.accessoryType = .Checkmark
+                StatusCell.accessoryType = .none
+                GameCell.accessoryType = .checkmark
                 
             default:
                 break
             }
             tableView.reloadData()
         }
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     // MARK: - Core Data
-    func fetchMeRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Me")
+    func fetchMeRequest() -> NSFetchRequest<NSFetchRequestResult> {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Me")
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         return fetchRequest
     }
     
     func deleteMeCoreData() {
-        let result: NSArray = (try! context.executeFetchRequest(fetchMeRequest())) as! [Player]
+        let result: NSArray = (try! context.fetch(fetchMeRequest())) as! [Me] as NSArray
         for me in result {
-            context.deleteObject(me as! NSManagedObject)
+            context.delete(me as! NSManagedObject)
         }
         do {
             try context.save()
@@ -139,58 +139,58 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     
     
     // MARK: - UIPickerViewDataSource
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         let mapResult : String = regionMap[row%11]
         return regionTuples[mapResult]?.title
     }
     
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         region = regionMap[row%11]
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return maxSelect
     }
     
-    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
     
     // MARK: - UITextFieldDelegate
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         getSummonerId(textField.text!)
         return true
     }
     
-    func toggleAddButton(text: String) {
+    func toggleAddButton(_ text: String) {
         if text.isEmpty {
-            verifyButton.enabled = false
+            verifyButton.isEnabled = false
         }
         else {
-            verifyButton.enabled = true
+            verifyButton.isEnabled = true
         }
     }
     
-    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if textField == summonerTextField {
-            summonerTextField.rightView?.hidden = true
-            let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            summonerTextField.rightView?.isHidden = true
+            let text = (textField.text! as NSString).replacingCharacters(in: range, with: string)
             toggleAddButton(text)
         }
         return true
     }
     
-    func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         tap = UITapGestureRecognizer(target: self, action: #selector(SettingsTableViewController.handleTap(_:)))
         view.addGestureRecognizer(tap!)
         
         return true
     }
     
-    func textFieldShouldClear(textField: UITextField) -> Bool {
-        summonerTextField.rightView?.hidden = true
-        verifyButton.enabled = false
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        summonerTextField.rightView?.isHidden = true
+        verifyButton.isEnabled = false
         return true
     }
     
@@ -203,45 +203,45 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     
     
     // MARK: - Riot API Calls
-    func getSummonerId(summonerName: String) {
-        messageCell.hidden = true
+    func getSummonerId(_ summonerName: String) {
+        messageCell.isHidden = true
         discardKeyboard()
         if mySummoner?.name != summonerTextField.text || mySummoner?.region != region {
             if CheckReachability.isConnectedToNetwork() {
-                let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
-                let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
+                let urlSummonerName: String = summonerName.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+                let trimmedSummonerName = summonerName.replacingOccurrences(of: " ", with: "")
                 
-                let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
-                let request = NSURLRequest(URL: url!)
-                let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
+                let request = URLRequest(url: url!)
+                let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+                    DispatchQueue.main.async(execute: { () -> Void in
                         if(error == nil) {
                             do {
-                                if let httpReponse = reponse as! NSHTTPURLResponse? {
+                                if let httpReponse = reponse as! HTTPURLResponse? {
                                     self.indicator.stopAnimating()
-                                    self.indicator.hidden = true
-                                    self.verifyButton.enabled = true
-                                    self.verifyButton.hidden = false
+                                    self.indicator.isHidden = true
+                                    self.verifyButton.isEnabled = true
+                                    self.verifyButton.isHidden = false
                                     switch(httpReponse.statusCode) {
                                     case 200:
                                         self.deleteMeCoreData()
-                                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                        let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                         if let resultDict = object as? NSDictionary {
-                                            if let dataSet = resultDict.objectForKey(trimmedSummonerName.lowercaseString) as? NSDictionary {
+                                            if let dataSet = resultDict.object(forKey: trimmedSummonerName.lowercased()) as? NSDictionary {
                                                 let summoner = Summoner(data: dataSet)
                                                 
                                                 let context = self.context
-                                                let ent = NSEntityDescription.entityForName("Me", inManagedObjectContext: context)
-                                                let me = Me(entity: ent!, insertIntoManagedObjectContext: context)
+                                                let ent = NSEntityDescription.entity(forEntityName: "Me", in: context)
+                                                let me = Me(entity: ent!, insertInto: context)
                                                 me.name = summoner.name
                                                 self.summonerTextField.text = summoner.name
-                                                me.id = summoner.id
+                                                me.id = summoner.id as NSNumber?
                                                 me.region = region
-                                                me.date = NSDate()
+                                                me.date = Date()
                                                 me.homePage = 1
                                                 do {
                                                     try context.save()
-                                                    self.summonerTextField.rightView?.hidden = false
+                                                    self.summonerTextField.rightView?.isHidden = false
                                                     
                                                 } catch _ {
                                                 }
@@ -260,28 +260,28 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
                             } catch {}
                         }
                     })
-                }
+                }) 
                 task.resume()
             }
             else {
                 self.indicator.stopAnimating()
-                self.indicator.hidden = true
-                self.verifyButton.enabled = true
-                self.verifyButton.hidden = false
+                self.indicator.isHidden = true
+                self.verifyButton.isEnabled = true
+                self.verifyButton.isHidden = false
                 
                 showReponseMessage("Network Unavailable")
             }
         }
         else {
             self.indicator.stopAnimating()
-            self.indicator.hidden = true
-            self.verifyButton.enabled = true
-            self.verifyButton.hidden = false
+            self.indicator.isHidden = true
+            self.verifyButton.isEnabled = true
+            self.verifyButton.isHidden = false
         }
     }
     
-    func showReponseMessage(message: String) {
-        messageCell.hidden = false
+    func showReponseMessage(_ message: String) {
+        messageCell.isHidden = false
         messageLabel.text = message
     }
     

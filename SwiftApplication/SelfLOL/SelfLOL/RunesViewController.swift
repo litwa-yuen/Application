@@ -26,21 +26,21 @@ class RunesViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     // MARK: - UITableViewDataSource
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "rune"
         static let BorderColor = "607D8B"
     }
 
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return (runes?.count)!
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! RuneTableViewCell
-        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier) as! RuneTableViewCell
+        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
         cell.layer.borderWidth = 1.0
-        cell.rune = runes![indexPath.row]
+        cell.rune = runes![(indexPath as NSIndexPath).row]
         return cell
     }
 

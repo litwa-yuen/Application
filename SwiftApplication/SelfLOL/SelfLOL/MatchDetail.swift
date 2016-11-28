@@ -1,5 +1,16 @@
 
 import Foundation
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
 
 var matchDetail: MatchDetail? = nil
 
@@ -40,8 +51,8 @@ class MatchDetail {
         }
     }
     
-    func split(players: [PlayerDto]) -> Bool {
-        participants?.sortInPlace({ (p1:Participant, p2:Participant) -> Bool in
+    func split(_ players: [PlayerDto]) -> Bool {
+        participants?.sort(by: { (p1:Participant, p2:Participant) -> Bool in
             return p1.teamId < p2.teamId
         })
         
@@ -77,7 +88,7 @@ class MatchDetail {
         return true
     }
     
-    func findPlayer(teamId:CLong, championId:CLong) -> Participant? {
+    func findPlayer(_ teamId:CLong, championId:CLong) -> Participant? {
         for p in participants! {
             if p.championId == championId && p.teamId == teamId {
                 return p
@@ -116,7 +127,7 @@ class Participant: CurrentGameParticipant {
         }
         self.participantStats = ParticipantStats(status: (participant["stats"] as? NSDictionary)!)
         super.init(participant: participant)
-        let found: Int = identities.indexOf { (identity) -> Bool in
+        let found: Int = identities.index { (identity) -> Bool in
              return identity.participantId == self.participantId
         }!
         if let name = identities[found].summonerName {

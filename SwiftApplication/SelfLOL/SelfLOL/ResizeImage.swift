@@ -11,20 +11,20 @@ import UIKit
 
 
 
-public func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
+public func resizeImage(_ image: UIImage, newWidth: CGFloat) -> UIImage {
     
-    UIGraphicsBeginImageContext(CGSizeMake(newWidth, newWidth))
-    image.drawInRect(CGRectMake(0, 0, newWidth, newWidth))
+    UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newWidth))
+    image.draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newWidth))
     let newImage = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     
-    return newImage
+    return newImage!
 }
 
-public func UIColorFromRGB(colorCode: String, alpha: Float = 1.0) -> UIColor {
-    let scanner = NSScanner(string:colorCode)
+public func UIColorFromRGB(_ colorCode: String, alpha: Float = 1.0) -> UIColor {
+    let scanner = Scanner(string:colorCode)
     var color:UInt32 = 0;
-    scanner.scanHexInt(&color)
+    scanner.scanHexInt32(&color)
     
     let mask = 0x000000FF
     let r = CGFloat(Float(Int(color >> 16) & mask)/255.0)
@@ -34,7 +34,7 @@ public func UIColorFromRGB(colorCode: String, alpha: Float = 1.0) -> UIColor {
     return UIColor(red: r, green: g, blue: b, alpha: CGFloat(alpha))
 }
 
-public func tint(image: UIImage, color: UIColor) -> UIImage
+public func tint(_ image: UIImage, color: UIColor) -> UIImage
 {
     let ciImage = CIImage(image: image)
     let filter = CIFilter(name: "CIMultiplyCompositing")
@@ -47,12 +47,12 @@ public func tint(image: UIImage, color: UIColor) -> UIImage
     filter!.setValue(colorImage, forKey: kCIInputImageKey)
     filter!.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
     
-    return UIImage(CIImage: filter!.outputImage!)
+    return UIImage(ciImage: filter!.outputImage!)
 }
 
-public func aroundBorder(imageView: UIImageView) {
+public func aroundBorder(_ imageView: UIImageView) {
     imageView.layer.cornerRadius = 5.0
-    imageView.layer.borderColor = UIColor.blackColor().CGColor
+    imageView.layer.borderColor = UIColor.black.cgColor
     imageView.layer.borderWidth = 1.0
     imageView.layer.masksToBounds = true
     
@@ -62,8 +62,8 @@ public func getEmptyItemImage() -> UIImage {
     return resizeImage(UIImage(named: "empty")!, newWidth: 25)
 }
 
-public func getValue<T>(jsonData: NSDictionary, fieldName: String) -> T? {
-    if let value: T? = jsonData.objectForKey(fieldName) as? T? {
+public func getValue<T>(_ jsonData: NSDictionary, fieldName: String) -> T? {
+    if let value: T? = jsonData.object(forKey: fieldName) as? T? {
         return value
     }
     else {

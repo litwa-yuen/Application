@@ -79,12 +79,12 @@ class AggregatedStatsDto {
         return "\(roundToOneDecimal(Double(totalMinionKills), dec: Double(totalSessionsPlayed)))"
     }
     
-    func roundToOneDecimal(num: Double, dec: Double) -> Double {
+    func roundToOneDecimal(_ num: Double, dec: Double) -> Double {
         let result = num/dec
         return NSString(format: "%.01f", result).doubleValue
     }
     
-    func roundToPercent(num: Double, dec: Double) -> Int {
+    func roundToPercent(_ num: Double, dec: Double) -> Int {
         let result = num/dec * 100
         return Int(result)
     }

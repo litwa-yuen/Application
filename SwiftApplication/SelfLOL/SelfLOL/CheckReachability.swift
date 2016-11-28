@@ -9,9 +9,9 @@
 import Foundation
 
 
-public class CheckReachability {
+open class CheckReachability {
     class func isConnectedToNetwork() -> Bool {
-        let reachability: Reachability = Reachability.reachabilityForInternetConnection()
+        let reachability: Reachability = Reachability.forInternetConnection()
         let networkStatus: Int = reachability.currentReachabilityStatus().rawValue
         return networkStatus != 0
     }

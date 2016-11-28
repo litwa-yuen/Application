@@ -14,7 +14,7 @@ import CoreData
 
 extension Me {
 
-    @NSManaged var date: NSDate?
+    @NSManaged var date: Date?
     @NSManaged var id: NSNumber?
     @NSManaged var name: String?
     @NSManaged var region: String?

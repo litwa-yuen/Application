@@ -66,7 +66,7 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
     }
 
     func updateUI() {
-        adjustViewLayout(UIScreen.mainScreen().bounds.size)
+        adjustViewLayout(UIScreen.main.bounds.size)
         if let participant = self.participant {
             if let champion = championsMap[participant.championId] {
                 championImageView?.image = UIImage(named: champion)
@@ -196,27 +196,27 @@ class MatchTableViewCell: UITableViewCell, DamageViewDataSource {
         damageView.setNeedsDisplay()
     }
     
-    func damagePercentForDamageView(sender: DamageView) -> CGFloat? {
+    func damagePercentForDamageView(_ sender: DamageView) -> CGFloat? {
         return damage
     }
     
-    func damageForDamageLabel(sender: DamageView) -> String? {
+    func damageForDamageLabel(_ sender: DamageView) -> String? {
         return damageLabel
     }
     
-    func roundToOneDecimal(num: Double, dec: Double) -> Double {
+    func roundToOneDecimal(_ num: Double, dec: Double) -> Double {
         let result = num/dec
         return NSString(format: "%.01f", result).doubleValue
     }
     
-    func adjustViewLayout(size: CGSize) {
+    func adjustViewLayout(_ size: CGSize) {
         
         switch(size.width, size.height) {
         case (480, 320), (568, 320):                        // iPhone 4S, 5s in landscape
-            summonerNameLabel.hidden = true
+            summonerNameLabel.isHidden = true
             
         case (320, 480), (320, 568):                        // iPhone 4S in portrait
-            summonerNameLabel.hidden = true
+            summonerNameLabel.isHidden = true
         default:
             break
         }

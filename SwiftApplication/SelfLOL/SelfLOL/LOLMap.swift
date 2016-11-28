@@ -130,6 +130,7 @@ var championsMap = [
     412:"Thresh",
     420:"Illaoi",
     421:"RekSai",
+    427:"Ivern",
     429:"Kalista",
     432:"Bard"
 ]

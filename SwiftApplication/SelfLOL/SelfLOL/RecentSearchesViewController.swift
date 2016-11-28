@@ -14,27 +14,27 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
     @IBOutlet weak var recentSearchTableView: UITableView!
     @IBOutlet weak var clearButton: UIBarButtonItem!
         
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication()
+    let context: NSManagedObjectContext = (UIApplication.shared
         .delegate as! AppDelegate).managedObjectContext
-    var frc: NSFetchedResultsController = NSFetchedResultsController()
+    var frc: NSFetchedResultsController = NSFetchedResultsController<NSFetchRequestResult>()
     
-    func recentSearchFetchRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Players")
+    func recentSearchFetchRequest() -> NSFetchRequest<NSFetchRequestResult> {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Players")
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
         return  fetchRequest
     }
 
-    func getFetchedResultsController() -> NSFetchedResultsController {
-        frc = NSFetchedResultsController(fetchRequest: recentSearchFetchRequest(),
+    func getFetchedResultsController() -> NSFetchedResultsController<Player> {
+        frc = NSFetchedResultsController(fetchRequest: recentSearchFetchRequest() ,
                                          managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-        return frc
+        return frc as! NSFetchedResultsController<Player>
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        frc = getFetchedResultsController()
+        frc = getFetchedResultsController() as! NSFetchedResultsController<NSFetchRequestResult>
         frc.delegate = self
         do {
             try frc.performFetch()
@@ -51,80 +51,80 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    @IBAction func clear(sender: UIBarButtonItem) {
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
+    @IBAction func clear(_ sender: UIBarButtonItem) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
   
         alert.addAction(UIAlertAction(
-        title: "Clear Recent Searches", style: .Default) { (action) -> Void in
+        title: "Clear Recent Searches", style: .default) { (action) -> Void in
             self.deleteCoreData()
             })
         
         alert.addAction(UIAlertAction(
             title: "Cancel",
-            style: .Cancel)
+            style: .cancel)
         { (action) in
             // do nothing
             })
-        alert.modalPresentationStyle = .Popover
+        alert.modalPresentationStyle = .popover
         let ppc = alert.popoverPresentationController
         ppc?.barButtonItem = clearButton
-        presentViewController(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
         
     }
     
-    @IBAction func done(sender: UIBarButtonItem) {
+    @IBAction func done(_ sender: UIBarButtonItem) {
         
-        self.navigationController?.popViewControllerAnimated(true)
+       _ = self.navigationController?.popViewController(animated: true)
     }
     
     // MARK: - UITableViewDelegate
     
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "recent"
         static let PlayerIdentifier = "player"
     }
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let numberOfRow = frc.sections?[section].numberOfObjects
         return numberOfRow!
         
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         let numberOfSections = frc.sections?.count
         return numberOfSections!
         
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath)
-        let player = frc.objectAtIndexPath(indexPath) as! Player
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier, for: indexPath)
+        let player = frc.object(at: indexPath) as! Player
         cell.textLabel?.text = "\(player.name!)"
-        cell.detailTextLabel?.text = "(\((player.region?.uppercaseString)!))"
+        cell.detailTextLabel?.text = "(\((player.region?.uppercased())!))"
         return cell
     }
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle:
-        UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        let managedObject: NSManagedObject = frc.objectAtIndexPath(indexPath) as! NSManagedObject
-        context.deleteObject(managedObject)
+    func tableView(_ tableView: UITableView, commit editingStyle:
+        UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        let managedObject: NSManagedObject = frc.object(at: indexPath) as! NSManagedObject
+        context.delete(managedObject)
         do {
             try context.save()
         } catch _ {
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         recentSearchTableView.reloadData()
     }
     
     func deleteCoreData() {
         var playersData = [Player]()
-        let fetchRequest = NSFetchRequest(entityName: "Players")
-        playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Players")
+        playersData = (try! context.fetch(fetchRequest)) as! [Player]
         for player in playersData {
-            context.deleteObject(player)
+            context.delete(player)
         }
         do {
             try context.save()
@@ -138,18 +138,18 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         if let identifier = segue.identifier {
             switch identifier {
             case Storyboard.PlayerIdentifier:
                 let cell = sender as? UITableViewCell
-                if let indexPath = recentSearchTableView.indexPathForCell(cell!) {
-                    let seguedToDetail = segue.destinationViewController as? LOLSelfViewController
-                    let player: Player = frc.objectAtIndexPath(indexPath) as! Player
+                if let indexPath = recentSearchTableView.indexPath(for: cell!) {
+                    let seguedToDetail = segue.destination as? LOLSelfViewController
+                    let player: Player = frc.object(at: indexPath) as! Player
                     let obj:NSDictionary = ["name":player.name!, "id":player.id!]
-                    player.date = NSDate()
+                    player.date = Date()
                     do {
                         try context.save()
                     } catch _ {
@@ -157,7 +157,7 @@ class RecentSearchesViewController: UIViewController, NSFetchedResultsController
                     region = player.region!
                     seguedToDetail?.summoner = Summoner(data: obj)
                     seguedToDetail?.summonerName = player.name!
-                    self.recentSearchTableView.deselectRowAtIndexPath(indexPath, animated: true)
+                    self.recentSearchTableView.deselectRow(at: indexPath, animated: true)
                 }
             default: break
             }

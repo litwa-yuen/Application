@@ -1,7 +1,7 @@
 import UIKit
 protocol DamageViewDataSource: class {
-    func damagePercentForDamageView(sender:DamageView) -> CGFloat?
-    func damageForDamageLabel(sender:DamageView) -> String?
+    func damagePercentForDamageView(_ sender:DamageView) -> CGFloat?
+    func damageForDamageLabel(_ sender:DamageView) -> String?
 }
 
 @IBDesignable
@@ -13,21 +13,21 @@ class DamageView: UIView {
     
     weak var dataSource: DamageViewDataSource?
     var damageLabelSet = Bool()
-    var damageLabel: UILabel = UILabel(frame: CGRectMake(0, 0, 50, 20))
+    var damageLabel: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 20))
     
-    override func drawRect(rect: CGRect) {
-        let r = CGRectMake(0, 0, bounds.size.width, 20)
-        let damgeFrame = UIBezierPath(roundedRect: r, byRoundingCorners: [UIRectCorner.TopLeft , UIRectCorner.BottomLeft], cornerRadii: CGSizeMake(1.0, 1.0))
+    override func draw(_ rect: CGRect) {
+        let r = CGRect(x: 0, y: 0, width: bounds.size.width, height: 20)
+        let damgeFrame = UIBezierPath(roundedRect: r, byRoundingCorners: [UIRectCorner.topLeft , UIRectCorner.bottomLeft], cornerRadii: CGSize(width: 1.0, height: 1.0))
         damgeFrame.lineWidth = lineWidth
         color.set()
         damgeFrame.stroke()
         let damagePercent = dataSource?.damagePercentForDamageView(self) ?? 0
         if damageLabelSet == false {
             damageLabel = UILabel(frame: r)
-            damageLabel.textAlignment = .Center
+            damageLabel.textAlignment = .center
             damageLabel.text = dataSource?.damageForDamageLabel(self) ?? "0"
             damageLabel.font = UIFont(name: "Helvetica", size: 12)
-            damageLabel.textColor = UIColor.blackColor()
+            damageLabel.textColor = UIColor.black
             self.addSubview(damageLabel)
             damageLabelSet = true
         }
@@ -39,9 +39,9 @@ class DamageView: UIView {
         
     }
     
-    private func bezierPathFor(damgePercent: CGFloat) -> UIBezierPath {
-        let r = CGRectMake(0, 0, bounds.size.width*damgePercent, 20)
-        let damgePath = UIBezierPath(roundedRect: r, byRoundingCorners: [UIRectCorner.TopLeft , UIRectCorner.BottomLeft], cornerRadii: CGSizeMake(1.0, 1.0))
+    fileprivate func bezierPathFor(_ damgePercent: CGFloat) -> UIBezierPath {
+        let r = CGRect(x: 0, y: 0, width: bounds.size.width*damgePercent, height: 20)
+        let damgePath = UIBezierPath(roundedRect: r, byRoundingCorners: [UIRectCorner.topLeft , UIRectCorner.bottomLeft], cornerRadii: CGSize(width: 1.0, height: 1.0))
         damgePath.lineWidth = lineWidth
         UIColorFromRGB("00C853").setFill()
         damgePath.fill()

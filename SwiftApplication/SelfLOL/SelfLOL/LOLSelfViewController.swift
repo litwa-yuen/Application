@@ -1,6 +1,27 @@
 import UIKit
 import CoreData
 import GoogleMobileAds
+import Firebase
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate, GADBannerViewDelegate {
     
@@ -18,13 +39,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     
     // MARK: - Properties
-    var selectedIndexPath: NSIndexPath?
-    let searchText: UITextField = UITextField(frame: CGRectMake(0,0,280,25))
+    var selectedIndexPath: IndexPath?
+    let searchText: UITextField = UITextField(frame: CGRect(x: 0,y: 0,width: 280,height: 25))
     
     var summonerName: String = ""{
         didSet{
             searchText.text = summonerName
-            searchSummonerButton.enabled = true
+            searchSummonerButton.isEnabled = true
         }
     }
     
@@ -34,7 +55,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
         set{
             imageView.image = newValue
-            imageView.hidden = false
+            imageView.isHidden = false
         }
     }
     
@@ -44,13 +65,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             summoner!.rankInfo = rankInfo
             rankLabel.text = rankInfo!.getRankWithLP()
 
-            rankLabel.textColor = UIColor.blackColor()
+            rankLabel.textColor = UIColor.black
             if isFavorite() {
-                favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+                favoriteButton.setImage(UIImage(named: "full star"), for: UIControlState())
             }
-            segmentBar.hidden = false
-            favoriteButton.hidden = false
-            rankLabel.hidden = false
+            segmentBar.isHidden = false
+            favoriteButton.isHidden = false
+            rankLabel.isHidden = false
         }
     }
     
@@ -77,8 +98,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         didSet{
             averageStatus.text = "\((averageChampion?.aggregatedStatsDto?.getAverageStatus())!)"
             winRate.text = " \((averageChampion?.aggregatedStatsDto?.getWinRate())!)"
-            averageStatus.hidden = false
-            winRate.hidden = false
+            averageStatus.isHidden = false
+            winRate.isHidden = false
         }
     }
     
@@ -88,29 +109,33 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     var messageLabel = UILabel()
     
+    var showAlert = false
+    
+    var interstitial: GADInterstitial!
+    
     // MARK: - NSFetchedResultsControllerDelegate
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
-    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+    let context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).managedObjectContext
+    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     
     
-    func fetchPlayersRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Players")
+    func fetchPlayersRequest() -> NSFetchRequest<NSFetchRequestResult> {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Players")
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         return fetchRequest
     }
     
-    func fetchMeRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Me")
+    func fetchMeRequest() -> NSFetchRequest<NSFetchRequestResult> {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Me")
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         return fetchRequest
     }
     
     func deleteMeCoreData() {
-        let result: NSArray = (try! context.executeFetchRequest(fetchMeRequest())) as! [Player]
+        let result: NSArray = (try! context.fetch(fetchMeRequest())) as! [Me] as NSArray
         for me in result {
-            context.deleteObject(me as! NSManagedObject)
+            context.delete(me as! NSManagedObject)
         }
         do {
             try context.save()
@@ -124,24 +149,19 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         rankLabel.font = Storyboard.TitleFont
         averageStatus.font = Storyboard.DetailFont
         winRate.font = Storyboard.DetailFont
-        googleBannerView.adUnitID = AdMobAdUnitID
-        googleBannerView.adSize = kGADAdSizeSmartBannerPortrait
-        googleBannerView.delegate = self
-        googleBannerView.rootViewController = self
-        let request = GADRequest()
-        request.testDevices = [testDevice]
-        googleBannerView.loadRequest(request)
+        createAndLoadAds()
 
-        view.bringSubviewToFront(favoriteButton)
+
+        view.bringSubview(toFront: favoriteButton)
         favoriteButton.contentEdgeInsets = UIEdgeInsetsMake(7, 7, 7, 7)
         
         setUpSearchBar()
         
-        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.size.width, height: self.view.bounds.size.height))
         messageLabel.font = UIFont(name: "Helvetica", size: 15)
-        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.textColor = UIColor.black
         messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = NSTextAlignment.Center
+        messageLabel.textAlignment = NSTextAlignment.center
         view.addSubview(messageLabel)
 
         navigationItem.titleView = searchText
@@ -151,7 +171,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         championsTable.rowHeight = UITableViewAutomaticDimension
         reset()
         if summoner?.id == nil {
-            let result: [Player] = (try! context.executeFetchRequest(fetchPlayersRequest())) as! [Player]
+            let result: [Player] = (try! context.fetch(fetchPlayersRequest())) as! [Player]
             if !result.isEmpty {
                 if let playerRegion = result.first?.region {
                     region = playerRegion
@@ -168,8 +188,19 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         toggleAddButton(searchText.text!)
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if showAlert {
+            showAlert = false
+            let alertController = UIAlertController(title: "No Favorite", message: "Tap the star icon to favorite your summoner", preferredStyle: .alert)
+            
+            let OKAction = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
+            }
+            
+            alertController.addAction(OKAction)
+            self.present(alertController, animated: true, completion:nil)
+            
+        }
         segmentBar.selectedSegmentIndex = 0
         championsTable.allowsSelection = true
         if regionTitle != region {
@@ -181,49 +212,51 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         championsTable.reloadData()
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         tryToRateApp()
     }
     
     func setUpSearchBar() {
         searchText.delegate = self
         searchText.placeholder = "Enter the Summoner's name"
-        searchText.contentHorizontalAlignment = .Center
-        searchText.contentVerticalAlignment = .Center
-        searchText.borderStyle = .RoundedRect
+        searchText.contentHorizontalAlignment = .center
+        searchText.contentVerticalAlignment = .center
+        searchText.borderStyle = .roundedRect
         searchText.font = UIFont(name: "Helvetica", size: 14)
-        searchText.clearButtonMode = .WhileEditing
-        searchText.textAlignment = .Center
-        searchText.returnKeyType = .Search
+        searchText.autocorrectionType = .no
+        searchText.spellCheckingType = .no
+        searchText.clearButtonMode = .whileEditing
+        searchText.textAlignment = .center
+        searchText.returnKeyType = .search
         searchText.enablesReturnKeyAutomatically = true
         
         let rightView = UIView()
         
-        rightView.frame = CGRectMake(0, 0, 20, 20)
+        rightView.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
         rightView.translatesAutoresizingMaskIntoConstraints = false
         
         
-        let button = UIButton(frame: CGRectMake(-1, 2, 14, 14))
-        button.setBackgroundImage(UIImage(named: "clock"), forState: .Normal)
-        button.addTarget(self, action: #selector(LOLSelfViewController.recentSearch), forControlEvents: UIControlEvents.TouchUpInside)
+        let button = UIButton(frame: CGRect(x: -1, y: 2, width: 14, height: 14))
+        button.setBackgroundImage(UIImage(named: "clock"), for: UIControlState())
+        button.addTarget(self, action: #selector(LOLSelfViewController.recentSearch), for: UIControlEvents.touchUpInside)
         rightView.addSubview(button)
-        searchText.rightViewMode = UITextFieldViewMode.UnlessEditing
+        searchText.rightViewMode = UITextFieldViewMode.unlessEditing
         searchText.rightView = rightView
     }
     
     func reset() {
         championsTable.allowsSelection = true
-        segmentBar.setWidth(0, forSegmentAtIndex: 1)
-        segmentBar.setEnabled(true, forSegmentAtIndex: 1)
-        segmentBar.hidden = true
-        favoriteButton.hidden = true
-        favoriteButton.setImage(UIImage(named: "star"), forState: .Normal)
-        rankLabel.hidden = true
-        rankLabel.textColor = UIColor.blackColor()
-        averageStatus.hidden = true
-        winRate.hidden = true
-        imageView.hidden = true
-        searchSummonerButton.enabled = true
+        segmentBar.setWidth(0, forSegmentAt: 1)
+        segmentBar.setEnabled(true, forSegmentAt: 1)
+        segmentBar.isHidden = true
+        favoriteButton.isHidden = true
+        favoriteButton.setImage(UIImage(named: "star"), for: UIControlState())
+        rankLabel.isHidden = true
+        rankLabel.textColor = UIColor.black
+        averageStatus.isHidden = true
+        winRate.isHidden = true
+        imageView.isHidden = true
+        searchSummonerButton.isEnabled = true
         messageLabel.text = ""
         champions.removeAll()
         recentGames.removeAll()
@@ -238,12 +271,12 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func loading() {
-        searchSummonerButton.enabled = false
+        searchSummonerButton.isEnabled = false
         indicator.startAnimating()
     }
     
     // MARK: - Button Action
-    @IBAction func segmentedControlActionChanged(sender: UISegmentedControl) {
+    @IBAction func segmentedControlActionChanged(_ sender: UISegmentedControl) {
         discardKeyboard()
         if segmentBar.selectedSegmentIndex == 0 {
             championsTable.allowsSelection = true
@@ -258,55 +291,89 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             championsTable.allowsSelection = false
             championsTable.reloadData()
         }
-        else if segmentBar.selectedSegmentIndex == 4 {
-            
-            let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TrendingViewController") as? TrendingViewController
+        else if segmentBar.selectedSegmentIndex == 3 {
+            FIRAnalytics.logEvent(withName: "trending_clicked" , parameters: [
+                "region": region as NSObject
+                ])
+
+            let tvc = self.storyboard?.instantiateViewController(withIdentifier: "TrendingViewController") as? TrendingViewController
             self.navigationController?.pushViewController(tvc!, animated: true)
             
         }
         else {
-            let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("CurrentGameViewController") as? CurrentGameViewController
+            
+            let tvc = self.storyboard?.instantiateViewController(withIdentifier: "CurrentGameViewController") as? CurrentGameViewController
             tvc?.summoner = self.summoner
             self.navigationController?.pushViewController(tvc!, animated: true)
         }
     }
     
-    @IBAction func searchSummonerBarAction(sender: UIBarButtonItem) {
+    @IBAction func searchSummonerBarAction(_ sender: UIBarButtonItem) {
         performAction()
     }
     
     func recentSearch() {
-        let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("RecentSearchesViewController") as? RecentSearchesViewController
+        FIRAnalytics.logEvent(withName: "recent_search_clicked", parameters: [
+            "region": region as NSObject
+            ])
+        let tvc = self.storyboard?.instantiateViewController(withIdentifier: "RecentSearchesViewController") as? RecentSearchesViewController
         self.navigationController?.pushViewController(tvc!, animated: true)
     }
     
-    @IBAction func favorite(sender: UIButton) {
+    @IBAction func favorite(_ sender: UIButton) {
+
         if isFavorite() {
-            favoriteButton.setImage(UIImage(named: "star"), forState: .Normal)
+            
+            favoriteButton.setImage(UIImage(named: "star"), for: UIControlState())
             deleteMeCoreData()
         }
         else {
             deleteMeCoreData()
-            let ent = NSEntityDescription.entityForName("Me", inManagedObjectContext: context)
-            let me = Me(entity: ent!, insertIntoManagedObjectContext: context)
+            
+            FIRAnalytics.logEvent(withName: "favorite_clicked", parameters: [
+                "region": region as NSObject
+                ])
+            if interstitial.isReady {
+                interstitial.present(fromRootViewController: self)
+            }
+            
+            let ent = NSEntityDescription.entity(forEntityName: "Me", in: context)
+            let me = Me(entity: ent!, insertInto: context)
             me.name = summoner!.name
-            me.id = summoner!.id
+            me.id = summoner!.id as NSNumber?
             me.region = region
-            me.date = NSDate()
+            me.date = Date()
             me.homePage = 1
             do {
                 try context.save()
-                favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+                favoriteButton.setImage(UIImage(named: "full star"), for: UIControlState())
             } catch _ {
             }
 
         }
     }
     
+    private func createAndLoadAds() {
+        
+        googleBannerView.adUnitID = AdMobAdUnitID
+        googleBannerView.adSize = kGADAdSizeSmartBannerPortrait
+        googleBannerView.delegate = self
+        googleBannerView.rootViewController = self
+        let request = GADRequest()
+        request.testDevices = [testDevice]
+        googleBannerView.load(request)
+ 
+        interstitial = GADInterstitial(adUnitID: AdMobAdUnitID)
+        // Request test ads on devices you specify. Your test device ID is printed to the console when
+        // an ad request is made.
+        interstitial.load(request)
+    }
+
+    
     func isFavorite() -> Bool {
-        let result: [Me] = (try! context.executeFetchRequest(fetchMeRequest())) as! [Me]
+        let result: [Me] = (try! context.fetch(fetchMeRequest())) as! [Me]
         if !result.isEmpty {
-            if result.first?.id == summoner?.id && result.first?.region == region {
+            if (result.first?.id)!.stringValue == (summoner?.id)!.description && (result.first?.region)! == region {
                 return true
             }
         }
@@ -319,13 +386,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         if CheckReachability.isConnectedToNetwork() {
             let fetchRequest = fetchPlayersRequest()
             
-            let playersData = (try! context.executeFetchRequest(fetchRequest)) as! [Player]
+            let playersData = (try! context.fetch(fetchRequest)) as! [Player]
             var found = false
             for player in playersData {
                 if uniformName(player.name!) == uniformName(searchText.text!) && player.region == region {
                     found = true
                     let obj:NSDictionary = ["name":player.name!, "id":player.id!]
-                    player.date = NSDate()
+                    player.date = Date()
                     do {
                         try context.save()
                     } catch _ {
@@ -340,30 +407,30 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
         else {
             showReponseMessage("Network Unavailable.")
-            searchSummonerButton.enabled = true
+            searchSummonerButton.isEnabled = true
         }
     }
     
     // MARK: - League of Lengends API
-    func getRecentGamesInfo(summonerId: CLong) {
-        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func getRecentGamesInfo(_ summonerId: CLong) {
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/game/by-summoner/\(summonerId)/recent?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                        if let httpReponse = reponse as! HTTPURLResponse? {
                             self.indicator.stopAnimating()
                             switch(httpReponse.statusCode) {
                             case 200:
-                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                 if let resultDict = object as? NSDictionary {
                                     if let entries = resultDict["games"] as? NSArray {
                                         for entry in entries {
                                             let game:GameDto = GameDto(entry: entry as! NSDictionary)
                                             self.recentGames.append(game)
-                                            self.recentGames.sortInPlace({ (c1:GameDto, c2:GameDto) -> Bool in
-                                                return c1.createDate.longLongValue > c2.createDate.longLongValue
+                                            self.recentGames.sort(by: { (c1:GameDto, c2:GameDto) -> Bool in
+                                                return c1.createDate.int64Value > c2.createDate.int64Value
                                             })
                                             self.championsTable.reloadData()
                                         }
@@ -383,25 +450,25 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func getChampionRankInfo(summonerId: CLong) {
-        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2016&api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func getChampionRankInfo(_ summonerId: CLong) {
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2016&api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                        let object = try JSONSerialization.jsonObject(with: data!, options: [])
                         if let resultDict = object as? NSDictionary {
                             if let entries = resultDict["champions"] as? NSArray {
                                 for entry in entries {
                                     let rankChampion:ChampionStatus = ChampionStatus(entry: entry as! NSDictionary)
                                     if rankChampion.id != 0 {
                                         self.champions.append(rankChampion)
-                                        self.champions.sortInPlace({ (c1:ChampionStatus, c2:ChampionStatus) -> Bool in
+                                        self.champions.sort(by: { (c1:ChampionStatus, c2:ChampionStatus) -> Bool in
                                             return c1.aggregatedStatsDto?.totalSessionsPlayed > c2.aggregatedStatsDto?.totalSessionsPlayed
                                         })
                                     }
@@ -415,23 +482,23 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func getChampionMastery(summonerId: CLong) {
-        let url = NSURL(string: "https://\(region).api.pvp.net/championmastery/location/\(platformMap[region]!)/player/\(summonerId)/champions?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func getChampionMastery(_ summonerId: CLong) {
+        let url = URL(string: "https://\(region).api.pvp.net/championmastery/location/\(platformMap[region]!)/player/\(summonerId)/champions?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                        let object = try JSONSerialization.jsonObject(with: data!, options: [])
                         if let entries = object as? NSArray {
                             for entry in entries {
                                 let championMastery:ChampionMasteryDTO = ChampionMasteryDTO(data: entry as! NSDictionary)
                                 self.championMastery.append(championMastery)
-                                self.championMastery.sortInPlace({ (c1:ChampionMasteryDTO, c2:ChampionMasteryDTO) -> Bool in
+                                self.championMastery.sort(by: { (c1:ChampionMasteryDTO, c2:ChampionMasteryDTO) -> Bool in
                                     return c1.championPoints > c2.championPoints
                                 })
                                 self.championsTable.reloadData()
@@ -440,26 +507,26 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
     
-    func getRankInfo(summonerId: CLong) {
-        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+    func getRankInfo(_ summonerId: CLong) {
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v2.5/league/by-summoner/\(summonerId)/entry?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                        if let httpReponse = reponse as! HTTPURLResponse? {
                             self.indicator.stopAnimating()
-                            self.searchSummonerButton.enabled = true
+                            self.searchSummonerButton.isEnabled = true
                             
                             switch(httpReponse.statusCode) {
                                 
                             case 200:
-                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                 if let resultDict = object as? NSDictionary {
                                     if let entries = resultDict["\(summonerId)"] as? NSArray {
                                         self.rankInfo = RankInfo(data: entries[0] as! NSDictionary)
@@ -467,13 +534,13 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 }
                             case 404:
                                 self.rankLabel.text = "Unranked"
-                                self.rankLabel.hidden = false
-                                self.segmentBar.setEnabled(false, forSegmentAtIndex: 1)
-                                self.segmentBar.setWidth(0.1, forSegmentAtIndex: 1)
-                                self.favoriteButton.hidden = false
-                                self.segmentBar.hidden = false
+                                self.rankLabel.isHidden = false
+                                self.segmentBar.setEnabled(false, forSegmentAt: 1)
+                                self.segmentBar.setWidth(0.1, forSegmentAt: 1)
+                                self.favoriteButton.isHidden = false
+                                self.segmentBar.isHidden = false
                                 if self.isFavorite() {
-                                    self.favoriteButton.setImage(UIImage(named: "full star"), forState: .Normal)
+                                    self.favoriteButton.setImage(UIImage(named: "full star"), for: UIControlState())
                                 }
                                 self.image = UIImage(named: "provisional")
                             case 429:
@@ -489,37 +556,37 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func getSummonerId(summonerName: String) {
-        let urlSummonerName: String = summonerName.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
-        let trimmedSummonerName = summonerName.stringByReplacingOccurrencesOfString(" ", withString: "")
+    func getSummonerId(_ summonerName: String) {
+        let urlSummonerName: String = summonerName.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+        let trimmedSummonerName = summonerName.replacingOccurrences(of: " ", with: "")
         
-        let url = NSURL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
-        let request = NSURLRequest(URL: url!)
-        let task = NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, reponse, error) -> Void in
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.4/summoner/by-name/\(urlSummonerName)?api_key=\(api_key)")
+        let request = URLRequest(url: url!)
+        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 if(error == nil) {
                     do {
-                        if let httpReponse = reponse as! NSHTTPURLResponse? {
+                        if let httpReponse = reponse as! HTTPURLResponse? {
                             self.indicator.stopAnimating()
-                            self.searchSummonerButton.enabled = true
+                            self.searchSummonerButton.isEnabled = true
                             
                             switch(httpReponse.statusCode) {
                             case 200:
-                                let object = try NSJSONSerialization.JSONObjectWithData(data!, options: [])
+                                let object = try JSONSerialization.jsonObject(with: data!, options: [])
                                 if let resultDict = object as? NSDictionary {
-                                    if let dataSet = resultDict.objectForKey(trimmedSummonerName.lowercaseString) as? NSDictionary {
+                                    if let dataSet = resultDict.object(forKey: trimmedSummonerName.lowercased()) as? NSDictionary {
                                         self.summoner = Summoner(data: dataSet)
                                         let context = self.context
-                                        let ent = NSEntityDescription.entityForName("Players", inManagedObjectContext: context)
-                                        let nPlayer = Player(entity: ent!, insertIntoManagedObjectContext: context)
+                                        let ent = NSEntityDescription.entity(forEntityName: "Players", in: context)
+                                        let nPlayer = Player(entity: ent!, insertInto: context)
                                         nPlayer.name = self.searchText.text!
-                                        nPlayer.id = self.summoner?.id
+                                        nPlayer.id = self.summoner?.id as NSNumber?
                                         nPlayer.region = region
-                                        nPlayer.date = NSDate()
+                                        nPlayer.date = Date()
                                         
                                         do {
                                             try context.save()
@@ -529,10 +596,10 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                                 }
                             case 404:
                                 self.rankLabel.text = "Not Found"
-                                self.rankLabel.textColor = UIColor.redColor()
-                                self.rankLabel.hidden = false
-                                self.segmentBar.hidden = true
-                                self.favoriteButton.hidden = true
+                                self.rankLabel.textColor = UIColor.red
+                                self.rankLabel.isHidden = false
+                                self.segmentBar.isHidden = true
+                                self.favoriteButton.isHidden = true
                                 
                             case 503, 500:
                                 self.showReponseMessage("Service Unavailable.")
@@ -544,22 +611,22 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
                     } catch {}
                 }
             })
-        }
+        }) 
         task.resume()
     }
     
-    func uniformName(summonerName: String) -> String {
-        return summonerName.stringByReplacingOccurrencesOfString(" ", withString: "").lowercaseString
+    func uniformName(_ summonerName: String) -> String {
+        return summonerName.replacingOccurrences(of: " ", with: "").lowercased()
     }
     
-    func showReponseMessage(message: String) {
+    func showReponseMessage(_ message: String) {
         messageLabel.text = message
         indicator.stopAnimating()
-        messageLabel.hidden = false
+        messageLabel.isHidden = false
     }
     
     // MARK: - UITableViewDataSource
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "champion"
         static let ReuseMatchCellIdentifer = "match"
         static let ReuseMasteryCellIdentifer = "mastery"
@@ -570,33 +637,33 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch segmentBar.selectedSegmentIndex {
         case 0:
-            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseMatchCellIdentifer) as! RecentGameTableViewCell?
-            cell?.game = recentGames[indexPath.row]
-            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseMatchCellIdentifer) as! RecentGameTableViewCell?
+            cell?.game = recentGames[(indexPath as NSIndexPath).row]
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
             cell?.layer.borderWidth = 1.0
             return cell!
         case 1:
-            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
-            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier) as! ChampionTableViewCell?
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
             cell?.layer.borderWidth = 1.0
-            cell?.champion = champions[indexPath.row]
+            cell?.champion = champions[(indexPath as NSIndexPath).row]
             return cell!
         case 2:
             fallthrough
         default:
-            let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseMasteryCellIdentifer) as! ChampionMasteryTableViewCell?
-            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+            let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseMasteryCellIdentifer) as! ChampionMasteryTableViewCell?
+            cell?.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
             cell?.layer.borderWidth = 1.0
-            cell?.mastery = championMastery[indexPath.row]
+            cell?.mastery = championMastery[(indexPath as NSIndexPath).row]
             return cell!
             
         }
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch segmentBar.selectedSegmentIndex {
         case 0: return recentGames.count
         case 1: return champions.count
@@ -605,97 +672,97 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         }
     }
     
-    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         discardKeyboard()
     }
     
     
     
     // MARK: - UITextFieldDelegate
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         performAction()
         return true
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.searchText.endEditing(true)
     }
     
-    func toggleAddButton(text: String) {
+    func toggleAddButton(_ text: String) {
         if text.isEmpty {
-            searchSummonerButton.enabled = false
+            searchSummonerButton.isEnabled = false
         }
         else {
-            searchSummonerButton.enabled = true
+            searchSummonerButton.isEnabled = true
         }
     }
     
-    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if textField == searchText {
-            let text = (textField.text! as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            let text = (textField.text! as NSString).replacingCharacters(in: range, with: string)
             toggleAddButton(text)
         }
         return true
     }
     
-    func textFieldShouldClear(textField: UITextField) -> Bool {
-        searchSummonerButton.enabled = false
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        searchSummonerButton.isEnabled = false
         return true
     }
     
     // MARK: - GADBannerViewDelegate
-    func adViewDidReceiveAd(bannerView: GADBannerView!) {
-        bannerView.hidden = false
+    func adViewDidReceiveAd(_ bannerView: GADBannerView!) {
+        bannerView.isHidden = false
         bannerView.alpha = 0
-        UIView.animateWithDuration(1, animations: {
+        UIView.animate(withDuration: 1, animations: {
             bannerView.alpha = 1
         })
     }
     
-    func adView(bannerView: GADBannerView!,
+    func adView(_ bannerView: GADBannerView!,
                 didFailToReceiveAdWithError error: GADRequestError!) {
         bannerView.alpha = 1
-        UIView.animateWithDuration(1, animations: {
+        UIView.animate(withDuration: 1, animations: {
             bannerView.alpha = 0
         })
-        bannerView.hidden = true
+        bannerView.isHidden = true
     }
     
     func showRateAppAlert() {
-        let alert = UIAlertController(title: "Rate \(APP_NAME)", message: "If you enjoy using \(APP_NAME), would you mind taking a moment to rate it? It wouldn't take more than a minute. Thanks for your support!", preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "Rate It Now", style: UIAlertActionStyle.Default, handler: { alertAction in
-            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "neverRate")
-            UIApplication.sharedApplication().openURL(NSURL(string : "itms-apps://itunes.apple.com/app/id\(APP_ID)")!)
-            alert.dismissViewControllerAnimated(true, completion: nil)
+        let alert = UIAlertController(title: "Rate \(APP_NAME)", message: "If you enjoy using \(APP_NAME), would you mind taking a moment to rate it? It wouldn't take more than a minute. Thanks for your support!", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Rate It Now", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(true, forKey: "neverRate")
+            UIApplication.shared.openURL(URL(string : "itms-apps://itunes.apple.com/app/id\(APP_ID)")!)
+            alert.dismiss(animated: true, completion: nil)
         }))
         
-        alert.addAction(UIAlertAction(title: "Remind me later", style: UIAlertActionStyle.Default, handler: { alertAction in
-            NSUserDefaults.standardUserDefaults().setInteger(0, forKey: "numLaunches")
-            alert.dismissViewControllerAnimated(true, completion: nil)
+        alert.addAction(UIAlertAction(title: "Remind me later", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(0, forKey: "numLaunches")
+            alert.dismiss(animated: true, completion: nil)
         }))
         
-        alert.addAction(UIAlertAction(title: "No thanks", style: UIAlertActionStyle.Default, handler: { alertAction in
-            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "neverRate")       // Hide the Alert
-            alert.dismissViewControllerAnimated(true, completion: nil)
+        alert.addAction(UIAlertAction(title: "No thanks", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(true, forKey: "neverRate")       // Hide the Alert
+            alert.dismiss(animated: true, completion: nil)
         }))
-        self.presentViewController(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
     
     func tryToRateApp() {
-        let neverRate = NSUserDefaults.standardUserDefaults().boolForKey("neverRate")
-        let numLaunches = NSUserDefaults.standardUserDefaults().integerForKey("numLaunches") + 1
+        let neverRate = UserDefaults.standard.bool(forKey: "neverRate")
+        let numLaunches = UserDefaults.standard.integer(forKey: "numLaunches") + 1
         if (!neverRate && (numLaunches >= minNumberOfSessions))
         {
             showRateAppAlert()
         }
-        NSUserDefaults.standardUserDefaults().setInteger(numLaunches, forKey: "numLaunches")
+        UserDefaults.standard.set(numLaunches, forKey: "numLaunches")
     }
     
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         discardKeyboard()
@@ -703,7 +770,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
             switch identifier {
             case Storyboard.MatchDetailIdentifier:
                 let cell = sender as? RecentGameTableViewCell
-                let seguedToDetail = segue.destinationViewController as? MatchViewController
+                let seguedToDetail = segue.destination as? MatchViewController
                 guard let matchId = cell?.game?.gameId else { return }
                 guard let fellowPlayers = cell?.game?.fellowPlayers else { return }
                 let matchDetail = (fellowPlayers, matchId, (summoner?.name)!, (summoner?.id)!)

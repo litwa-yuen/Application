@@ -7,7 +7,7 @@ class RankInfo {
     var queue: String
     var tier: String
     var image: UIImage? {
-        let rank = getRank().lowercaseString
+        let rank = getRank().lowercased()
         if let image = UIImage(named: rank){
             return image
         }

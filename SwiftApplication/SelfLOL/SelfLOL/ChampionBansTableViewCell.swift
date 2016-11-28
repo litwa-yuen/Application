@@ -24,9 +24,12 @@ class ChampionBansTableViewCell: UITableViewCell {
         banRankLabel.text = nil
         
         if let champ = self.champ {
+            var champData = "Unknown"
             
-            if let champData = championsMap[champ.championId] {
-                champImageView.image = UIImage(named: champData)
+            if let champName = championsMap[champ.championId] {
+                champImageView.image = UIImage(named: champName)
+                champData = champName
+                
             }
             else {
                 champImageView.image = UIImage(named: "unknown")
@@ -34,15 +37,15 @@ class ChampionBansTableViewCell: UITableViewCell {
             var sub = ""
             switch champ.pickTurn {
             case 1:
-                sub = "st ban"
+                sub = "st"
             case 2:
-                sub = "nd ban"
+                sub = "nd"
             case 3:
-                sub = "rd ban"
+                sub = "rd"
             default:
-                sub = "th ban"
+                sub = "th"
             }
-            banRankLabel.text = "\(champ.pickTurn.description)\(sub)"
+            banRankLabel.text = "\(champ.pickTurn.description)\(sub): \(champData)"
             banRankLabel.font = UIFont(name: "Helvetica", size: 15)
         }
     }

@@ -6,11 +6,14 @@ class TrendingViewController: UIViewController, UITableViewDataSource, UITableVi
     
     @IBOutlet weak var trendingTableView: UITableView!
     @IBOutlet weak var updatedDateLabel: UILabel!
+    @IBOutlet weak var searchButton: UIBarButtonItem!
     
     let database = FIRDatabase.database()
     var bannedChamps = [BannedChampion]()
-    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+    let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     var messageLabel = UILabel()
+    
+    var isMainPage = false
 
     
     override func viewDidLoad() {
@@ -24,68 +27,71 @@ class TrendingViewController: UIViewController, UITableViewDataSource, UITableVi
         // Do any additional setup after loading the view.
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         indicator.startAnimating()
+
+        if !isMainPage {
+            searchButton.tintColor = UIColor.clear;
+            searchButton.isEnabled = false
+        }
         if CheckReachability.isConnectedToNetwork() {
+            
             let trending = database.reference().child("trending/updatedDate")
             
-            trending.observeEventType(.Value) { (snapshot: FIRDataSnapshot) in
+            trending.observe(.value) { (snapshot: FIRDataSnapshot) in
                 
-                self.updatedDateLabel.text = "The Most Banned Champions in \((snapshot.value?.description)!)"
+                self.updatedDateLabel.text = "Popular Bans on \((snapshot.value as! String))"
                 
             }
             let champs = database.reference().child("trending/banned")
             
-            champs.queryOrderedByKey().observeEventType(.ChildAdded) { (snapshot: FIRDataSnapshot) in
+            champs.queryOrderedByKey().observe(.childAdded) { (snapshot: FIRDataSnapshot) in
                 
-                let champ = snapshot.value!["id"] as! CLong
-                let rank = snapshot.value!["rank"] as! Int
+                let champ = (snapshot.value as? NSDictionary)?["id"] as? CLong ?? 0
+                let rank = (snapshot.value as? NSDictionary)?["rank"] as? Int ?? 1
                 let obj:NSDictionary = ["championId":champ, "pickTurn":rank]
                 
                 self.bannedChamps.append(BannedChampion(champion: obj))
                 self.indicator.stopAnimating()
                 self.trendingTableView.reloadData()
-                
             }
 
         }
         else {
-            updatedDateLabel.hidden = true
+            updatedDateLabel.isHidden = true
             showReponseMessage("Network Unavailable.")
         }
-
-
         
     }
     
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "ban"
         static let BorderColor = "607D8B"
     }
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return bannedChamps.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier) as! ChampionBansTableViewCell
-        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).CGColor
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier) as! ChampionBansTableViewCell
+        cell.layer.borderColor = UIColorFromRGB(Storyboard.BorderColor).cgColor
         cell.layer.borderWidth = 1.0
-        cell.champ = bannedChamps[indexPath.row]
+        cell.champ = bannedChamps[(indexPath as NSIndexPath).row]
         return cell
     }
     
-    func showReponseMessage(message: String) {
+    func showReponseMessage(_ message: String) {
         indicator.stopAnimating()
-        messageLabel = UILabel(frame: CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height))
+        messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.view.bounds.size.width, height: self.view.bounds.size.height))
         messageLabel.text = message
         messageLabel.font = UIFont(name: "Helvetica", size: 15)
-        messageLabel.textColor = UIColor.blackColor()
+        messageLabel.textColor = UIColor.black
         messageLabel.numberOfLines = 0
-        messageLabel.textAlignment = NSTextAlignment.Center
-        trendingTableView.hidden = true
+        messageLabel.textAlignment = NSTextAlignment.center
+        trendingTableView.isHidden = true
         view.addSubview(messageLabel)
     }
 

@@ -9,7 +9,7 @@ class ChampionTableViewCell: UITableViewCell {
 
     var champion: ChampionStatus? {
         didSet{
-            adjustViewLayout(UIScreen.mainScreen().bounds.size)
+            adjustViewLayout(UIScreen.main.bounds.size)
             aroundBorder(championImageView)
             updateUI()
         }
@@ -59,14 +59,14 @@ class ChampionTableViewCell: UITableViewCell {
     }
     
     
-    func adjustViewLayout(size: CGSize) {
+    func adjustViewLayout(_ size: CGSize) {
         
         switch(size.width, size.height) {
         case (480, 320), (568, 320):                        // iPhone 4S, 5s in landscape
-            hideView.hidden = false
+            hideView.isHidden = false
             
         case (320, 480), (320, 568):                        // iPhone 4S in portrait
-            hideView.hidden = true
+            hideView.isHidden = true
         default:
             break
         }
