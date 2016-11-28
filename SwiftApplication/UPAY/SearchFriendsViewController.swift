@@ -2,205 +2,103 @@
 //  SearchFriendsViewController.swift
 //  UPAY1.1
 //
-//  Created by Lit Wa Yuen on 9/17/15.
-//  Copyright © 2015 CS320. All rights reserved.
+//  Created by Lit Wa Yuen on 10/11/16.
+//  Copyright © 2016 CS320. All rights reserved.
 //
 
 import UIKit
-import CoreData
-import ContactsUI
+import Firebase
 
-class SearchFriendsViewController: UIViewController, UITableViewDataSource, UISearchResultsUpdating {
+
+class SearchFriendsViewController: UIViewController, UITableViewDataSource, UISearchBarDelegate {
+
+    var items: [User] = []
     
-    @IBOutlet weak var tableView: UITableView!
-    var friendList = [String]()
-    var filteredFriendList = [String]()
-    var searchController: UISearchController!
-    let store = CNContactStore()
-    // MARK: - NSFetchedResultsControllerDelegate
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+    let database = FIRDatabase.database().reference()
     
-    
+
+    @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var friendTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.dataSource = self
-        
-        getContacts()
-        
-        searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        
-        // If we are using this same view controller to present the results
-        // dimming it out wouldn't make sense.  Should set probably only set
-        // this to yes if using another controller to display the search results.
-        searchController.dimsBackgroundDuringPresentation = false
-        
-        searchController.searchBar.sizeToFit()
-        tableView.tableHeaderView = searchController.searchBar
-        
-        // Sets this view controller as presenting view controller for the search interface
-        definesPresentationContext = true
-        // Do any additional setup after loading the view.
+        searchBar.delegate = self
+        friendTableView.dataSource = self
+   
         // Do any additional setup after loading the view.
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+    }
+
+    @IBAction func cancelAction(_ sender: UIBarButtonItem) {
+        dismiss(animated: true, completion: nil)
+    }
+
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    func getContacts() {
-        let store = CNContactStore()
+    fileprivate struct Storyboard {
+        static let ReuseCellIdentifier = "hit"
+        static let FriendIdentifier = "friend"
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier) as UITableViewCell?
+        cell?.textLabel?.text = items[indexPath.row].name
         
-        store.requestAccessForEntityType(.Contacts) { (success, error) -> Void in
-            if let error = error {
-                print(error.localizedDescription)
-            }
-        }
+        return cell!
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return items.count
+    }
+    
+    func searchFriend(email: String) {
+        let friends = database.child("users")
         
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
-            let predicate = CNContact.predicateForContactsInContainerWithIdentifier(store.defaultContainerIdentifier())
-            let keysToFetch = [CNContactFormatter.descriptorForRequiredKeysForStyle(.FullName)]
+        friends.queryOrdered(byChild: "email").queryEqual(toValue: "\(email)").observe(.childAdded) { (snapshot: FIRDataSnapshot) in
             
-            do {
-                let contacts = try store.unifiedContactsMatchingPredicate(predicate, keysToFetch: keysToFetch)
-                
-                
-                for contact in contacts {
-                    
-                    let fullName = CNContactFormatter.stringFromContact(contact, style: .FullName) ?? "No Name"
+            self.items.append(User(snapshot: snapshot ))
+            
+            self.friendTableView.reloadData()
+        }
+        
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchFriend(email: searchBar.text!)
+    }
 
-                    self.friendList.append(fullName)
-                    self.tableView.reloadData()
-                    
-                }
-                
-            } catch _ {
-                print("An error occured.")
-            }
-        }
-        
-    }
     
-    @IBAction func addFriend(sender: UIBarButtonItem) {
-        let alert = UIAlertController(
-            title: "Add Friend",
-            message: "Please enter a friend name ...",
-            preferredStyle: UIAlertControllerStyle.Alert)
-        
-        let cancelAction = UIAlertAction(
-            title: "Cancel",
-            style: UIAlertActionStyle.Cancel)
-            { (action) in
-                // do nothing
-        }
-        alert.addAction(cancelAction)
-        
-        let addFriendAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) { (action) -> Void in
-            if let tf = alert.textFields?.first as UITextField! {
-                if !self.friendList.isEmpty {
-                    self.friendList.insert(tf.text!, atIndex: 1)
-                }
-                else {
-                    self.friendList.append(tf.text!)
-                }
-                self.tableView.reloadData()
-            }
-        }
-        alert.addAction(addFriendAction)
-        
-        alert.addTextFieldWithConfigurationHandler { (textField) -> Void in
-            textField.placeholder = "friend name"
-        }
-        presentViewController(alert, animated: true, completion: nil)
-        
-    }
-    
-    func addFriendDatabase(name: String) {
-        let context = self.context
-        let ent = NSEntityDescription.entityForName("Participants", inManagedObjectContext: context)
-        let nParticipant = Participants(entity: ent!, insertIntoManagedObjectContext: context)
-        nParticipant.name = name
-        let uuid = NSUUID().UUIDString
-        nParticipant.id = uuid
-        do {
-            try context.save()
-        } catch _ {
-        }
-        
-    }
-    
-    // MARK: - Search Results Updating
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
-        let searchText = searchController.searchBar.text
-        let searchPredicate = NSPredicate(format: "SELF CONTAINS[c] %@", searchText!)
-        let filterArray = (friendList as NSArray).filteredArrayUsingPredicate(searchPredicate)
-        filteredFriendList = searchText!.isEmpty ? friendList : filterArray as! [String]
-        tableView.reloadData()
-    }
-    
-    // MARK: - Table view data source
-    
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Potentially incomplete method implementation.
-        // Return the number of sections.
-        return 1
-    }
-    
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete method implementation.
-        // Return the number of rows in the section.
-        if self.searchController.active {
-            return filteredFriendList.count
-        }
-        else {
-            return friendList.count
-        }
-    }
-    
-    private struct Storyboard {
-        static let ReuseCellIdentifier = "friendCell"
-        static let AddIdentifier = "add"
-    }
-    
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath)
-        
-        if self.searchController.active {
-            cell.textLabel?.text = filteredFriendList[indexPath.row]
-        }
-        else {
-            cell.textLabel?.text = friendList[indexPath.row]
-        }
-        
-        return cell
-    }
-    
-    
+
+
     // MARK: - Navigation
-    
+
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
         if let identifier = segue.identifier {
             switch identifier {
-            case Storyboard.AddIdentifier:
+            case Storyboard.FriendIdentifier:
                 let cell = sender as? UITableViewCell
-                if let indexPath = tableView.indexPathForCell(cell!) {
-                    let seguedToDetail = segue.destinationViewController as? TransactionViewController
-                    
-                    if searchController.active {
-                        seguedToDetail?.friendName = filteredFriendList[indexPath.row]
-                    }
-                    else {
-                        seguedToDetail?.friendName = friendList[indexPath.row]
-                    }
+                if let indexPath = friendTableView.indexPath(for: cell!) {
+                    let seguedToDetail = segue.destination as? ProfileTableViewController
+                    seguedToDetail?.hitUser = items[indexPath.row]
+                    friendTableView.deselectRow(at: indexPath, animated: false)
+
                     
                 }
             default: break
             }
         }
+        
+
     }
     
-    
+
 }

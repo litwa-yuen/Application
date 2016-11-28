@@ -11,10 +11,15 @@ class FriendManager: NSObject {
     
     
     // MARK: - public action functions
-    func addFriend(name: String, amount: Double, multiplier: Int, desc: String, identifier: String) {
-        
+    func addFriend(_ name: String, amount: Double, multiplier: Int, desc: String, identifier: String) {
         let temp:Double = NSString(format: "%.02f", amount).doubleValue
-        friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc, identifier: identifier))
+
+        if let found = friends.map({$0.identifier}).index(of: identifier) {
+            friends[found].amount += temp
+        }
+        else {
+            friends.append(Friend(name: name, amount: temp, multiplier: multiplier, desc: desc, identifier: identifier))
+        }    
     }
     
     func evalute() {
@@ -26,6 +31,20 @@ class FriendManager: NSObject {
         findExactMatch()
         while !paid.isEmpty && !owed.isEmpty {
             compare();
+        }
+    }
+    
+    func findFriend(identifier: String) -> Int {
+        return friends.map({$0.identifier}).index(of: identifier)!
+    }
+    
+    func removeAction(action: Action) {
+        let index = findFriend(identifier: action.createdBy)
+        if friends[index].amount <= action.amount {
+            friends[index].amount = 0
+        }
+        else {
+            friends[index].amount -= action.amount
         }
     }
     
@@ -48,7 +67,7 @@ class FriendManager: NSObject {
     }
     
     func different() -> Double {
-        return NSString(format: "%.02f", Double(average()*Double(getTotalPeople())).distanceTo(total())).doubleValue
+        return NSString(format: "%.02f", Double(average()*Double(getTotalPeople())).distance(to: total())).doubleValue
     }
     
     
@@ -61,7 +80,7 @@ class FriendManager: NSObject {
     }
     
     // MARK: - private actions functions
-    private func splitTwoNSetPay() {
+    fileprivate func splitTwoNSetPay() {
         for friend in friends {
             //split into two array and start calculator
             let multAverage = average() * Double(friend.multiplier)
@@ -78,14 +97,16 @@ class FriendManager: NSObject {
         sortTwoArrays()
     }
     
-    private func findExactMatch() {
+    fileprivate func findExactMatch() {
+        
         if !paid.isEmpty && !owed.isEmpty {
-            for var i = paid.endIndex-1; i >= 0; i-- {
+
+            for i in (0 ..< paid.endIndex).reversed() {
                 if let index: Int = binarySearch(NSString(format: "%.02f", paid[i].pay).doubleValue , data: owed) {
                     if index >= 0 {
                         addSummaryAndDetail(owed[index].name, paidName: paid[i].name, amount: paid[i].pay)
-                        owed.removeAtIndex(index)
-                        paid.removeAtIndex(i)
+                        owed.remove(at: index)
+                        paid.remove(at: i)
                     }
                     
                 }
@@ -94,7 +115,7 @@ class FriendManager: NSObject {
         }
     }
     
-    private func compare() {
+    fileprivate func compare() {
         var largestPaid: Double = -1
         var largestOwed: Double = -1
         if !paid.isEmpty {
@@ -106,13 +127,13 @@ class FriendManager: NSObject {
         if largestOwed > 0 && largestPaid > 0 {
             if largestPaid > largestOwed {
                 addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: owed.first!.pay)
-                owed.removeAtIndex(0)
+                owed.remove(at: 0)
                 let remaining: Double = NSString(format: "%.02f", largestPaid - largestOwed).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: owed) {
                     if remainingIndex >= 0 {
                         addSummaryAndDetail(owed[remainingIndex].name, paidName: paid.first!.name, amount: remaining)
-                        paid.removeAtIndex(0)
-                        owed.removeAtIndex(remainingIndex)
+                        paid.remove(at: 0)
+                        owed.remove(at: remainingIndex)
                     }
                     else {
                         paid.first!.pay = remaining
@@ -121,13 +142,13 @@ class FriendManager: NSObject {
             }
             else {
                 addSummaryAndDetail(owed.first!.name, paidName: paid.first!.name, amount: paid.first!.pay)
-                paid.removeAtIndex(0)
+                paid.remove(at: 0)
                 let remaining: Double = NSString(format: "%.02f", largestOwed - largestPaid).doubleValue
                 if let remainingIndex: Int = binarySearch(remaining, data: paid) {
                     if remainingIndex >= 0 {
                         addSummaryAndDetail(owed.first!.name, paidName: paid[remainingIndex].name, amount: remaining)
-                        owed.removeAtIndex(0)
-                        paid.removeAtIndex(remainingIndex)
+                        owed.remove(at: 0)
+                        paid.remove(at: remainingIndex)
                     }
                     else {
                         owed.first!.pay = remaining
@@ -141,7 +162,7 @@ class FriendManager: NSObject {
     }
     
     // MARK: - private utilties
-    private func binarySearch(key: Double, data: [Friend]) -> Int? {
+    fileprivate func binarySearch(_ key: Double, data: [Friend]) -> Int? {
         var low: Int = 0
         var high: Int = data.count-1
         while high >= low {
@@ -160,31 +181,31 @@ class FriendManager: NSObject {
         return -1
     }
     
-    private func addDetail(target: String, oweName: String, paidName: String, amount: Double) {
-        guard let found = friends.map({$0.name}).indexOf(target) else { return }
+    fileprivate func addDetail(_ target: String, oweName: String, paidName: String, amount: Double) {
+        guard let found = friends.map({$0.name}).index(of: target) else { return }
         
         let obj = friends[found]
         obj.detail.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
         
     }
     
-    private func addSummaryAndDetail(oweName: String, paidName: String, amount: Double) {
+    fileprivate func addSummaryAndDetail(_ oweName: String, paidName: String, amount: Double) {
         summary.append(Transaction(oweName: oweName, paidName: paidName, amount: amount))
         addDetail(oweName, oweName: oweName, paidName: paidName, amount: amount)
         addDetail(paidName, oweName: oweName, paidName: paidName, amount: amount)
         
     }
     
-    private func sortTwoArrays() {
-        paid.sortInPlace { (friend1: Friend, friend2: Friend) -> Bool in
+    fileprivate func sortTwoArrays() {
+        paid.sort { (friend1: Friend, friend2: Friend) -> Bool in
             return friend1.pay > friend2.pay
         }
-        owed.sortInPlace { (friend1: Friend, friend2: Friend) -> Bool in
+        owed.sort { (friend1: Friend, friend2: Friend) -> Bool in
             return friend1.pay > friend2.pay
         }
     }
     
-    private func remainAmount() {
+    fileprivate func remainAmount() {
         let dif: Double = different()
         if !paid.isEmpty {
             // TODO pick a random user

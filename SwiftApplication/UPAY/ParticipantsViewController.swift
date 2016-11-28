@@ -9,28 +9,34 @@
 import UIKit
 import CoreData
 import ContactsUI
+import GoogleMobileAds
 
 class ParticipantsViewController: UIViewController, NSFetchedResultsControllerDelegate,
-UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
+UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate, GADBannerViewDelegate {
     
     @IBOutlet weak var participantsTableView: UITableView!
     @IBOutlet weak var averageLabel: UILabel!
     @IBOutlet weak var totalLabel: UILabel!
     @IBOutlet weak var barButton: UIBarButtonItem!
+    @IBOutlet weak var googleBannerView: GADBannerView!
+    
+    let minNumberOfSessions = 5
+    let APP_NAME = "UPAY"
+    let APP_ID = "1071727468"
 
-    
-    let context: NSManagedObjectContext = (UIApplication.sharedApplication()
+    let store = CNContactStore()
+    let context: NSManagedObjectContext = (UIApplication.shared
         .delegate as! AppDelegate).managedObjectContext
-    var frc: NSFetchedResultsController = NSFetchedResultsController()
+    var frc: NSFetchedResultsController = NSFetchedResultsController<Friends>()
     
-    func getFetchedResultsController() -> NSFetchedResultsController {
+    func getFetchedResultsController() -> NSFetchedResultsController<Friends> {
         frc = NSFetchedResultsController(fetchRequest: friendFetchRequest(),
             managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
         return frc
     }
     
-    func friendFetchRequest() -> NSFetchRequest {
-        let fetchRequest = NSFetchRequest(entityName: "Friends")
+    func friendFetchRequest() -> NSFetchRequest<Friends> {
+        let fetchRequest = NSFetchRequest<Friends>(entityName: "Friends")
         let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         return  fetchRequest
@@ -38,8 +44,8 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     
     func fetchData() {
         var friendData = [Friends]()
-        let fetchRequest = NSFetchRequest(entityName: "Friends")
-        friendData = (try! context.executeFetchRequest(fetchRequest)) as! [Friends]
+        let fetchRequest = NSFetchRequest<Friends>(entityName: "Friends")
+        friendData = (try! context.fetch(fetchRequest)) 
         for friend in friendData {
             let number = Int(friend.multiplier!)
             friendMgr.addFriend(friend.name, amount: friend.amount, multiplier: number, desc: friend.desc, identifier: friend.identifier )
@@ -48,10 +54,10 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     
     func deleteCoreData() {
         var friendData = [Friends]()
-        let fetchRequest = NSFetchRequest(entityName: "Friends")
-        friendData = (try! context.executeFetchRequest(fetchRequest)) as! [Friends]
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Friends")
+        friendData = (try! context.fetch(fetchRequest)) as! [Friends]
         for friend in friendData {
-            context.deleteObject(friend)
+            context.delete(friend)
         }
         do {
             try context.save()
@@ -59,13 +65,13 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         participantsTableView.reloadData()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    
         frc = getFetchedResultsController()
         frc.delegate = self
         do {
@@ -73,67 +79,99 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
         } catch _ {
         }
         participantsTableView.dataSource = self
-        
+        refresh()
         // Do any additional setup after loading the view.
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         refresh()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        tryToRateApp()
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    @IBAction func clearAll(sender: UIBarButtonItem) {
+    @IBAction func clearAll(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(
             title: "Warning!",
             message: "Are you sure you want to delete all transactions",
-            preferredStyle: UIAlertControllerStyle.Alert)
+            preferredStyle: UIAlertControllerStyle.alert)
         
         let cancelAction = UIAlertAction(
             title: "Cancel",
-            style: UIAlertActionStyle.Cancel)
+            style: UIAlertActionStyle.cancel)
             { (action) in
                 // do nothing
         }
         alert.addAction(cancelAction)
         
-        let clearAllAction = UIAlertAction(title: "Clear", style: UIAlertActionStyle.Default) { (action) -> Void in
+        let clearAllAction = UIAlertAction(title: "Clear", style: UIAlertActionStyle.default) { (action) -> Void in
             self.deleteCoreData()
             self.refresh()
         }
         alert.addAction(clearAllAction)
-        presentViewController(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
     }
     
-    @IBAction func pickParticipant(sender: UIBarButtonItem) {
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
-        alert.addAction(UIAlertAction(
-            title: "Add from Contacts", style: .Default) { (action) -> Void in
+    @IBAction func pickParticipant(_ sender: UIBarButtonItem) {
+        
+        switch CNContactStore.authorizationStatus(for: .contacts){
+        case .authorized:
+            promptAddContactAlert(true)
+        case .notDetermined:
+            store.requestAccess(for: .contacts){succeeded, err in
+                guard err == nil && succeeded else{
+                    self.promptAddContactAlert(false)
+                    return
+                }
+                self.promptAddContactAlert(true)
+            }
+        default:
+            promptAddContactAlert(false)
+        }
+    }
+    
+    func promptAddContactAlert(_ auth: Bool) {
+        let alert = UIAlertController(title: nil, message: (auth) ? nil : "To enable Add from Contacts, tap Settings and turn on Contacts.", preferredStyle: .actionSheet)
+        if auth == true {
+            alert.addAction(UIAlertAction(
+            title: "Add from Contacts", style: .default) { (action) -> Void in
                 self.addFriendFromContacts()
-        })
+                })
+        }
+        else {
+            alert.addAction(UIAlertAction(title: "Settings", style: .default) { (action) in
+                // THIS IS WHERE THE MAGIC HAPPENS!!!!
+                if let appSettings = URL(string: UIApplicationOpenSettingsURLString) {
+                    UIApplication.shared.openURL(appSettings)
+                }})
+        }
         alert.addAction(UIAlertAction(
-            title: "Add from Name", style: .Default) { (action) -> Void in
-                self.addTempFriend()
+        title: "Add from Name", style: .default) { (action) -> Void in
+            self.addTempFriend()
             })
-
+        
         alert.addAction(UIAlertAction(
             title: "Cancel",
-            style: .Cancel)
-            { (action) in
-                // do nothing
-        })
-        alert.modalPresentationStyle = .Popover
+            style: .cancel)
+        { (action) in
+            // do nothing
+            })
+        alert.modalPresentationStyle = .popover
         let ppc = alert.popoverPresentationController
         ppc?.barButtonItem = barButton
-        presentViewController(alert, animated: true, completion: nil)
-        
+        present(alert, animated: true, completion: nil)
+
     }
     
-    func contactPicker(picker: CNContactPickerViewController, didSelectContact contact: CNContact) {
-        let newPar = (CNContactFormatter.stringFromContact(contact, style: .FullName)!, contact.identifier)
-        let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TransactionViewController") as? TransactionViewController
+    func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+        let newPar = (CNContactFormatter.string(from: contact, style: .fullName)!, contact.identifier)
+    
+        let tvc = self.storyboard?.instantiateViewController(withIdentifier: "TransactionTableViewController") as? TransactionTableViewController
         tvc?.newParticipant = newPar
         self.navigationController?.pushViewController(tvc!, animated: true)
     }
@@ -141,10 +179,10 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
     func addFriendFromContacts() {
         let contactPicker = CNContactPickerViewController()
         contactPicker.displayedPropertyKeys = [CNContactEmailAddressesKey]
-        
+    
         contactPicker.predicateForEnablingContact = NSPredicate(format: "NOT (identifier IN %@)", friendMgr.friends.map{$0.identifier})
         contactPicker.delegate = self
-        self.presentViewController(contactPicker, animated: true, completion: nil)
+        self.present(contactPicker, animated: true, completion: nil)
 
     }
     
@@ -152,70 +190,102 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
         let alert = UIAlertController(
             title: "Add Friend",
             message: "Please enter a friend name ...",
-            preferredStyle: UIAlertControllerStyle.Alert)
+            preferredStyle: UIAlertControllerStyle.alert)
         
         let cancelAction = UIAlertAction(
             title: "Cancel",
-            style: UIAlertActionStyle.Cancel)
+            style: UIAlertActionStyle.cancel)
             { (action) in
                 // do nothing
         }
         alert.addAction(cancelAction)
         
-        let addFriendAction = UIAlertAction(title: "Add", style: UIAlertActionStyle.Default) { (action) -> Void in
+        let addFriendAction = UIAlertAction(title: "Next", style: UIAlertActionStyle.default) { (action) -> Void in
             if let tf = alert.textFields?.first as UITextField! {
-                let newPar = (tf.text!, NSUUID().UUIDString)
-                let tvc = self.storyboard?.instantiateViewControllerWithIdentifier("TransactionViewController") as? TransactionViewController
+                
+                if tf.text?.isEmpty == true {
+                    let noTextalert = UIAlertController(
+                        title: "Name is required",
+                        message: nil,
+                        preferredStyle: UIAlertControllerStyle.alert)
+                    let okAction = UIAlertAction(
+                        title: "OK",
+                        style: UIAlertActionStyle.cancel)
+                        { (action) in
+                            // do nothing
+                    }
+                    noTextalert.addAction(okAction)
+                    self.present(noTextalert, animated: true, completion: nil)
+                }
+                
+                let newPar = (tf.text!, UUID().uuidString)
+                let tvc = self.storyboard?.instantiateViewController(withIdentifier: "TransactionTableViewController") as? TransactionTableViewController
                 tvc?.newParticipant = newPar
                 self.navigationController?.pushViewController(tvc!, animated: true)
             }
         }
         alert.addAction(addFriendAction)
         
-        alert.addTextFieldWithConfigurationHandler { (textField) -> Void in
+        alert.addTextField { (textField) -> Void in
+            textField.returnKeyType = .next
+            textField.enablesReturnKeyAutomatically = true
             textField.placeholder = "friend name"
         }
-        presentViewController(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
 
     }
     
     func refresh() {
+        if CheckReachability.isConnectedToNetwork() == true {
+            googleBannerView.isHidden = false
+            googleBannerView.adUnitID = "ca-app-pub-2177302372559739/4031410603"
+            googleBannerView.adSize = kGADAdSizeSmartBannerPortrait
+            googleBannerView.delegate = self
+            googleBannerView.rootViewController = self
+            let request = GADRequest()
+            request.testDevices = ["115f1beaa2017b6e9d2e9ead967bbb5b"]
+            googleBannerView.load(request)
+        }
+        else {
+            googleBannerView.isHidden = true
+        }
+        
         friendMgr.friends.removeAll()
         friendMgr.summary.removeAll()
         fetchData()
         friendMgr.evalute()
-        let formatter = NSNumberFormatter()
-        formatter.numberStyle = .CurrencyStyle
-        averageLabel.text = "Average: \(formatter.stringFromNumber(friendMgr.average())!)"
-        totalLabel.text = "Total: \(formatter.stringFromNumber(friendMgr.total())!)"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        averageLabel.text = "Average: \(formatter.string(from: NSNumber(value: friendMgr.average()))!)"
+        totalLabel.text = "Total: \(formatter.string(from: NSNumber(value: friendMgr.total()))!)"
         
         participantsTableView.reloadData()
     }
     
     // MARK: - UITableViewDelegate
     
-    private struct Storyboard {
+    fileprivate struct Storyboard {
         static let ReuseCellIdentifier = "Participant"
         static let DetailIdentifier = "detail"
         static let AddIdentifier = "add"
     }
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let numberOfRow = frc.sections?[section].numberOfObjects
         return numberOfRow!
         
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         let numberOfSections = frc.sections?.count
         return numberOfSections!
         
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Storyboard.ReuseCellIdentifier, forIndexPath: indexPath)
-        let friend = frc.objectAtIndexPath(indexPath) as! Friends
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Storyboard.ReuseCellIdentifier, for: indexPath)
+        let friend = frc.object(at: indexPath) 
         if friend.multiplier == 1 {
             cell.textLabel?.text = "\(friend.name)"
         }
@@ -223,17 +293,17 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
             let broughtWith = (friend.multiplier) as! Int - 1
             cell.textLabel?.text = "\(friend.name) + \(broughtWith)"
         }
-        let formatter = NSNumberFormatter()
-        formatter.numberStyle = .CurrencyStyle
-        cell.detailTextLabel?.text = formatter.stringFromNumber(friend.amount)!
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        cell.detailTextLabel?.text = formatter.string(from: NSNumber(value: friend.amount))!
         
         return cell
     }
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle:
-        UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        let managedObject: NSManagedObject = frc.objectAtIndexPath(indexPath) as! NSManagedObject
-        context.deleteObject(managedObject)
+    func tableView(_ tableView: UITableView, commit editingStyle:
+        UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        let managedObject: NSManagedObject = frc.object(at: indexPath) as NSManagedObject
+        context.delete(managedObject)
         do {
             try context.save()
         } catch _ {
@@ -241,25 +311,68 @@ UITableViewDataSource, UITableViewDelegate, CNContactPickerDelegate {
         refresh()
     }
     
+    func adViewDidReceiveAd(_ bannerView: GADBannerView!) {
+        bannerView.isHidden = false
+        bannerView.alpha = 0
+        UIView.animate(withDuration: 1, animations: {
+            bannerView.alpha = 1
+        })
+    }
     
+    func adView(_ bannerView: GADBannerView!,
+                didFailToReceiveAdWithError error: GADRequestError!) {
+        bannerView.alpha = 1
+        UIView.animate(withDuration: 1, animations: {
+            bannerView.alpha = 0
+        })
+        bannerView.isHidden = true
+    }
+    
+    func showRateAppAlert() {
+        let alert = UIAlertController(title: "Rate \(APP_NAME)", message: "If you enjoy using \(APP_NAME), would you mind taking a moment to rate it? It wouldn't take more than a minute. Thanks for your support!", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Rate It Now", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(true, forKey: "neverRate")
+            UIApplication.shared.openURL(URL(string : "itms-apps://itunes.apple.com/app/id\(self.APP_ID)")!)
+            alert.dismiss(animated: true, completion: nil)
+        }))
+
+        alert.addAction(UIAlertAction(title: "Remind me later", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(0, forKey: "numLaunches")
+            alert.dismiss(animated: true, completion: nil)
+        }))
+
+        alert.addAction(UIAlertAction(title: "No thanks", style: UIAlertActionStyle.default, handler: { alertAction in
+            UserDefaults.standard.set(true, forKey: "neverRate")       // Hide the Alert
+            alert.dismiss(animated: true, completion: nil)
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func tryToRateApp() {
+        let neverRate = UserDefaults.standard.bool(forKey: "neverRate")
+        let numLaunches = UserDefaults.standard.integer(forKey: "numLaunches") + 1
+        if (!neverRate && (numLaunches >= minNumberOfSessions))
+        {
+            showRateAppAlert()
+        }
+        UserDefaults.standard.set(numLaunches, forKey: "numLaunches")
+    }
     
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let identifier = segue.identifier {
             switch identifier {
             case Storyboard.DetailIdentifier:
                 let cell = sender as? UITableViewCell
-                if let indexPath = participantsTableView.indexPathForCell(cell!) {
-                    let seguedToDetail = segue.destinationViewController as? DetailTableViewController
-                    let nFriend: Friends = frc.objectAtIndexPath(indexPath) as! Friends
+                if let indexPath = participantsTableView.indexPath(for: cell!) {
+                    let seguedToDetail = segue.destination as? DetailTableViewController
+                    let nFriend: Friends = frc.object(at: indexPath) 
                     seguedToDetail?.friendData = nFriend
                 }
             default: break
             }
         }
     }
-    
-    
 }
