@@ -3,7 +3,7 @@
 
 #Description:
 Look LOL is an IOS application which can look up your current season rank statistics and current game status.  
-- Search Summoner Name (NA an EUW only)
+- Search Summoner Name 
 - Show 10 recent games played   
 - Show current seaion rank status (current Rank and KDA)
 - Show list of champions that summoner played in the current season
