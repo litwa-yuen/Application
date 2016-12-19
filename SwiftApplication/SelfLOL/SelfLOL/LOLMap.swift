@@ -114,6 +114,7 @@ var championsMap = [
     157:"Yasuo",
     161:"Velkoz",
     163:"Taliyah",
+    164:"Camille",
     201:"Braum",
     202:"Jhin",
     203:"Kindred",

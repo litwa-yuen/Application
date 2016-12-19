@@ -34,8 +34,8 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var segmentBar: UISegmentedControl!
     @IBOutlet weak var searchSummonerButton: UIBarButtonItem!
     @IBOutlet weak var googleBannerView: GADBannerView!
-    @IBOutlet weak var settingBarButton: UIBarButtonItem!
     @IBOutlet weak var favoriteButton: UIButton!
+    @IBOutlet weak var menuButton: UIBarButtonItem!
     
     
     // MARK: - Properties
@@ -146,6 +146,14 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if self.revealViewController() != nil {
+            menuButton.target = self.revealViewController()
+            self.revealViewController().rearViewRevealWidth = SideOutWidth
+            menuButton.action =  #selector(SWRevealViewController.revealToggle(_:))
+            self.view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
+        }
+
         rankLabel.font = Storyboard.TitleFont
         averageStatus.font = Storyboard.DetailFont
         winRate.font = Storyboard.DetailFont
@@ -190,6 +198,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         if showAlert {
             showAlert = false
             let alertController = UIAlertController(title: "No Favorite", message: "Tap the star icon to favorite your summoner", preferredStyle: .alert)
@@ -290,15 +299,6 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
         else if segmentBar.selectedSegmentIndex == 2 {
             championsTable.allowsSelection = false
             championsTable.reloadData()
-        }
-        else if segmentBar.selectedSegmentIndex == 3 {
-            FIRAnalytics.logEvent(withName: "trending_clicked" , parameters: [
-                "region": region as NSObject
-                ])
-
-            let tvc = self.storyboard?.instantiateViewController(withIdentifier: "TrendingViewController") as? TrendingViewController
-            self.navigationController?.pushViewController(tvc!, animated: true)
-            
         }
         else {
             
@@ -455,7 +455,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func getChampionRankInfo(_ summonerId: CLong) {
-        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2016&api_key=\(api_key)")
+        let url = URL(string: "https://\(region).api.pvp.net/api/lol/\(region)/v1.3/stats/by-summoner/\(summonerId)/ranked?season=SEASON2017&api_key=\(api_key)")
         let request = URLRequest(url: url!)
         let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, reponse, error) -> Void in
             DispatchQueue.main.async(execute: { () -> Void in
@@ -713,7 +713,7 @@ class LOLSelfViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // MARK: - GADBannerViewDelegate
     func adViewDidReceiveAd(_ bannerView: GADBannerView!) {
-        bannerView.isHidden = false
+        bannerView.isHidden = true
         bannerView.alpha = 0
         UIView.animate(withDuration: 1, animations: {
             bannerView.alpha = 1

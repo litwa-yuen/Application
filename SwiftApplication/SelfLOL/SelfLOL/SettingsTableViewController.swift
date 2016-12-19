@@ -13,6 +13,7 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     @IBOutlet weak var messageCell: UITableViewCell!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var indicator: UIActivityIndicatorView!
+    @IBOutlet weak var menuButton: UIBarButtonItem!
     
     // MARK: - Properties
     let context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).managedObjectContext
@@ -25,6 +26,14 @@ class SettingsTableViewController: UITableViewController, UIPickerViewDelegate, 
     // MARK: - Setup
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if self.revealViewController() != nil {
+            menuButton.target = self.revealViewController()
+            self.revealViewController().rearViewRevealWidth = SideOutWidth
+            menuButton.action =  #selector(SWRevealViewController.revealToggle(_:))
+            self.view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
+        }
+
         let initSelect = maxSelect/regionTuples.count/2*regionTuples.count
         summonerTextField.delegate = self
         regionPicker.delegate = self

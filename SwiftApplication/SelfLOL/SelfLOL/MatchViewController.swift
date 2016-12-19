@@ -163,71 +163,7 @@ class MatchViewController: UIViewController, UITableViewDataSource {
         }
     }
     
-    private func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let team = match?.teams![section]
-        
-        var champs:[String] = []
-        if let bannedChampions = team?.bans {
-            for champion in bannedChampions {
-                if let bannedChampion = championsMap[champion.championId] {
-                    champs.append(bannedChampion)
-                }
-                else {
-                    champs.append("unknown")
-                }                
-            }
-        }
-
-        if !champs.isEmpty {
-            let h = tableView
-                .dequeueReusableHeaderFooterView(withIdentifier: Storyboard.ReuseFooterIdentifier)!
-            h.backgroundView = UIView()
-            h.backgroundView?.backgroundColor = UIColor.black
-            let lab = UILabel()
-            lab.font = UIFont(name:"Helvetica-Bold", size:12)
-            lab.textColor = UIColorFromRGB("D50000")
-            lab.text = "Ban:"
-            lab.backgroundColor = UIColor.clear
-            h.contentView.addSubview(lab)
-            let champ1 = UIImageView()
-            champ1.image = UIImage(named:champs[0])
-            h.contentView.addSubview(champ1)
-            let champ2 = UIImageView()
-            if champs.count >= 2  {
-                champ2.image = UIImage(named: champs[1])
-            }
-            h.contentView.addSubview(champ2)
-            let champ3 = UIImageView()
-            if champs.count >= 3 {
-                champ3.image = UIImage(named: champs[2])
-            }
-            h.contentView.addSubview(champ3)
-            lab.translatesAutoresizingMaskIntoConstraints = false
-            champ1.translatesAutoresizingMaskIntoConstraints = false
-            champ2.translatesAutoresizingMaskIntoConstraints = false
-            champ3.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                NSLayoutConstraint.constraints(
-                    withVisualFormat: "H:[lab(30)]-10-[champ3(50)]-5-[champ2(50)]-5-[champ1(50)]-5-|",
-                    options:[], metrics:nil, views:["champ1":champ1, "lab":lab, "champ2":champ2, "champ3":champ3]),
-                NSLayoutConstraint.constraints(
-                    withVisualFormat: "V:|[champ1]|", options:[], metrics:nil, views:["champ1":champ1]),
-                NSLayoutConstraint.constraints(
-                    withVisualFormat: "V:|[champ2]|", options:[], metrics:nil, views:["champ2": champ2]),
-                NSLayoutConstraint.constraints(
-                    withVisualFormat: "V:|[champ3]|", options:[], metrics:nil, views:["champ3": champ3]),
-                NSLayoutConstraint.constraints(
-                    withVisualFormat: "V:|[lab]|", options:[], metrics:nil, views:["lab":lab])
-                ].joined().map{$0})
-            
-            return h
-
-        }
-        else {
-            return nil
-        }
-    }
-    
+ 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if match?.table![section].isEmpty == true {
             return nil

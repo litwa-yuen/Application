@@ -43,6 +43,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let result: NSArray = (try! context.fetch(fetchMeRequest())) as! [Me] as NSArray
         if result.count > 0 {
             // mainStoryboard
+            
+            
             let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
             
             // rootViewController
@@ -60,7 +62,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // self.window
             self.window = UIWindow(frame: UIScreen.main.bounds)
             
-            self.window!.rootViewController = navigationController
+            let rearNav = mainStoryboard.instantiateViewController(withIdentifier: "BackTableVC")
+            let mainRevealController: SWRevealViewController = SWRevealViewController(rearViewController: rearNav, frontViewController: navigationController)
+            self.window!.rootViewController = mainRevealController
             
             self.window!.makeKeyAndVisible()
 
@@ -211,12 +215,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
             
             // rootViewController
-            let rootViewController = mainStoryboard.instantiateViewController(withIdentifier: "TrendingViewController") as? TrendingViewController
-            rootViewController?.isMainPage = true
-            // navigationController
-            let navigationController = UINavigationController(rootViewController: rootViewController!)
-         
-            window?.rootViewController?.present(navigationController, animated: true, completion: nil)
+            let rootViewController = mainStoryboard.instantiateViewController(withIdentifier: "TrendingNav")
+            let rearNav = mainStoryboard.instantiateViewController(withIdentifier: "BackTableVC")
+            let mainRevealController: SWRevealViewController = SWRevealViewController(rearViewController: rearNav, frontViewController: rootViewController)
+            window?.rootViewController?.present(mainRevealController, animated: true, completion: nil)
+            
+            
         case ShortcutIdentifier.Favorite.type:
             FIRAnalytics.logEvent(withName: "3D_Favorite", parameters: [
                 "region": region as NSObject
@@ -225,8 +229,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
             // rootViewController
             let rootViewController = mainStoryboard.instantiateViewController(withIdentifier: "LOLSelfViewController") as? LOLSelfViewController
+            
             let navigationController = UINavigationController(rootViewController: rootViewController!)
 
+            
+            let rearNav = mainStoryboard.instantiateViewController(withIdentifier: "BackTableVC")
+            let mainRevealController: SWRevealViewController = SWRevealViewController(rearViewController: rearNav, frontViewController: navigationController)
             let result: NSArray = (try! self.managedObjectContext.fetch(fetchMeRequest())) as! [Me] as NSArray
             if result.count > 0 {
                 let id = (result[0] as! Me).value(forKey: "id") as! NSNumber
@@ -240,7 +248,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 rootViewController?.showAlert = true
             }
             
-            window?.rootViewController?.present(navigationController, animated: true, completion: nil)
+            window?.rootViewController?.present(mainRevealController, animated: true, completion: nil)
         default:
             break
         }

@@ -6,19 +6,28 @@ class TrendingViewController: UIViewController, UITableViewDataSource, UITableVi
     
     @IBOutlet weak var trendingTableView: UITableView!
     @IBOutlet weak var updatedDateLabel: UILabel!
-    @IBOutlet weak var searchButton: UIBarButtonItem!
+    @IBOutlet weak var menuButton: UIBarButtonItem!
     
     let database = FIRDatabase.database()
     var bannedChamps = [BannedChampion]()
     let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     var messageLabel = UILabel()
     
-    var isMainPage = false
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
         indicator.center = view.center
+        if self.revealViewController() != nil {
+            menuButton.target = self.revealViewController()
+            self.revealViewController().rearViewRevealWidth = SideOutWidth
+            menuButton.action =  #selector(SWRevealViewController.revealToggle(_:))
+            self.view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
+        }
+        FIRAnalytics.logEvent(withName: "trending_clicked" , parameters: [
+            "region": region as NSObject
+            ])
+
+
         view.addSubview(indicator)
         trendingTableView.estimatedRowHeight = trendingTableView.rowHeight
         trendingTableView.rowHeight = UITableViewAutomaticDimension
@@ -29,12 +38,9 @@ class TrendingViewController: UIViewController, UITableViewDataSource, UITableVi
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         indicator.startAnimating()
 
-        if !isMainPage {
-            searchButton.tintColor = UIColor.clear;
-            searchButton.isEnabled = false
-        }
         if CheckReachability.isConnectedToNetwork() {
             
             let trending = database.reference().child("trending/updatedDate")
