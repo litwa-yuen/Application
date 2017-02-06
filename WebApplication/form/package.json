@@ -1,0 +1,24 @@
+{
+  "name": "form",
+  "description": "form",
+  "version": "1.0.0",
+  "keywords": [
+    "responsive",
+    "front-end",
+    "web"
+  ],
+  "homepage": "",
+  "author": "litwa.yuen@gmail.com",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-less": "^1.4.0",
+    "typescript": "^2.0.6",
+    "grunt-ts": "^6.0.0-beta.3",
+    "grunt-cli": "^1.2.0"
+  },
+  "dependencies": {}
+}

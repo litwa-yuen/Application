@@ -1,0 +1,17 @@
+{
+  "name": "form",
+  "description": "form.",
+  "version": "1.0.0",
+  "keywords": [
+    "web"
+  ],
+  "homepage": "",
+  "main": [],
+  "devDependencies": {
+    "angular": "~1.6.1",
+    "DefinitelyTyped": "*",
+    "bootstrap":"~3.3.7",
+    "jquery":"~3.1.1",
+    "jquery-ui":"~1.12.1"
+  }
+}

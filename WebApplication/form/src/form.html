@@ -1,0 +1,62 @@
+
+<form name="userForm" class="form-horizontal" ng-submit="submitForm()" novalidate>
+
+        <!-- label -->
+        <div class="form-group" ng-class="{ 'has-error' : userForm.label.$invalid && !userForm.label.$pristine }">
+            <label class="control-label col-xs-12 col-sm-4">Label</label>
+            <div class="col-xs-12 col-sm-6">
+                <input type="text" name="label" class="form-control" ng-model="form.label" required>
+                <p ng-show="userForm.label.$invalid && !userForm.label.$pristine" class="help-block">label is required.</p>
+            </div>
+        </div>
+      
+        <!-- Type -->
+        <div class="form-group">
+            <label class="control-label col-xs-4 col-sm-4">Type</label>
+            <div class="col-xs-8 col-sm-3">
+                <label class="control-label">Multi-select Text</label>
+            </div>
+            <div class="col-xs-12 col-sm-3">
+                <label class="control-label"><input ng-model="form.required"type="checkbox" id="cbox1">A value is required</label>
+
+            </div>
+        </div>
+
+          <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-4">Default Value</label>
+            <div class="col-xs-12 col-sm-6">
+                <input type="text" name="default" ng-maxlength="40" class="form-control" ng-model="form.default">
+                <p ng-show="userForm.default.$error.maxlength" class="help-block">choices cannot be longer than 40 characters.</p>
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-4">Choices</label>
+            <div class="col-xs-12 col-sm-6"> 
+                <ol type="1">
+                    <li ng-repeat="choice in form.choices">{{choice}}</li>
+                </ol>  
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-4">Order</label>
+            <div class="col-xs-12 col-sm-6"> 
+
+                <select ng-change="reorder()" class="form-control" ng-model="form.displayAlpha">
+                    <option value="true">A-Z</option>
+                    <option value="false">Z-A</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+             <div class="col-sm-4"></div>
+            <div class="col-xs-12 col-sm-6">
+                <button type="submit" style="" class="btn btn-primary" ng-click="submit()" ng-disabled="userForm.$invalid">Submit</button>
+            </div>
+        </div>
+             
+        
+</form>
+
