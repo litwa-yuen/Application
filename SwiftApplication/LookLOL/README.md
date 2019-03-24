@@ -1,11 +1,11 @@
 # Look LOL
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/Icon-Small-40%402x.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/Icon-Small-40%402x.png)
 
 #Description:
-Look LOL is an IOS application which can look up your current season rank statistics and current game status.  
+Look LOL is an mobile application which can look up your current season rank statistics and current game status.  
 - Search Summoner Name 
 - Show 10 recent games played   
-- Show current seaion rank status (current Rank and KDA)
+- Show current season rank status (current Rank and KDA)
 - Show list of champions that summoner played in the current season
 - This list is order by the most played champion
 - Each row of the list will show an image, number of times summoner played, win rate and KDA of the champion
@@ -14,19 +14,19 @@ Look LOL is an IOS application which can look up your current season rank statis
 
 #ScreenShots:
 - Inital screen<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/newItialScreen.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/newItialScreen.png)
 
 - Settings<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/Settings.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/Settings.png)
 
 - Match Detail<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/CurrentGame2.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/CurrentGame2.png)
 
 - Rank Stats<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/initial%20Screen%20landscape.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/initial%20Screen%20landscape.png)
 
 - Current Game<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/CurrentGame1.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/CurrentGame1.png)
 
 - Runes Page<br/>
-![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/SelfLOL/ScreenShot/runes.png)
+![alt tag](https://github.com/litwa-yuen/Application/blob/master/SwiftApplication/LookLOL/ScreenShot/runes.png)
