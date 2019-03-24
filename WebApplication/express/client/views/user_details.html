@@ -1,0 +1,20 @@
+<a href="#/users">Go Back</a>
+<div class="panel panel-default" ng-init="getUser()">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{user.firstName}} {{user.lastName}}</h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-8">
+        <ul class="list-group">
+          <li class="list-group-item">Email: {{user.email}}</li>
+          <li class="list-group-item">Phone Number: {{user.phone}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pull-right">
+  <a href="#/users/edit/{{user._id}}">Edit</a> |  <a href="#" ng-click="removeUser(user._id)">Delete</a>
+  </div>
